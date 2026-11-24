@@ -6,7 +6,7 @@
 
 ## 1. The High-Signal 1-Page AI/ML Fresher Resume Blueprint
 
-Recruiters and hiring managers scan a fresher resume in **8–12 seconds**. Avoid generic "Built Titanic/Iris notebook" bullets and follow the **CAR (Context → Action → Result)** engineering formula:
+Recruiters and hiring managers scan a fresher resume in **8-12 seconds**. Avoid generic "Built Titanic/Iris notebook" bullets and follow the **CAR (Context → Action → Result)** engineering formula:
 
 ```text
 [Weak Bullet]:  Built a PDF RAG chatbot using LangChain and OpenAI.
@@ -31,7 +31,7 @@ Recruiters and hiring managers scan a fresher resume in **8–12 seconds**. Avoi
 
 ### How to Ace 2026 AI-Assisted Coding Rounds (`Cursor` / `Copilot` Permitted)
 1. **State Architecture & Edge Cases *Before* Prompting AI:** Tell the interviewer your schema, complexity target, and failure modes upfront before generating boilerplate.
-2. **Audit Every Generated Line Out Loud:** Explicitly check AI output for silent killers — train-test leakage, missing `model.eval()`, sequential `await` inside loops, post-filtering tenant leaks, and KV prefix-cache invalidation.
+2. **Audit Every Generated Line Out Loud:** Explicitly check AI output for silent killers: train-test leakage, missing `model.eval()`, sequential `await` inside loops, post-filtering tenant leaks, and KV prefix-cache invalidation.
 3. **Write Deterministic `assert` / `pytest` Checks Immediately:** Never declare an AI-generated function "done" without executing edge-case tests (`empty input`, `NaN`, `HTTP 429`, `unauthorized tenant`).
 
 ### Top 10 Interview Red Flags to Avoid
@@ -52,9 +52,9 @@ Recruiters and hiring managers scan a fresher resume in **8–12 seconds**. Avoi
 
 | Term | Crisp 1-Line Interview Definition |
 |---|---|
-| **Bias–Variance Tradeoff** | Balancing underfitting (oversimplified high-bias models) against overfitting (noise-memorizing high-variance models). |
+| **Bias-Variance Tradeoff** | Balancing underfitting (oversimplified high-bias models) against overfitting (noise-memorizing high-variance models). |
 | **`XGBoost` / `LightGBM`** | Gradient-boosted decision tree ensembles where each shallow tree sequentially predicts the negative gradient residuals of prior trees. |
-| **PR-AUC** | Area under the Precision–Recall curve; the gold-standard metric for heavily imbalanced rare-event classification (`<1%` positives). |
+| **PR-AUC** | Area under the Precision-Recall curve; the gold-standard metric for heavily imbalanced rare-event classification (`<1%` positives). |
 | **`SHAP` & Calibration** | Game-theoretic additive feature attributions (`TreeExplainer`) paired with `Platt`/`Isotonic` probability calibration (Brier Score). |
 | **`TabPFN`** | Pre-trained tabular foundation model performing `<1s` zero-shot in-context predictions on small-to-medium (`<=10k` row) structured datasets. |
 | **Data Leakage** | When target proxies, future events, or test-fold statistics contaminate training transformations, causing live Day-1 collapse. |
@@ -62,12 +62,12 @@ Recruiters and hiring managers scan a fresher resume in **8–12 seconds**. Avoi
 | **`NDCG@K`** | Normalized Discounted Cumulative Gain: ranking metric rewarding relevant items placed near rank #1 with logarithmic position decay. |
 | **LayerNorm / RMSNorm** | Per-token feature-axis normalization used in Transformers, invariant to batch size and sequence padding. |
 | **`AdamW`** | Adaptive momentum optimizer with **decoupled weight decay**, standard for training ViTs and LLMs. |
-| **Self-Attention ($Q,K,V$)** | $\text{softmax}(QK^\top / \sqrt{d_k})V$ — computes dynamic contextual token representations across full sequences in parallel. |
+| **Self-Attention ($Q,K,V$)** | $\text{softmax}(QK^\top / \sqrt{d_k})V$: computes dynamic contextual token representations across full sequences in parallel. |
 | **`RoPE`** | Rotary Positional Embeddings: encodes relative token distance by rotating Query and Key vectors in complex/2D planes. |
 | **`CLIP`** | Contrastive vision-language model aligning image and text encoders into a shared embedding space via symmetric InfoNCE loss. |
-| **Token (`BPE`)** | Subword text unit (~3–4 chars) produced by Byte-Pair Encoding, avoiding Out-Of-Vocabulary failures and governing LLM billing/context. |
+| **Token (`BPE`)** | Subword text unit (~3-4 chars) produced by Byte-Pair Encoding, avoiding Out-Of-Vocabulary failures and governing LLM billing/context. |
 | **Embedding** | Dense continuous vector capturing semantic similarity such that related concepts have high cosine/dot-product alignment. |
-| **Context Engineering** | Ordering static instructions/schemas first for 50%–90% KV prefix-cache hits while pruning noisy tool outputs to preserve signal-to-noise. |
+| **Context Engineering** | Ordering static instructions/schemas first for 50%-90% KV prefix-cache hits while pruning noisy tool outputs to preserve signal-to-noise. |
 | **Structured Outputs** | Grammar-constrained token decoding guaranteeing LLM responses conform 100% to a strict JSON / `Pydantic` schema. |
 | **`Qdrant` (Filterable HNSW)** | Rust vector database combining payload-indexed HNSW subgraph filtering, native Dense+Sparse RRF, and 32x Binary Quantization. |
 | **Hybrid Search + `RRF`** | Fusing lexical `BM25` keyword hits with dense semantic `HNSW` vectors via Reciprocal Rank Fusion. |

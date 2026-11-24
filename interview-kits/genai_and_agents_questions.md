@@ -30,9 +30,9 @@ Dense embeddings blur exact identifiers (error codes, SKUs, clause numbers, name
 
 **Q4: Why do naive Pre-Filtering and Post-Filtering break vector search in multi-tenant RAG, and how does `Qdrant` solve it?**
 *Answer:*
-- **Post-Filtering** retrieves global `Top-K` vectors first and filters by `tenant_id` afterward — if a small tenant owns `0.2%` of chunks, `Top-20` often yields **0 valid results**.
+- **Post-Filtering** retrieves global `Top-K` vectors first and filters by `tenant_id` afterward: if a small tenant owns `0.2%` of chunks, `Top-20` often yields **0 valid results**.
 - **Naive Pre-Filtering** masks unauthorized nodes out of an `HNSW` graph, severing navigation edges and degrading recall.
-- **`Qdrant` Filterable HNSW** builds payload-aware subgraph edges directly into the `HNSW` index (and dynamically falls back to indexed scan at very low cardinality), maintaining sub-10ms high-recall filtered search alongside 4x–32x Scalar/Binary Quantization.
+- **`Qdrant` Filterable HNSW** builds payload-aware subgraph edges directly into the `HNSW` index (and dynamically falls back to indexed scan at very low cardinality), maintaining sub-10ms high-recall filtered search alongside 4x-32x Scalar/Binary Quantization.
 
 **Q5: Does RAG completely eliminate hallucinations? When would you Fine-Tune instead of using RAG?**
 *Answer:*
@@ -42,7 +42,7 @@ Dense embeddings blur exact identifiers (error codes, SKUs, clause numbers, name
 
 ## 3. Inference Optimization, Agents & Security
 
-**Q6: Explain `TTFT` vs. `TPOT`, `KV Cache` fragmentation, and why `vLLM` achieves 2x–4x higher throughput.**
+**Q6: Explain `TTFT` vs. `TPOT`, `KV Cache` fragmentation, and why `vLLM` achieves 2x-4x higher throughput.**
 *Answer:*
 - **`TTFT` (Prefill)** processes all input tokens in parallel (**compute-bound**; speed up via Prefix Caching).
 - **`TPOT` (Decode)** generates 1 token at a time (**memory-bandwidth bound**; speed up via `FP8`/`AWQ` quantization & Speculative Decoding). Streaming improves *perceived* UX latency without lowering total generation wall-time.
@@ -50,9 +50,9 @@ Dense embeddings blur exact identifiers (error codes, SKUs, clause numbers, name
 
 **Q7: When should you build a Deterministic Workflow instead of an Autonomous Agent, and how do `MCP` and `A2A` differ?**
 *Answer:*
-Use **Workflows** (routing, prompt chaining, `asyncio.gather` parallelization) whenever step structure is predictable — lower latency, lower cost, deterministic testing. Reserve **Autonomous Agents (`LangGraph` / `Google ADK`)** for open-ended multi-step loops requiring dynamic recovery.
-- **`MCP` (Model Context Protocol — Vertical):** Connects a single agent to deterministic **`Tools`, `Resources`, and `Prompts`** over JSON-RPC 2.0 (`stdio` locally, `Streamable HTTP` + OAuth 2.1 remotely).
-- **`A2A` (Agent-to-Agent Protocol — Horizontal):** Linux Foundation / Google standard enabling peer agents across different frameworks/vendors to discover capabilities via `/.well-known/agent-card.json` and delegate opaque multi-turn tasks without exposing internal prompts or database credentials.
+Use **Workflows** (routing, prompt chaining, `asyncio.gather` parallelization) whenever step structure is predictable: lower latency, lower cost, deterministic testing. Reserve **Autonomous Agents (`LangGraph` / `Google ADK`)** for open-ended multi-step loops requiring dynamic recovery.
+- **`MCP` (Model Context Protocol: Vertical):** Connects a single agent to deterministic **`Tools`, `Resources`, and `Prompts`** over JSON-RPC 2.0 (`stdio` locally, `Streamable HTTP` + OAuth 2.1 remotely).
+- **`A2A` (Agent-to-Agent Protocol: Horizontal):** Linux Foundation / Google standard enabling peer agents across different frameworks/vendors to discover capabilities via `/.well-known/agent-card.json` and delegate opaque multi-turn tasks without exposing internal prompts or database credentials.
 
 **Q8: What is Indirect Prompt Injection, and how do you secure tool-calling agents in production?**
 *Answer:*

@@ -1,14 +1,14 @@
 # Module 01: Python, SQL & Modern Data Engineering Stack
 
-> **Estimated Study Time:** 6–8 Hours | **Prerequisites:** Basic programming familiarity | **Lab:** [Run Interactive Notebook](../../notebooks/01_numpy_pandas_sql_lab.ipynb) | **[Open in Colab](https://colab.research.google.com/github/FirdowsRahaman/ai-ml-fresher-roadmap/blob/main/notebooks/01_numpy_pandas_sql_lab.ipynb)**
+> **Estimated Study Time:** 6-8 Hours | **Prerequisites:** Basic programming familiarity | **Lab:** [Run Interactive Notebook](../../notebooks/01_numpy_pandas_sql_lab.ipynb) | **[Open in Colab](https://colab.research.google.com/github/FirdowsRahaman/ai-ml-fresher-roadmap/blob/main/notebooks/01_numpy_pandas_sql_lab.ipynb)**
 
-[← Back to Roadmap](../../README.md) | [Next: Module 02 — Math & Statistics →](./02_math_and_statistics.md)
+[← Back to Roadmap](../../README.md) | [Next: Module 02: Math & Statistics →](./02_math_and_statistics.md)
 
 ---
 
 ## Mental Model: Where Every AI Journey Starts
 
-Every machine learning model and autonomous AI agent—no matter how smart—begins life as raw, messy data sitting inside a database or log file. Before we touch neural networks or LLMs, we start at the true beginning of the river: pulling clean rows out of databases with `SQL`, fixing missing values in `Pandas`, transforming columns at C++ speed with `NumPy`, and wrapping everything in type-safe, non-blocking Python.
+Every machine learning model and autonomous AI agent, no matter how smart, begins life as raw, messy data sitting inside a database or log file. Before we touch neural networks or LLMs, we start at the true beginning of the river: pulling clean rows out of databases with `SQL`, fixing missing values in `Pandas`, transforming columns at C++ speed with `NumPy`, and wrapping everything in type-safe, non-blocking Python.
 
 ```mermaid
 flowchart LR
@@ -35,10 +35,10 @@ Let's follow a single dataset step-by-step from raw Python variables into clean,
 ### 1. Python Core Mechanics
 
 #### 1.1 Why Python Runs AI (The "Steering Wheel" Mental Model)
-If Python is famously slower than C++ or Rust, why does nearly all of AI run on Python? Think of Python as the **steering wheel of a race car**: you write short, readable Python commands at the top, while the heavy math engine underneath (`NumPy`, `PyTorch`, `Polars`) executes at full speed in compiled C++, CUDA, or Rust. Your job is to write clean orchestration in Python—and **never** write raw Python `for` loops over millions of numbers when a vectorized library function can do it in one step.
+If Python is famously slower than C++ or Rust, why does nearly all of AI run on Python? Think of Python as the **steering wheel of a race car**: you write short, readable Python commands at the top, while the heavy math engine underneath (`NumPy`, `PyTorch`, `Polars`) executes at full speed in compiled C++, CUDA, or Rust. Your job is to write clean orchestration in Python, and **never** write raw Python `for` loops over millions of numbers when a vectorized library function can do it in one step.
 
 #### 1.2 Core Data Structures, Mutability & Lookup Complexity
-Once you sit in Python's driver's seat, your first everyday decision is choosing the right container to hold data in memory—because picking a `list` instead of a `set` or `dict` can silently slow a 1-million-word vocabulary check from milliseconds to minutes:
+Once you sit in Python's driver's seat, your first everyday decision is choosing the right container to hold data in memory, because picking a `list` instead of a `set` or `dict` can silently slow a 1-million-word vocabulary check from milliseconds to minutes:
 
 | Structure | Syntax | Mutable? | Lookup Time | Primary AI/ML Use Case |
 |---|---|---|---|---|
@@ -54,7 +54,7 @@ vocab = {"<PAD>": 0, "<UNK>": 1, "ai": 2}  # O(1) token lookup
 
 #### 1.3 Value Equality (`==`) vs. Object Identity (`is`) & List Mutation
 As you manipulate those lists and dictionaries, two tiny Python behaviors trip up newcomers constantly: checking whether two variables hold *equal values* vs. *the exact same object in memory*, and adding items to a list without accidentally nesting a list inside a list:
-- `==` compares **value equality**; `is` checks **object identity** (same memory address — always write `is None`, never `== None`).
+- `==` compares **value equality**; `is` checks **object identity** (same memory address: always write `is None`, never `== None`).
 - `append(x)` drops `x` in as a **single item**; `extend(iterable)` unpacks and adds **each element individually**.
 
 ```python
@@ -70,7 +70,7 @@ items2.extend([3, 4])  # [1, 2, 3, 4]
 ```
 
 #### 1.4 Lazy Batch Streaming with Python Generators (`yield`)
-Lists and dicts work great when your dataset fits comfortably in memory—but what happens when your training log is **50 GB** on a **16 GB** laptop? A normal function is like downloading an entire 50 GB movie before watching frame 1 (crashing your RAM); a **generator (`yield`)** works like Netflix streaming—handing you one small batch at a time, pausing where it left off, and waiting until you ask for the next chunk:
+Lists and dicts work great when your dataset fits comfortably in memory, but what happens when your training log is **50 GB** on a **16 GB** laptop? A normal function is like downloading an entire 50 GB movie before watching frame 1 (crashing your RAM); a **generator (`yield`)** works like Netflix streaming, handing you one small batch at a time, pausing where it left off, and waiting until you ask for the next chunk:
 
 ```python
 from typing import Iterator
@@ -93,10 +93,10 @@ def stream_batches(file_path: str, batch_size: int = 64) -> Iterator[list[str]]:
 
 Streaming batches solves our memory limit, but standard Python lists still can't crunch math fast enough on each batch. To multiply millions of numbers in milliseconds, we pass those batches into **`NumPy`**.
 
-> **What is `NumPy`?** Short for *Numerical Python*, `NumPy` is the foundational math library underneath almost every AI tool. Standard Python only knows single numbers and slow lists; `NumPy` gives Python fast **grids of numbers (`ndarray`)** so you can add or multiply a million numbers in one line of code—no `for` loops needed.
+> **What is `NumPy`?** Short for *Numerical Python*, `NumPy` is the foundational math library underneath almost every AI tool. Standard Python only knows single numbers and slow lists; `NumPy` gives Python fast **grids of numbers (`ndarray`)** so you can add or multiply a million numbers in one line of code: no `for` loops needed.
 
-#### 2.1 Why `NumPy` Is 30×–100× Faster & How Broadcasting Works
-Why is a `NumPy` array so much faster than a Python `list`? A Python `list` scatters numbers in separate boxes across RAM and checks every item's type one by one. A **NumPy array** packs same-type numbers side-by-side in one solid strip of C memory, letting your CPU multiply dozens of numbers in a single hardware instruction. Even better, **Broadcasting** lets you combine grids of different sizes—when you subtract a 3-number column average `(3,)` from a 4-row table `(4, 3)`, NumPy automatically "stretches" that 3-number row across all 4 rows without copying memory!
+#### 2.1 Why `NumPy` Is 30×-100× Faster & How Broadcasting Works
+Why is a `NumPy` array so much faster than a Python `list`? A Python `list` scatters numbers in separate boxes across RAM and checks every item's type one by one. A **NumPy array** packs same-type numbers side-by-side in one solid strip of C memory, letting your CPU multiply dozens of numbers in a single hardware instruction. Even better, **Broadcasting** lets you combine grids of different sizes: when you subtract a 3-number column average `(3,)` from a 4-row table `(4, 3)`, NumPy automatically "stretches" that 3-number row across all 4 rows without copying memory!
 
 <details>
 <summary><b>Deep Dive: Contiguous C Memory & CPU SIMD Vectorization</b></summary>
@@ -125,7 +125,7 @@ print(X_scaled.shape)          # (4, 3)
 
 ### 3. Spreadsheet Data Cleaning with `Pandas`
 
-`NumPy` shines on clean grids of pure numbers, yet real-world business files arrive messy—mixing user IDs, text categories (`"free"`, `"pro"`), and missing blank cells (`NaN`). Before `NumPy` or a model can touch that data, we clean and shape it with **`Pandas`**.
+`NumPy` shines on clean grids of pure numbers, yet real-world business files arrive messy, mixing user IDs, text categories (`"free"`, `"pro"`), and missing blank cells (`NaN`). Before `NumPy` or a model can touch that data, we clean and shape it with **`Pandas`**.
 
 > **What is `Pandas`?** Think of `Pandas` as **programmable Excel inside Python**. Its main table object is called a **`DataFrame`** (rows and named columns), used to load CSV/SQL tables, fix messy text, and **impute** (*fill in missing blank cells*) before feeding clean numbers into an ML model.
 
@@ -133,7 +133,7 @@ print(X_scaled.shape)          # (4, 3)
 To navigate and clean a `DataFrame` without subtle bugs, keep three core habits straight:
 - **`df.loc[...]` (Lookup by Name):** Grabs rows/columns by their **label name** (like asking for `"spend"`). Slice ends are *included*.
 - **`df.iloc[...]` (Lookup by Row Number):** Grabs rows/columns by **0, 1, 2 position** (like Excel row numbers). Slice ends are *excluded*.
-- **Imputing (Filling Blank `NaN` Cells) Safely:** In Pandas 2.x/3.0, **Copy-on-Write** protects tables from accidental silent edits—so avoid old `df['col'].fillna(..., inplace=True)` code and always assign back cleanly (`df['col'] = df['col'].fillna(...)`).
+- **Imputing (Filling Blank `NaN` Cells) Safely:** In Pandas 2.x/3.0, **Copy-on-Write** protects tables from accidental silent edits, so avoid old `df['col'].fillna(..., inplace=True)` code and always assign back cleanly (`df['col'] = df['col'].fillna(...)`).
 
 ```python
 import pandas as pd
@@ -155,14 +155,14 @@ print(df)
 
 ### 4. `SQL` Foundations with Real Queries
 
-Where did that `Pandas` table come from in the first place? In a real company, data almost never sits in a neat CSV on your desktop—it lives across millions of rows inside cloud databases. Before Python even starts, we use **`SQL`** to join and filter the exact training table we need.
+Where did that `Pandas` table come from in the first place? In a real company, data almost never sits in a neat CSV on your desktop: it lives across millions of rows inside cloud databases. Before Python even starts, we use **`SQL`** to join and filter the exact training table we need.
 
 > **What is `SQL`?** *Structured Query Language* is how you pull data out of company databases (`PostgreSQL`, `Snowflake`, `BigQuery`). You write `SQL` to filter and join millions of rows *inside the database* first so Python only receives the clean summary table.
 
 #### 4.1 Combining Tables (`INNER` vs. `LEFT JOIN`) & Filtering Groups (`WHERE` vs. `HAVING`)
 The #1 SQL bug in machine learning happens right when joining two tables:
 - **Real-World Analogy (`INNER` vs. `LEFT JOIN`):** Suppose Table A lists **all 1,000 registered app users** and Table B lists **orders placed this month**.
-  - **`INNER JOIN`** keeps *only* users who bought something—silently deleting all inactive users (ruining a churn model!).
+  - **`INNER JOIN`** keeps *only* users who bought something, silently deleting all inactive users (ruining a churn model!).
   - **`LEFT JOIN`** keeps **all 1,000 users** from Table A and puts `NULL` (blank) next to anyone with zero orders.
 - **`WHERE` vs. `HAVING`:** `WHERE` filters individual rows *before* grouping; `HAVING` filters summary totals *after* `GROUP BY`.
 
@@ -186,7 +186,7 @@ HAVING COUNT(o.order_id) >= 0;
 
 ## Tier 2: Production Architecture & Scale (Modern AI Engineering)
 
-With Python, `NumPy`, `Pandas`, and basic `SQL`, you can build any laptop prototype. **Tier 2** upgrades those foundations for real production systems—where you need time-aware SQL features (`Window Functions`), strict input validation (`Pydantic`), and parallel API calls (`async/await`) that don't freeze your server.
+With Python, `NumPy`, `Pandas`, and basic `SQL`, you can build any laptop prototype. **Tier 2** upgrades those foundations for real production systems, where you need time-aware SQL features (`Window Functions`), strict input validation (`Pydantic`), and parallel API calls (`async/await`) that don't freeze your server.
 
 ### 5. Analytical `SQL`: `CTEs` (`WITH`) & Window Functions
 
@@ -228,8 +228,8 @@ WHERE rn = 1;
 Once your data pipeline is clean, shipping it as a reliable AI service relies on four everyday Python engineering tools working together:
 
 #### 6.1 What Each Tool Does in Plain English
-1. **`uv` (Project Dependency Manager):** Like an ultra-fast `pip` + isolated sandbox (`venv`) in one tool—ensures project A's library versions never break project B (`uv sync`).
-2. **`Pydantic` (Automatic Data Bouncer):** Checks incoming JSON/API inputs at the door—if someone sends `"age": -5` or `"twenty"`, `Pydantic` blocks it immediately with a clear error before bad data crashes your model.
+1. **`uv` (Project Dependency Manager):** Like an ultra-fast `pip` + isolated sandbox (`venv`) in one tool: ensures project A's library versions never break project B (`uv sync`).
+2. **`Pydantic` (Automatic Data Bouncer):** Checks incoming JSON/API inputs at the door: if someone sends `"age": -5` or `"twenty"`, `Pydantic` blocks it immediately with a clear error before bad data crashes your model.
 3. **`async` / `await` (Kitchen Multitasking for Network Calls):** Waiting for an LLM API is like waiting for water to boil. Synchronous code stares at Pot #1 for 1 second, then Pot #2 for 1 second (`10 pots = 10s`). **`asyncio.gather()`** turns on all 10 burners at once so all 10 finish in **`~1s` total**!
 4. **`pytest` (Automated Code Checker):** Runs small `assert` checks automatically on every code save so bugs get caught in 1 second.
 
@@ -260,7 +260,7 @@ vectors = asyncio.run(embed_all_chunks([1, 2, 3, 4]))
 assert len(vectors) == 4
 ```
 
-> **When Pandas hits RAM limits:** Mention **Polars** or **DuckDB** in interviews — both execute multi-threaded Rust/C++ query plans with lazy evaluation (`pl.scan_parquet(...)`) on 50 GB+ datasets without Out-Of-Memory crashes.
+> **When Pandas hits RAM limits:** Mention **Polars** or **DuckDB** in interviews: both execute multi-threaded Rust/C++ query plans with lazy evaluation (`pl.scan_parquet(...)`) on 50 GB+ datasets without Out-Of-Memory crashes.
 
 ---
 
@@ -302,11 +302,11 @@ print("Lab 01 Passed!", out.to_dict(orient="records"))
 ## Key Engineering Takeaways
 - Use **generators (`yield`)** for lazy batch streaming and **NumPy broadcasting** instead of Python `for` loops.
 - Avoid chained `inplace=True` in Pandas; use `groupby().transform()` and explicit column assignment for Copy-on-Write compatibility.
-- Master **SQL `LEFT JOIN`**, **`HAVING` vs. `WHERE`**, and **Window Functions (`ROW_NUMBER`, `LAG`, `OVER`)** — they are tested in almost every screening.
+- Master **SQL `LEFT JOIN`**, **`HAVING` vs. `WHERE`**, and **Window Functions (`ROW_NUMBER`, `LAG`, `OVER`)**: they are tested in almost every screening.
 - Use **`Pydantic`** for schema safety and **`asyncio.gather`** to parallelize I/O-bound LLM and vector search calls.
 
 > **Next in the Journey:** Now that you can pull, clean, and batch raw data into `NumPy` grids, how does an AI model actually measure similarity between those rows, handle extreme outliers, and prove statistically that a new model beats an old one? Let's flow straight into **[Module 02: Mathematics & Statistics](./02_math_and_statistics.md)**.
 
 ---
 
-[← Back to Roadmap](../../README.md) | [Next: Module 02 — Math & Statistics →](./02_math_and_statistics.md)
+[← Back to Roadmap](../../README.md) | [Next: Module 02: Math & Statistics →](./02_math_and_statistics.md)

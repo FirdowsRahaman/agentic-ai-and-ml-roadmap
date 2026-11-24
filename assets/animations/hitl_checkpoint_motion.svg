@@ -72,5 +72,5 @@
     <animateMotion dur="6s" repeatCount="indefinite" path="M 228 135 L 370 135 L 370 247 L 610 247 L 836 135"/>
   </circle>
 
-  <text x="480" y="314" text-anchor="middle" class="small">Never call time.sleep() waiting for a human — save state to Postgres so any server pod can resume hours later!</text>
+  <text x="480" y="314" text-anchor="middle" class="small">Never call time.sleep() waiting for a human: save state to Postgres so any server pod can resume hours later!</text>
 </svg>

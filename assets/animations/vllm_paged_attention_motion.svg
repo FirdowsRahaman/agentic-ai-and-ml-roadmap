@@ -26,7 +26,7 @@
   <rect x="691" y="1" width="268" height="5" fill="#00A9F4"/>
 
   <text x="32" y="34" class="kicker">VISUAL INTUITION  |  GPU MEMORY &amp; vLLM PAGEDATTENTION</text>
-  <text x="32" y="60" class="title">The "12-Seat Restaurant Table" Problem: Why vLLM Serves 2×–4× More Users</text>
+  <text x="32" y="60" class="title">The "12-Seat Restaurant Table" Problem: Why vLLM Serves 2×-4× More Users</text>
   <line x1="32" y1="74" x2="928" y2="74" stroke="#E2E8F0" stroke-width="1"/>
 
   <!-- LEFT: Naive Contiguous Allocation -->
@@ -74,5 +74,5 @@
 
   <!-- Bottom Banner -->
   <rect x="32" y="270" width="896" height="34" rx="3" fill="#051C2C"/>
-  <text x="480" y="292" text-anchor="middle" font-family="-apple-system, 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#F8FAFC">Pages are handed out 1 block at a time as tokens stream in — and freed the instant a user's reply finishes!</text>
+  <text x="480" y="292" text-anchor="middle" font-family="-apple-system, 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#F8FAFC">Pages are handed out 1 block at a time as tokens stream in: and freed the instant a user's reply finishes!</text>
 </svg>

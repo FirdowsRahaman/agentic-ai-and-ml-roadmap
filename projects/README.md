@@ -6,7 +6,7 @@
 
 A generic "PDF Chatbot" or "Iris classification script" will **not** get you hired. Hiring managers look for projects that demonstrate **system thinking**, handle **real-world edge cases (latency SLAs, token budgets, drift, class imbalance)**, and prove you can build **both locally on consumer hardware and at scale in the cloud**.
 
-This curated collection is divided into two tracks — plus **2 runnable starter kits** right inside this folder so you never start from a blank directory:
+This curated collection is divided into two tracks: plus **2 runnable starter kits** right inside this folder so you never start from a blank directory:
 
 1. **100% Local Projects (\$0 Cloud Cost):** Build entirely on your laptop/workstation using open-weight models, embedded vector/OLAP stores, and open-source MLOps tools without needing cloud credit cards.
 2. **Cloud & Big Tech Enterprise Projects:** Mirror the production architectures built by **Google Cloud (GCP), AWS, Meta, and Stripe** engineering teams.
@@ -20,7 +20,7 @@ This curated collection is divided into two tracks — plus **2 runnable starter
 
 ## Local Project 1: Private Air-Gapped Desktop RAG & Multi-Tool Agent
 > **Key Skills:** Ollama, Qwen 3.5 / Gemma 3 / Llama 4, Qdrant (Embedded Hybrid Search), DuckDB (SQL), LangGraph  
-> **Hardware:** Any 8GB–16GB RAM laptop or Apple Silicon / RTX GPU (\$0 API Cost)  
+> **Hardware:** Any 8GB-16GB RAM laptop or Apple Silicon / RTX GPU (\$0 API Cost)  
 > **Runnable Starter Code:** **[Open `starter-local-rag-agent/` →](./starter-local-rag-agent/README.md)**
 
 ### The Problem
@@ -63,7 +63,7 @@ flowchart TD
 > **Hardware:** Any laptop with a webcam or RTSP video file (\$0 Cloud Cost)
 
 ### The Problem
-Retail stores and warehouses need live footfall counting, queue dwell-time analytics, and safety zone alerts. Streaming raw 1080p video feeds to the cloud wastes bandwidth and violates latency budgets — inference must run **on-premise at the edge**.
+Retail stores and warehouses need live footfall counting, queue dwell-time analytics, and safety zone alerts. Streaming raw 1080p video feeds to the cloud wastes bandwidth and violates latency budgets: inference must run **on-premise at the edge**.
 
 ### Local Architecture & Workflow
 ```mermaid
@@ -84,7 +84,7 @@ flowchart LR
 ```
 
 1. **Decoupled Frame Ingestion:** Producer-consumer threads prevent RTSP buffer lag during inference spikes.
-2. **ONNX Edge Acceleration:** Export `YOLO26n` (native NMS-free architecture) to **ONNX Runtime** (`INT8`/`FP16`) for 45–60+ FPS on consumer hardware.
+2. **ONNX Edge Acceleration:** Export `YOLO26n` (native NMS-free architecture) to **ONNX Runtime** (`INT8`/`FP16`) for 45-60+ FPS on consumer hardware.
 3. **Multi-Object Tracking (`ByteTrack`):** Persist unique object IDs across occlusions using Kalman filter motion priors + IoU association.
 
 ---
@@ -217,7 +217,7 @@ flowchart TD
 > **Target Roles:** AI Infrastructure / LLM Platform Engineer  
 > **Key Stack:** `vLLM` (`PagedAttention`), Redis Semantic Cache, Prefix Caching, `OpenTelemetry` + `Arize Phoenix`
 
-- **Key Talking Points:** Serving `<15ms` Redis semantic cache hits ($\cos \ge 0.96$) at `\$0` GPU cost, 2x–4x higher concurrency via `PagedAttention` + continuous batching, and full `TTFT`/`TPOT` OpenTelemetry span observability.
+- **Key Talking Points:** Serving `<15ms` Redis semantic cache hits ($\cos \ge 0.96$) at `\$0` GPU cost, 2x-4x higher concurrency via `PagedAttention` + continuous batching, and full `TTFT`/`TPOT` OpenTelemetry span observability.
 
 ---
 

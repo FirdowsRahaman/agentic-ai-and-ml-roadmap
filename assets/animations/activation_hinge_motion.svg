@@ -7,7 +7,7 @@
     .small { font: 600 11px -apple-system, 'Segoe UI', Arial, sans-serif; fill: #475569; }
     .plot-bg { fill: #F8FAFC; stroke: #CBD5E1; stroke-width: 1.2; }
 
-    /* Left rigid ruler tilts helplessly around center (240, 204) — never able to circle the blue center! */
+    /* Left rigid ruler tilts helplessly around center (240, 204): never able to circle the blue center! */
     @keyframes helplessTilt {
       0%, 100% { transform: rotate(-22deg); }
       50%      { transform: rotate(24deg); }

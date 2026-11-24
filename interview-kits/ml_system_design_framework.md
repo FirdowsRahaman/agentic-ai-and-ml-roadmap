@@ -37,20 +37,20 @@ flowchart LR
 
 1. **Clarify & Business KPI:** Minimize net chargeback dollar loss while keeping false-decline customer friction `< 0.5%`. Latency budget: **`<50ms` p99 synchronous**.
 2. **ML Formulation:** Cost-sensitive binary classification outputting calibrated $P(\text{fraud} \mid \mathbf{x})$. Offline metric: **PR-AUC** and **Recall @ FPR = 0.5%** (never raw Accuracy on `0.1%` fraud!).
-3. **Labels & Leakage Handling:** Chargebacks arrive 30–60 days late (**delayed feedback**). Use chronological splits + point-in-time feature joins (`merge_asof` / `Feast` offline store) so post-dispute signals never leak.
+3. **Labels & Leakage Handling:** Chargebacks arrive 30-60 days late (**delayed feedback**). Use chronological splits + point-in-time feature joins (`merge_asof` / `Feast` offline store) so post-dispute signals never leak.
 4. **Feature Tiers (`Feast`):**
    - *Static (`Snowflake`/Offline):* Account age, historical merchant chargeback rate.
    - *Streaming (`Kinesis -> Redis` Online Store, `<5ms`):* 5-min card velocity, distance from last IP/geolocation.
 5. **Model Progression:** Logistic Regression baseline -> **`LightGBM` / `XGBoost`** trained with sample weights proportional to transaction dollar value.
 6. **Serving Budget (`38ms` total):** API Gateway (`4ms`) + Redis `Feast` lookup (`5ms`) + `ONNX Runtime` tree scoring (`4ms`) + Rules/Threshold check (`2ms`).
-7. **Deployment & Drift:** Shadow traffic -> 2% Canary -> Online A/B test; daily **`PSI` drift alerts (`>= 0.25`)** + human-review active learning queue for borderline scores (`0.35–0.65`).
+7. **Deployment & Drift:** Shadow traffic -> 2% Canary -> Online A/B test; daily **`PSI` drift alerts (`>= 0.25`)** + human-review active learning queue for borderline scores (`0.35-0.65`).
 
 ---
 
 ## Worked Blueprint 2: Enterprise Hybrid RAG & Action Copilot
 
 1. **Clarify & Scope:** 50,000 internal Confluence/PDF docs + live Jira/Order tools; strict document ACL permissions (HR docs invisible to interns); **`TTFT < 800ms`**.
-2. **Ingestion & ACL Indexing:** Parse tables with `Docling`, chunk by section headers (`512` tokens + contextual header prefix), and index dense + sparse vectors in **`Qdrant`** (using **Binary/Scalar Quantization** to cut RAM 4x–32x and payload-indexed `allowed_groups` arrays).
+2. **Ingestion & ACL Indexing:** Parse tables with `Docling`, chunk by section headers (`512` tokens + contextual header prefix), and index dense + sparse vectors in **`Qdrant`** (using **Binary/Scalar Quantization** to cut RAM 4x-32x and payload-indexed `allowed_groups` arrays).
 3. **Retrieval & Reranking Funnel:**
    - **Filterable HNSW (`Qdrant` Payload Index):** Enforce user ACL filters *during* graph traversal (avoiding post-filtering zero-result bugs and naive pre-filtering graph disconnection; never filter permissions purely in the LLM prompt!).
    - Native `Qdrant` Hybrid `BM25 + Dense HNSW` -> `Fusion.RRF` (`Top 40`) -> Cross-Encoder Reranker (`Qwen3-Reranker` / `ModernBERT` / `Cohere Rerank 4`, `Top 5`).

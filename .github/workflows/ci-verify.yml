@@ -61,6 +61,17 @@ jobs:
                       errors.append(f"{rel}: missing target '{target}'")
                   elif anchor and resolved_rel in headings and anchor not in headings[resolved_rel]:
                       errors.append(f"{rel}: broken anchor '{target}'")
+              for im in re.finditer(r'<img[^>]+src=["\']([^"\']+)["\']', stripped):
+                  src_target = im.group(1).strip()
+                  if src_target.startswith(("http://", "https://", "data:")):
+                      continue
+                  resolved_img = os.path.normpath(os.path.join(os.path.dirname(rel), src_target))
+                  if not os.path.exists(resolved_img):
+                      errors.append(f"{rel}: missing <img src='{src_target}'>")
+
+          import glob, xml.etree.ElementTree as ET
+          for svg_path in sorted(glob.glob("assets/animations/*.svg")):
+              ET.parse(svg_path)
 
           if errors:
               print("\n".join(errors))

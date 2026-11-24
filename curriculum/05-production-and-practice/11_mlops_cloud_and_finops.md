@@ -1,14 +1,14 @@
 # Module 11: Production MLOps, AI Engineering, Drift & Cloud FinOps
 
-> **Estimated Study Time:** 8–10 Hours | **Prerequisites:** [Module 03](../02-core-ml-and-dl/03_classical_ml_and_recsys.md), [Module 10](../04-agentic-ai/10_agent_evals_and_safety.md) | **Starter Repo:** [Local MLOps Starter Template](../../projects/starter-local-mlops/)
+> **Estimated Study Time:** 8-10 Hours | **Prerequisites:** [Module 03](../02-core-ml-and-dl/03_classical_ml_and_recsys.md), [Module 10](../04-agentic-ai/10_agent_evals_and_safety.md) | **Starter Repo:** [Local MLOps Starter Template](../../projects/starter-local-mlops/)
 
-[← Previous: Module 10 — Agent Evaluation & Safety](../04-agentic-ai/10_agent_evals_and_safety.md) | [Home](../../README.md) | [Next: Module 12 — Practical Troubleshooting Scenarios →](./12_system_troubleshooting_scenarios.md)
+[← Previous: Module 10: Agent Evaluation & Safety](../04-agentic-ai/10_agent_evals_and_safety.md) | [Home](../../README.md) | [Next: Module 12: Practical Troubleshooting Scenarios →](./12_system_troubleshooting_scenarios.md)
 
 ---
 
-## Mental Model: ML Modeling Code Is Only ~5%–10% of a Production System
+## Mental Model: ML Modeling Code Is Only ~5%-10% of a Production System
 
-Across [Modules 01–10](../04-agentic-ai/10_agent_evals_and_safety.md), you learned how to train, align, ground, and evaluate AI models. Now comes the reality check that separates portfolio demos from real engineering: as Google researchers famously documented in *[Hidden Technical Debt in Machine Learning Systems](https://papers.nips.cc/paper_files/paper/2015/hash/86df7dcfd896fcaf2674f757a2463eba-Abstract.html)* (Sculley et al., NeurIPS 2015), core ML training code makes up **only ~5%–10%** of a live production system. A `0.94 AUC` model or smart agent delivers zero business value until surrounded by safe packaging, `FastAPI` endpoints, `Docker`, feature stores, drift monitors, and cloud GPU FinOps:
+Across [Modules 01-10](../04-agentic-ai/10_agent_evals_and_safety.md), you learned how to train, align, ground, and evaluate AI models. Now comes the reality check that separates portfolio demos from real engineering: as Google researchers famously documented in *[Hidden Technical Debt in Machine Learning Systems](https://papers.nips.cc/paper_files/paper/2015/hash/86df7dcfd896fcaf2674f757a2463eba-Abstract.html)* (Sculley et al., NeurIPS 2015), core ML training code makes up **only ~5%-10%** of a live production system. A `0.94 AUC` model or smart agent delivers zero business value until surrounded by safe packaging, `FastAPI` endpoints, `Docker`, feature stores, drift monitors, and cloud GPU FinOps:
 
 ```mermaid
 flowchart LR
@@ -38,9 +38,9 @@ flowchart LR
 > - **`FastAPI`:** Python's standard web framework for wrapping a trained model behind a live URL (`POST /predict`) so mobile apps, websites, or teammates can send JSON inputs and get predictions back in milliseconds.
 
 #### 1.1 Safe Model Serialization (`safetensors`, `ONNX`) & Startup-Loaded `FastAPI` Services
-- **Security Trap (`pickle` / `torch.load` default):** `pickle` executes arbitrary Python bytecode during deserialization — loading an untrusted `.pkl` file can compromise your production server!
-- **`safetensors` (Hugging Face / PyTorch standard):** Zero-copy, memory-mapped tensor format that stores **pure weights + JSON header** with **zero arbitrary code execution** and 2x–4x faster GPU loading.
-- **`ONNX` (Open Neural Network Exchange):** Framework-agnostic computation graph enabling graph fusion and quantized CPU/GPU inference via **ONNX Runtime** (`2x–5x` speedup over eager PyTorch).
+- **Security Trap (`pickle` / `torch.load` default):** `pickle` executes arbitrary Python bytecode during deserialization: loading an untrusted `.pkl` file can compromise your production server!
+- **`safetensors` (Hugging Face / PyTorch standard):** Zero-copy, memory-mapped tensor format that stores **pure weights + JSON header** with **zero arbitrary code execution** and 2x-4x faster GPU loading.
+- **`ONNX` (Open Neural Network Exchange):** Framework-agnostic computation graph enabling graph fusion and quantized CPU/GPU inference via **ONNX Runtime** (`2x-5x` speedup over eager PyTorch).
 - **`joblib`:** Efficient NumPy buffer compression for trusted internal `scikit-learn` pipelines.
 
 ```python
@@ -77,7 +77,7 @@ def predict_churn(payload: ChurnFeatures) -> dict[str, float | bool]:
 
 ### 2. Containerization (`Docker`) & Experiment/Data Versioning (`MLflow` + `DVC`)
 
-Your `FastAPI` endpoint runs smoothly on your laptop—now how do you make sure it runs identically on a Linux cloud server, and track *which exact dataset* trained *which model version*?
+Your `FastAPI` endpoint runs smoothly on your laptop: now how do you make sure it runs identically on a Linux cloud server, and track *which exact dataset* trained *which model version*?
 
 > **Three Everyday MLOps Tools in Plain English:**
 > - **`Docker` (Sealed Shipping Container):** Solves *"It worked on my laptop, why did it crash on the server?"* by packing your code + exact Python version + system libraries into one portable **Image** (blueprint) that runs identically anywhere as a **Container** (live process).
@@ -115,7 +115,7 @@ Before building that `Docker` image in CI/CD, these three versioning tools keep 
 
 ## Tier 2: Production Architecture & Scale (Serving Architectures, `Feast`, `PSI` Drift, Rollouts & Infra FinOps)
 
-Shipping Version 1 in a container is **Day 1**; **Tier 2** covers **Day 2 and beyond**—scaling GPU vs. CPU pods, keeping live features identical to training features (`Feast`), streaming real-time agent tokens (`SSE`), catching data drift (`PSI`), and slashing cloud GPU bills.
+Shipping Version 1 in a container is **Day 1**; **Tier 2** covers **Day 2 and beyond**: scaling GPU vs. CPU pods, keeping live features identical to training features (`Feast`), streaming real-time agent tokens (`SSE`), catching data drift (`PSI`), and slashing cloud GPU bills.
 
 ### 3. Classical ML Serving vs. LLM Serving, and Feature Stores (`Feast`)
 
@@ -124,7 +124,7 @@ First, notice how differently Kubernetes must autoscale a classical `XGBoost` mi
 
 | Dimension | Classical ML (`XGBoost` / `LightGBM`) | LLM Serving (`vLLM` / `TensorRT-LLM`) |
 |---|---|---|
-| **Compute & State** | Stateless CPU pods (`<500 MB` RAM), `5ms` inference | Stateful `KV Cache` on high-VRAM GPUs (`24–80 GB`), streaming `SSE` tokens |
+| **Compute & State** | Stateless CPU pods (`<500 MB` RAM), `5ms` inference | Stateful `KV Cache` on high-VRAM GPUs (`24-80 GB`), streaming `SSE` tokens |
 | **Batching** | Simple request or micro-batching | **Continuous iteration-level batching** + `PagedAttention` |
 | **Autoscaling Signal** | CPU utilization / RPS | **KV Cache VRAM % utilization** + waiting queue depth (CPU % stays near 0 on GPU pods!) |
 
@@ -135,7 +135,7 @@ On the classical ML side, how do you guarantee the live `FastAPI` server feeds `
   2. **Online Store (`Redis` / `DynamoDB`):** Latest precomputed values in `<5ms` for live API requests.
 
 #### 3.3 Real-Time `SSE` Token/Tool Streaming (`FastAPI`) & User Feedback Data Flywheels
-On the GenAI & Agent side, users won't stare at a frozen spinner for 12 seconds—so instead of returning one blocking JSON blob, production APIs stream live **Server-Sent Events (`SSE`)** and wire user feedback straight back into training:
+On the GenAI & Agent side, users won't stare at a frozen spinner for 12 seconds, so instead of returning one blocking JSON blob, production APIs stream live **Server-Sent Events (`SSE`)** and wire user feedback straight back into training:
 
 ```python
 import json
@@ -162,12 +162,12 @@ async def chat_stream(session_id: str, q: str) -> StreamingResponse:
 
 ### 4. Statistical Drift (`PSI`), Safe Deployments & Cloud GPU FinOps
 
-Even a perfectly deployed model decays quietly as the outside world changes—so we close the production loop with **automated drift alarms**, **safe staged rollouts**, and **Spot GPU cost controls**:
+Even a perfectly deployed model decays quietly as the outside world changes, so we close the production loop with **automated drift alarms**, **safe staged rollouts**, and **Spot GPU cost controls**:
 
 #### 4.1 Detecting Data Drift (`PSI`) vs. Concept Drift
 - **In Plain English:**
-  - **Data / Covariate Drift ($P(X)$ changes):** *The customers walking into your store changed*—e.g., your loan model was trained on `\$50k` average salaries, and suddenly `\$120k` applicants flood in. Measured with **`PSI`** (`< 0.10` safe, `>= 0.25` retrain!).
-  - **Concept Drift ($P(Y \mid X)$ changes):** *The same customers changed what their behavior means*—e.g., input salaries look identical (`PSI = 0.02`), yet a recession makes people default twice as often! Caught only by tracking real outcomes and accuracy over time.
+  - **Data / Covariate Drift ($P(X)$ changes):** *The customers walking into your store changed*: e.g., your loan model was trained on `\$50k` average salaries, and suddenly `\$120k` applicants flood in. Measured with **`PSI`** (`< 0.10` safe, `>= 0.25` retrain!).
+  - **Concept Drift ($P(Y \mid X)$ changes):** *The same customers changed what their behavior means*: e.g., input salaries look identical (`PSI = 0.02`), yet a recession makes people default twice as often! Caught only by tracking real outcomes and accuracy over time.
 
 <p align="center">
   <img src="../../assets/animations/psi_drift_canary_motion.svg" width="100%" alt="Animated PSI Data Drift bell-curve shift triggering automated Shadow and Canary retraining" />
@@ -183,14 +183,14 @@ Standard MLOps & credit-risk thresholds (*Siddiqi, Credit Risk Scorecards*): `PS
 </details>
 
 #### 4.2 Progressive Delivery: Shadow Traffic, Canary Rollouts & Online A/B Tests
-When `PSI >= 0.25` triggers a newly retrained **Challenger** model, never swap 100% of live user traffic onto it overnight—promote it safely through three progressive gates:
+When `PSI >= 0.25` triggers a newly retrained **Challenger** model, never swap 100% of live user traffic onto it overnight: promote it safely through three progressive gates:
 1. **Shadow (Dark Traffic):** Mirror 100% of live requests to the Challenger model asynchronously; discard Challenger outputs from user responses while verifying latency, memory, and prediction distributions at **zero user risk**.
 2. **Canary Rollout:** Route `1% -> 10% -> 50% -> 100%` of live traffic with automated rollback if `5xx` error rates or `p99` latency breach guardrails.
 3. **Online A/B Test:** Randomize by `user_id` (`50/50`), measuring **Primary Business KPI** statistical lift ($p < 0.05$) alongside strict **Guardrail Metrics** (latency, unsubscribe rate).
 
 #### 4.3 Preemptible Spot GPU Checkpointing & Automated Cloud Cost Kill-Switches
-Running those retraining jobs and GPU clusters on full-price On-Demand cloud instances gets expensive fast—here is how production infra teams slash GPU bills safely:
-1. **Spot / Preemptible GPUs + Emergency Checkpointing:** Rent spare cloud GPU capacity at **up to 60%–91% discount** compared to On-Demand rates ([AWS EC2 Spot](https://aws.amazon.com/ec2/spot/); [Google Cloud Spot VMs](https://cloud.google.com/spot-vms)). Save checkpoints to S3/GCS every $N$ steps and trap the cloud `SIGTERM` preemption signal to flush optimizer + model state cleanly so replacement nodes resume automatically.
+Running those retraining jobs and GPU clusters on full-price On-Demand cloud instances gets expensive fast: here is how production infra teams slash GPU bills safely:
+1. **Spot / Preemptible GPUs + Emergency Checkpointing:** Rent spare cloud GPU capacity at **up to 60%-91% discount** compared to On-Demand rates ([AWS EC2 Spot](https://aws.amazon.com/ec2/spot/); [Google Cloud Spot VMs](https://cloud.google.com/spot-vms)). Save checkpoints to S3/GCS every $N$ steps and trap the cloud `SIGTERM` preemption signal to flush optimizer + model state cleanly so replacement nodes resume automatically.
 2. **Automated Cloud Infrastructure Kill-Switches:**
    - Cap Kubernetes autoscalers (`maxReplicas`), enforce idle-GPU auto-shutdown (`GPU utilization < 5%` for 30 mins), and wire **AWS Budgets -> SNS -> Lambda** (or **GCP Billing Budgets -> Pub/Sub -> Cloud Function**) to automatically scale non-prod GPU groups to zero when spend crosses threshold.
 
@@ -235,4 +235,4 @@ print(f"Lab 11 Passed! Stable PSI={compute_psi(train_dist, stable_prod):.3f}, Dr
 
 ---
 
-[← Previous: Module 10 — Agent Evaluation & Safety](../04-agentic-ai/10_agent_evals_and_safety.md) | [Home](../../README.md) | [Next: Module 12 — Practical Troubleshooting Scenarios →](./12_system_troubleshooting_scenarios.md)
+[← Previous: Module 10: Agent Evaluation & Safety](../04-agentic-ai/10_agent_evals_and_safety.md) | [Home](../../README.md) | [Next: Module 12: Practical Troubleshooting Scenarios →](./12_system_troubleshooting_scenarios.md)

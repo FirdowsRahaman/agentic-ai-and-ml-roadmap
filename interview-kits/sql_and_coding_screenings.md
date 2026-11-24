@@ -1,6 +1,6 @@
 # SQL, PyTorch Debugging & Live Coding Screening Kit
 
-> **Note:** For pure NumPy ML-from-scratch implementations (`Linear/Logistic Regression`, `Stable Softmax`, `K-Means`, `Top-K Cosine`, `BM25`, `Jittered Backoff`), see **[Module 13 — Hands-On Algorithms from Scratch](../curriculum/05-production-and-practice/13_algorithms_from_scratch.md)**. This kit covers complementary **SQL Window Queries, PyTorch Bug-Hunts, Point-in-Time Joins, and Systems Data Structures** tested in Round-1 screenings.
+> **Note:** For pure NumPy ML-from-scratch implementations (`Linear/Logistic Regression`, `Stable Softmax`, `K-Means`, `Top-K Cosine`, `BM25`, `Jittered Backoff`), see **[Module 13: Hands-On Algorithms from Scratch](../curriculum/05-production-and-practice/13_algorithms_from_scratch.md)**. This kit covers complementary **SQL Window Queries, PyTorch Bug-Hunts, Point-in-Time Joins, and Systems Data Structures** tested in Round-1 screenings.
 
 [← GenAI & Agents Questions](./genai_and_agents_questions.md) | [Home](../README.md) | [Next: Resume Guide & Flashcards →](./resume_and_flashcards.md)
 
@@ -156,9 +156,9 @@ assert cache.get("b") is None and cache.get("a") == [0.1]
 
 ---
 
-## Section 5: 2026 AI-Assisted Coding Round — "Audit This AI-Generated Agent PR"
+## Section 5: 2026 AI-Assisted Coding Round: "Audit This AI-Generated Agent PR"
 
-In 2026 interviews, many teams explicitly allow `Cursor`, `Copilot`, or `Claude` — grading how ruthlessly you **audit, debug, and harden AI-generated code** before shipping.
+In 2026 interviews, many teams explicitly allow `Cursor`, `Copilot`, or `Claude`: grading how ruthlessly you **audit, debug, and harden AI-generated code** before shipping.
 
 ### Q6: Spot All 5 Production & Security Flaws in This AI-Generated Multi-Tenant RAG/Agent Snippet
 ```python

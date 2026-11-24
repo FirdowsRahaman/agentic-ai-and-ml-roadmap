@@ -9,3 +9,5 @@ venv/
 .env
 site/
 projects/starter-local-mlops/artifacts/
+qdrant_local/
+qdrant_db/

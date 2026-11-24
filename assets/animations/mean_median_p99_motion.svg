@@ -51,7 +51,7 @@
 
   <!-- Header -->
   <text x="32" y="34" class="kicker">VISUAL INTUITION  |  OUTLIERS &amp; TAIL PERCENTILES</text>
-  <text x="32" y="60" class="title">Why One Extreme Outlier Breaks the Mean — While Median (p50) Stays Honest</text>
+  <text x="32" y="60" class="title">Why One Extreme Outlier Breaks the Mean: While Median (p50) Stays Honest</text>
   <line x1="32" y1="74" x2="928" y2="74" stroke="#E2E8F0" stroke-width="1"/>
 
   <!-- SECTION 1: Bill Gates / Billionaire Walks Into a Cafe -->
@@ -96,7 +96,7 @@
   <line x1="32" y1="198" x2="928" y2="198" stroke="#E2E8F0" stroke-width="1"/>
 
   <!-- SECTION 2: Coffee Shop / API Latency p50 vs p95 vs p99 -->
-  <text x="32" y="222" class="label">2. "The Coffee Shop Line" — Why Production APIs Track p99 Tail Latency, Not Just Average</text>
+  <text x="32" y="222" class="label">2. "The Coffee Shop Line": Why Production APIs Track p99 Tail Latency, Not Just Average</text>
 
   <text x="48" y="252" class="small">p50 (Typical User)</text>
   <rect x="190" y="239" width="38" height="16" rx="2" fill="#051C2C"/>

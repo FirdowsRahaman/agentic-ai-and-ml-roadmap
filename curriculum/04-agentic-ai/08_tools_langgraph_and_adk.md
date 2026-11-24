@@ -1,14 +1,14 @@
 # Module 08: Function Calling, LangGraph & Google Agent Development Kit (ADK)
 
-> **Estimated Study Time:** 6–8 Hours | **Prerequisites:** [Module 07](./07_ai_agents_fundamentals.md) | **Focus:** Strict Tool Schemas, Stateful Cyclical Graphs (`LangGraph`), `Google ADK` & `HITL` Checkpoints
+> **Estimated Study Time:** 6-8 Hours | **Prerequisites:** [Module 07](./07_ai_agents_fundamentals.md) | **Focus:** Strict Tool Schemas, Stateful Cyclical Graphs (`LangGraph`), `Google ADK` & `HITL` Checkpoints
 
-[← Previous: Module 07 — AI Agents Fundamentals](./07_ai_agents_fundamentals.md) | [Home](../../README.md) | [Next: Module 09 — Multi-Agent Systems & MCP →](./09_multi_agent_and_mcp.md)
+[← Previous: Module 07: AI Agents Fundamentals](./07_ai_agents_fundamentals.md) | [Home](../../README.md) | [Next: Module 09: Multi-Agent Systems & MCP →](./09_multi_agent_and_mcp.md)
 
 ---
 
 ## Mental Model: From Stateless JSON Contracts to Durable Agent Graphs
 
-In [Module 07](./07_ai_agents_fundamentals.md), we built a basic `ReAct` loop using regex parsing in RAM. In real production, regex breaks the moment an LLM adds a stray newline, and in-memory loops vanish if a pod restarts. Instead, remember one core rule: **an LLM never executes HTTP calls or SQL queries itself**—it emits a **strict JSON intent** that your **runtime orchestrator (`LangGraph` / `Google ADK`)** validates, executes, saves to a database checkpoint, and feeds back into state:
+In [Module 07](./07_ai_agents_fundamentals.md), we built a basic `ReAct` loop using regex parsing in RAM. In real production, regex breaks the moment an LLM adds a stray newline, and in-memory loops vanish if a pod restarts. Instead, remember one core rule: **an LLM never executes HTTP calls or SQL queries itself**: it emits a **strict JSON intent** that your **runtime orchestrator (`LangGraph` / `Google ADK`)** validates, executes, saves to a database checkpoint, and feeds back into state:
 
 ```mermaid
 flowchart LR
@@ -74,16 +74,16 @@ WEATHER_TOOL_SCHEMA = {
     },
 }
 ```
-> **Schema Design Rule:** Tool `description` strings act as **system prompts** — explicitly stating *when* and *when NOT* to call a tool + setting `"strict": True` and `"additionalProperties": False` enforces **100% structural argument compliance** via constrained decoding ([OpenAI Structured Outputs, 2024](https://openai.com/index/introducing-structured-outputs-in-the-api/)).
+> **Schema Design Rule:** Tool `description` strings act as **system prompts**: explicitly stating *when* and *when NOT* to call a tool + setting `"strict": True` and `"additionalProperties": False` enforces **100% structural argument compliance** via constrained decoding ([OpenAI Structured Outputs, 2024](https://openai.com/index/introducing-structured-outputs-in-the-api/)).
 
 ### 2. Stateful Cyclical Orchestration with `LangGraph`
 
-Strict JSON schemas make each *single* tool call safe—now how do you wire multiple tool calls, error retries, and exit conditions together without turning your backend into spaghetti `while` loops? Enter **`LangGraph`**:
+Strict JSON schemas make each *single* tool call safe: now how do you wire multiple tool calls, error retries, and exit conditions together without turning your backend into spaghetti `while` loops? Enter **`LangGraph`**:
 
-> **What is `LangGraph`?** Regular data pipelines (`DAGs` — *Directed Acyclic Graphs*) are one-way conveyor belts that cannot loop back when a step fails. **`LangGraph`** lets you wire Python functions as stations (**`Nodes`**) on a subway map with loop-backs (**`Conditional Edges`**) sharing one central clipboard (**`State`**)—giving you total control over how many times an agent can retry.
+> **What is `LangGraph`?** Regular data pipelines (`DAGs`: *Directed Acyclic Graphs*) are one-way conveyor belts that cannot loop back when a step fails. **`LangGraph`** lets you wire Python functions as stations (**`Nodes`**) on a subway map with loop-backs (**`Conditional Edges`**) sharing one central clipboard (**`State`**), giving you total control over how many times an agent can retry.
 
 #### 2.1 Cyclical State Graphs, Reducers & Conditional Routing in `LangGraph`
-Classic ETL/Chain pipelines are **Directed Acyclic Graphs (DAGs)** — data flows strictly forward with no cycles. Agents require **controlled loops** (call tool -> inspect error -> retry with refined query -> terminate).
+Classic ETL/Chain pipelines are **Directed Acyclic Graphs (DAGs)**: data flows strictly forward with no cycles. Agents require **controlled loops** (call tool -> inspect error -> retry with refined query -> terminate).
 **`LangGraph` Primitives:**
 - **`State` (`TypedDict` / `Pydantic`):** Single typed source of truth passed across nodes, using reducer annotations (`Annotated[list, operator.add]`) so nodes append messages cleanly rather than overwriting history.
 - **`Nodes`:** Pure Python/async functions `(state) -> partial_state_update`.
@@ -133,10 +133,10 @@ While `LangGraph` excels at fine-grained custom state machines, cloud teams also
 **Google Agent Development Kit (`ADK`)** treats agents as modular, testable Python software artifacts with built-in evaluation, trace inspection, and serverless deployment:
 - **Native Python Functions as Tools:** Automatically infers parameter schemas and docstrings directly from typed Python functions.
 - **Developer CLI Workflow:**
-  - `adk create support_agent` — scaffolds standardized agent package structure.
-  - `adk web` — spins up a local browser UI showing live token streams, tool payloads, state diffs, and latency spans.
-  - `adk eval` — runs regression datasets against expected tool trajectories.
-  - `adk deploy cloud_run` — containerizes and deploys straight to Google Cloud Run.
+  - `adk create support_agent`: scaffolds standardized agent package structure.
+  - `adk web`: spins up a local browser UI showing live token streams, tool payloads, state diffs, and latency spans.
+  - `adk eval`: runs regression datasets against expected tool trajectories.
+  - `adk deploy cloud_run`: containerizes and deploys straight to Google Cloud Run.
 
 ```python
 from google.adk.agents.llm_agent import Agent
@@ -159,7 +159,7 @@ root_agent = Agent(
 
 ### 4. Durable Persistence & Human-in-the-Loop (`HITL`) Interrupts
 
-Reading order status is harmless—but what happens when your agent wants to **issue a `\$5,000` refund** or **delete a production record**? You need a human in the loop, without freezing your server:
+Reading order status is harmless, but what happens when your agent wants to **issue a `\$5,000` refund** or **delete a production record**? You need a human in the loop, without freezing your server:
 
 #### 4.1 Durable State Checkpointing & Asynchronous `HITL` Approval Flows
 - **In Plain English (The Video-Game "Save Slot" Pattern):** Never leave a server thread hanging on `time.sleep()` for 4 hours waiting for a human manager to approve a `\$5,000` refund! Instead, `LangGraph` and `Google ADK` work like hitting **Save Game**:
@@ -208,8 +208,8 @@ print("Lab 08 Passed! Strict schema validation + HITL threshold verified.")
 - Use **`Google ADK`** for code-first agent definitions, visual trace debugging (`adk web`), trajectory evaluation (`adk eval`), and serverless Cloud Run deployment.
 - Implement **`HITL` via durable state checkpoints (`thread_id`)**, never blocking threads in memory.
 
-> **Next in the Journey:** One well-built `LangGraph` or `ADK` agent handles 5–10 tools smoothly. What happens when your company wants **40+ tools across Finance, Legal, and Supply Chain**—without writing custom API glue for every single database? Let's scale horizontally into **[Module 09: Multi-Agent Systems, `MCP` & `A2A` Protocol](./09_multi_agent_and_mcp.md)**.
+> **Next in the Journey:** One well-built `LangGraph` or `ADK` agent handles 5-10 tools smoothly. What happens when your company wants **40+ tools across Finance, Legal, and Supply Chain**, without writing custom API glue for every single database? Let's scale horizontally into **[Module 09: Multi-Agent Systems, `MCP` & `A2A` Protocol](./09_multi_agent_and_mcp.md)**.
 
 ---
 
-[← Previous: Module 07 — AI Agents Fundamentals](./07_ai_agents_fundamentals.md) | [Home](../../README.md) | [Next: Module 09 — Multi-Agent Systems & MCP →](./09_multi_agent_and_mcp.md)
+[← Previous: Module 07: AI Agents Fundamentals](./07_ai_agents_fundamentals.md) | [Home](../../README.md) | [Next: Module 09: Multi-Agent Systems & MCP →](./09_multi_agent_and_mcp.md)

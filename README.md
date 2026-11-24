@@ -1,6 +1,6 @@
 ![AI/ML Fresher Roadmap Banner](./assets/banner.webp)
 
-# AI/ML Fresher Roadmap — From Foundations to Agentic AI & Production MLOps
+# AI/ML Fresher Roadmap: From Foundations to Agentic AI & Production MLOps
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
 [![CI Verified](https://img.shields.io/badge/Links_%26_Tests-CI_Verified-16A34A.svg)](./.github/workflows/ci-verify.yml)
@@ -9,7 +9,7 @@
 
 A structured, **engineering-first** handbook and roadmap built to take learners, software engineers, and aspiring AI/ML engineers from **Python, SQL & Math foundations** all the way to **Transformers, `Qdrant` Hybrid RAG, Autonomous Agents (`LangGraph` / `Google ADK`), `MCP`, `vLLM` Serving, and Production MLOps**.
 
-> **Designed to Flow Like One Connected Story:** Rather than a disconnected pile of flashcards, Modules `01 -> 13` read as **one continuous engineering narrative** — every section explains *why* the previous tool hit a limit before introducing the next, pairing **Plain-English analogies & animated `.svg` visuals** with collapsible `<details>` math/citations, a **15-Minute Runnable Lab**, and **[Portfolio Starters](./projects/end_to_end_lifecycle_playbook.md)** + **[Interview Kits](./interview-kits/ml_system_design_framework.md)**.
+> **Designed to Flow Like One Connected Story:** Rather than a disconnected pile of flashcards, Modules `01 -> 13` read as **one continuous engineering narrative**: every section explains *why* the previous tool hit a limit before introducing the next, pairing **Plain-English analogies & animated `.svg` visuals** with collapsible `<details>` math/citations, a **15-Minute Runnable Lab**, and **[Portfolio Starters](./projects/end_to_end_lifecycle_playbook.md)** + **[Interview Kits](./interview-kits/ml_system_design_framework.md)**.
 
 ---
 
@@ -64,12 +64,12 @@ flowchart LR
 
 ## 2026 Market Reality: What NOT to Waste Time On vs. Where to Focus
 
-Hiring data and tech restructuring across 2025–2026 reshaped entry-level and mid-level AI expectations — routine boilerplate roles contracted while **full-stack AI systems engineers** remain supply-constrained:
+Hiring data and tech restructuring across 2025-2026 reshaped entry-level and mid-level AI expectations: routine boilerplate roles contracted while **full-stack AI systems engineers** remain supply-constrained:
 
 | Skip / De-Emphasize in 2026 (Low ROI) | Focus Heavily Here Instead (High Hiring Signal) |
 |---|---|
 | Memorizing `Word2Vec`, `Bag-of-Words`, regex stemming, or legacy `RNN`/`VGG` architectures | **`BPE` Tokenizers, `Qdrant` Filterable Hybrid Search (`BM25 + Dense RRF`), Cross-Encoders & `ViT`/`CLIP` Transfer Learning** |
-| Standalone "Prompt Engineering" tricks & single-turn chat wrappers | **Context Engineering** (50%–90% KV prefix-cache ordering, signal-to-noise pruning & grammar-constrained `Pydantic` JSON) |
+| Standalone "Prompt Engineering" tricks & single-turn chat wrappers | **Context Engineering** (50%-90% KV prefix-cache ordering, signal-to-noise pruning & grammar-constrained `Pydantic` JSON) |
 | `.ipynb`-only Kaggle notebooks without tests, APIs, calibration, or Docker | **Deployed Systems:** `SHAP` + calibrated models, `FastAPI` `SSE` token streaming, non-root `Docker`, `PSI` drift & `DPO` data flywheels |
 | Vibes-based prompt tweaking & custom brittle agent glue | **Eval-Driven Development (`EDD`)** (Day-1 Golden Datasets in CI/CD) + open agent standards (**`MCP`** vertical tools & **`A2A`** peer agents) |
 | Blindly pasting `Cursor`/`Copilot` code or cramming only abstract puzzles | **Auditing AI-Generated Code** for silent data leakage, tenant filter bugs, `N+1` async bottlenecks & security flaws ([Practice Kit](./interview-kits/sql_and_coding_screenings.md)) |
@@ -84,56 +84,56 @@ Don't try to cram 13 modules in a weekend. Pick the track aligned with your targ
 |---|---|---|
 | **Track A: Classical ML / Applied Data Scientist** | `01`, `02`, `03`, `04`, `11`, `12`, `13` | [Starter 2 (Local MLOps)](./projects/starter-local-mlops/README.md) + [Project 8 (RecSys)](./projects/README.md#project-8-meta--amazon-two-stage-e-commerce-recommendation--ranking-engine) or [Project 9 (Fraud + Feast)](./projects/README.md#project-9-fintech--stripe-real-time-fraud-prevention-with-feast--drift-cicd) |
 | **Track B: GenAI & Autonomous Agent Engineer** | `01`, `02`, `05`, `06`, `07`, `08`, `09`, `10`, `11`, `12` | [Starter 1 (Local Hybrid RAG + SQL)](./projects/starter-local-rag-agent/README.md) + [Project 7 (Google ADK + MCP)](./projects/README.md#project-7-google-ecosystem-autonomous-operations-copilot-with-google-adk--mcp) |
-| **Track C: Full-Stack AI/ML Engineer (Complete)** | All Modules `01` – `13` | 2 Local Projects (\$0) + 1 Cloud Architecture Blueprint |
+| **Track C: Full-Stack AI/ML Engineer (Complete)** | All Modules `01` - `13` | 2 Local Projects (\$0) + 1 Cloud Architecture Blueprint |
 
 ### Pacing Schedules
-- **16-Week Deep Mastery Schedule (~10 hrs/week — Recommended for True Beginners):**
-  - *Weeks 1–3:* Phase 1 Foundations (`01–02`) + [Lab 01 Notebook](./notebooks/01_numpy_pandas_sql_lab.ipynb)
-  - *Weeks 4–6:* Phase 2 Core ML & DL (`03–04`) + [Starter 2: Local MLOps](./projects/starter-local-mlops/README.md)
-  - *Weeks 7–10:* Phase 3 Multimodal & GenAI (`05–06`) + [Lab 03 Attention Notebook](./notebooks/03_mini_transformer_attention.ipynb)
-  - *Weeks 11–13:* Phase 4 Agentic AI & MCP (`07–10`) + [Starter 1: Local RAG Agent](./projects/starter-local-rag-agent/README.md)
-  - *Weeks 14–16:* Phase 5 Production, Troubleshooting & Scratch Coding (`11–13`) + [Interview Kits](./interview-kits/ml_system_design_framework.md)
-- **6-Week Fast-Track Crash Schedule (~20+ hrs/week — For CS Grads / Interview Prep):**
-  - *Week 1:* `01–02` (Tier 2 SQL Windows, Async, Bayes, CLT) • *Week 2:* `03–04` (`XGBoost`, RecSys, `LayerNorm`, `AdamW`) • *Week 3:* `05–06` ($Q,K,V$ Attention, `LoRA`/`DPO`, Hybrid RAG, `vLLM`) • *Week 4:* `07–09` (`LangGraph`, `Google ADK`, `MCP`) • *Week 5:* `10–11` (Guardrails, `Feast`, `PSI` Drift, FinOps) • *Week 6:* `12–13` + [Mock Interview Kits](./interview-kits/ml_system_design_framework.md).
+- **16-Week Deep Mastery Schedule (~10 hrs/week: Recommended for True Beginners):**
+  - *Weeks 1-3:* Phase 1 Foundations (`01-02`) + [Lab 01 Notebook](./notebooks/01_numpy_pandas_sql_lab.ipynb)
+  - *Weeks 4-6:* Phase 2 Core ML & DL (`03-04`) + [Starter 2: Local MLOps](./projects/starter-local-mlops/README.md)
+  - *Weeks 7-10:* Phase 3 Multimodal & GenAI (`05-06`) + [Lab 03 Attention Notebook](./notebooks/03_mini_transformer_attention.ipynb)
+  - *Weeks 11-13:* Phase 4 Agentic AI & MCP (`07-10`) + [Starter 1: Local RAG Agent](./projects/starter-local-rag-agent/README.md)
+  - *Weeks 14-16:* Phase 5 Production, Troubleshooting & Scratch Coding (`11-13`) + [Interview Kits](./interview-kits/ml_system_design_framework.md)
+- **6-Week Fast-Track Crash Schedule (~20+ hrs/week: For CS Grads / Interview Prep):**
+  - *Week 1:* `01-02` (Tier 2 SQL Windows, Async, Bayes, CLT) • *Week 2:* `03-04` (`XGBoost`, RecSys, `LayerNorm`, `AdamW`) • *Week 3:* `05-06` ($Q,K,V$ Attention, `LoRA`/`DPO`, Hybrid RAG, `vLLM`) • *Week 4:* `07-09` (`LangGraph`, `Google ADK`, `MCP`) • *Week 5:* `10-11` (Guardrails, `Feast`, `PSI` Drift, FinOps) • *Week 6:* `12-13` + [Mock Interview Kits](./interview-kits/ml_system_design_framework.md).
 
 ---
 
 ## Curriculum Modules (5 Progressive Phases)
 
 ### Phase 1: Foundations (`curriculum/01-foundations/`)
-- **[01 — Python, SQL & Modern Data Stack](./curriculum/01-foundations/01_python_sql_and_data_stack.md)**  
+- **[01: Python, SQL & Modern Data Stack](./curriculum/01-foundations/01_python_sql_and_data_stack.md)**  
   `Generators` `NumPy Broadcasting` `Pandas Copy-on-Write` `SQL Window Functions & CTEs` `Pydantic` `asyncio`
-- **[02 — Mathematics & Statistics](./curriculum/01-foundations/02_math_and_statistics.md)**  
+- **[02: Mathematics & Statistics](./curriculum/01-foundations/02_math_and_statistics.md)**  
   `Tensor Shapes` `Cosine Similarity` `p95/p99 Percentiles` `Bayes' Theorem` `Central Limit Theorem` `A/B Z-Tests`
 
 ### Phase 2: Core Machine Learning & Deep Learning (`curriculum/02-core-ml-and-dl/`)
-- **[03 — Classical ML, Ensembles & Recommendation Systems](./curriculum/02-core-ml-and-dl/03_classical_ml_and_recsys.md)**  
+- **[03: Classical ML, Ensembles & Recommendation Systems](./curriculum/02-core-ml-and-dl/03_classical_ml_and_recsys.md)**  
   `Leak-Free Pipelines` `XGBoost / LightGBM / TabPFN` `SHAP & Probability Calibration` `PR-AUC` `Two-Tower RecSys & NDCG@K`
-- **[04 — Deep Learning, PyTorch & Reinforcement Learning](./curriculum/02-core-ml-and-dl/04_deep_learning_and_rl.md)**  
+- **[04: Deep Learning, PyTorch & Reinforcement Learning](./curriculum/02-core-ml-and-dl/04_deep_learning_and_rl.md)**  
   `GELU / SwiGLU` `BatchNorm vs LayerNorm` `AdamW & Cosine Warmup` `Multi-GPU DDP vs FSDP (ZeRO-3)` `RL (PPO / GRPO)`
 
 ### Phase 3: Multimodal AI, LLMs & Advanced RAG (`curriculum/03-modern-ai-and-genai/`)
-- **[05 — NLP, Self-Attention, Computer Vision & Audio AI](./curriculum/03-modern-ai-and-genai/05_nlp_cv_and_multimodal.md)**  
+- **[05: NLP, Self-Attention, Computer Vision & Audio AI](./curriculum/03-modern-ai-and-genai/05_nlp_cv_and_multimodal.md)**  
   `BPE Tokenizers` `Scaled Dot-Product Attention (Q,K,V) & RoPE` `ResNet Skip Highway` `IoU / mAP` `ViT & CLIP` `Whisper & Audio Codecs`
-- **[06 — Generative AI, Fine-Tuning (`LoRA`/`DPO`), `Qdrant` & Production RAG](./curriculum/03-modern-ai-and-genai/06_llms_finetuning_and_rag.md)**  
+- **[06: Generative AI, Fine-Tuning (`LoRA`/`DPO`), `Qdrant` & Production RAG](./curriculum/03-modern-ai-and-genai/06_llms_finetuning_and_rag.md)**  
   `VRAM Math` `Context Engineering & Prefix Caching` `Structured JSON` `Qdrant Filterable HNSW & Quantization` `Hybrid RRF + Rerank` `LoRA / QLoRA / DPO / GRPO` `vLLM`
 
 ### Phase 4: Autonomous Agents & MCP (`curriculum/04-agentic-ai/`)
-- **[07 — AI Agents Fundamentals & Workflows](./curriculum/04-agentic-ai/07_ai_agents_fundamentals.md)**  
+- **[07: AI Agents Fundamentals & Workflows](./curriculum/04-agentic-ai/07_ai_agents_fundamentals.md)**  
   `Workflows vs Agents Rubric` `Safe AST ReAct Loop` `Working / Episodic / Semantic Memory` `Plan-and-Execute` `Loop Circuit Breakers`
-- **[08 — Function Calling, LangGraph & Google ADK](./curriculum/04-agentic-ai/08_tools_langgraph_and_adk.md)**  
+- **[08: Function Calling, LangGraph & Google ADK](./curriculum/04-agentic-ai/08_tools_langgraph_and_adk.md)**  
   `Strict Tool Schemas` `Cyclical StateGraphs` `Google ADK (adk web / eval / deploy)` `Durable HITL Checkpoints`
-- **[09 — Multi-Agent Systems, `MCP` & `A2A` Protocol](./curriculum/04-agentic-ai/09_multi_agent_and_mcp.md)**  
+- **[09: Multi-Agent Systems, `MCP` & `A2A` Protocol](./curriculum/04-agentic-ai/09_multi_agent_and_mcp.md)**  
   `Context Isolation` `Supervisor & Parallel Topologies` `MCP (stdio / Streamable HTTP)` `A2A Peer Agent Protocol` `Tool-Poisoning Defense`
-- **[10 — Eval-Driven Development, Safety, Governance & Token FinOps](./curriculum/04-agentic-ai/10_agent_evals_and_safety.md)**  
+- **[10: Eval-Driven Development, Safety, Governance & Token FinOps](./curriculum/04-agentic-ai/10_agent_evals_and_safety.md)**  
   `Eval-Driven Development & Golden Sets` `LLM-as-a-Judge Debiasing` `OpenTelemetry` `Indirect Injection` `EU AI Act & NIST RMF` `Model Cascading`
 
 ### Phase 5: Production MLOps, Troubleshooting & Live Coding (`curriculum/05-production-and-practice/`)
-- **[11 — Production MLOps, `SSE` Streaming, Drift & Cloud GPU FinOps](./curriculum/05-production-and-practice/11_mlops_cloud_and_finops.md)**  
+- **[11: Production MLOps, `SSE` Streaming, Drift & Cloud GPU FinOps](./curriculum/05-production-and-practice/11_mlops_cloud_and_finops.md)**  
   `safetensors & ONNX` `FastAPI Lifespan & SSE Streaming` `Data Flywheels` `Non-Root Docker` `Feast` `PSI Drift` `Shadow / Canary / A/B` `Spot GPUs`
-- **[12 — Real-World System Troubleshooting Scenarios](./curriculum/05-production-and-practice/12_system_troubleshooting_scenarios.md)**  
+- **[12: Real-World System Troubleshooting Scenarios](./curriculum/05-production-and-practice/12_system_troubleshooting_scenarios.md)**  
   `Day-1 Leakage vs Drift` `MCAR/MAR/MNAR` `Catastrophic Forgetting` `CUDA OOM Rescue Stack` `Cost-Matrix Thresholding`
-- **[13 — Hands-On Algorithms from Scratch (NumPy & Python)](./curriculum/05-production-and-practice/13_algorithms_from_scratch.md)**  
+- **[13: Hands-On Algorithms from Scratch (NumPy & Python)](./curriculum/05-production-and-practice/13_algorithms_from_scratch.md)**  
   `Linear & Logistic Regression` `Stable Softmax` `Vectorized K-Means` `O(N) Top-K Cosine` `BM25 Index` `Jittered Backoff`
 
 ---

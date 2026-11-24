@@ -4,7 +4,7 @@
 
 ---
 
-## 1. Evaluation & Bias–Variance
+## 1. Evaluation & Bias-Variance
 
 **Q1: Explain Precision vs. Recall, and why ROC-AUC can mislead you on rare-event datasets.**
 *Answer:*
@@ -12,7 +12,7 @@
 - **Recall** ($\frac{TP}{TP + FN}$) penalizes False Negatives (cancer screening, fraud).
 - On a `0.1%` positive dataset (`1,000` negatives per `1` positive), $TN$ is so huge that 500 false alarms barely move $\text{FPR} = \frac{FP}{FP + TN}$, keeping **ROC-AUC > 0.97** while precision is awful. Always report **PR-AUC** and **Recall at fixed Precision/FPR** for imbalanced problems.
 
-**Q2: Walk through the Bias–Variance Tradeoff and compare Bagging vs. Boosting.**
+**Q2: Walk through the Bias-Variance Tradeoff and compare Bagging vs. Boosting.**
 *Answer:*
 - **High Bias (Underfitting):** Model is too constrained (both train & validation error high). **Boosting (`XGBoost`, `LightGBM`)** reduces bias by training shallow trees sequentially on the residual gradients of prior trees.
 - **High Variance (Overfitting):** Model memorizes training noise (low train error, high validation error). **Bagging (`Random Forest`)** reduces variance by averaging deep independent trees trained on bootstrap samples + random feature subsets.
@@ -23,7 +23,7 @@
 
 **Q3: Why does `LogisticRegression` with L1/L2 regularization fail if you skip `StandardScaler`, while `XGBoost` is unaffected?**
 *Answer:*
-L1/L2 penalties shrink raw weight magnitudes ($\lambda \|\mathbf{w}\|_2^2$). If feature $x_1$ is measured in cents (`0–10,000,000`) and $x_2$ in years (`0–50`), $w_1$ is naturally tiny while $w_2$ is large — regularization unfairly crushes $w_2$! Decision trees only compare rank order (`x <= threshold`), making them invariant to monotonic scaling.
+L1/L2 penalties shrink raw weight magnitudes ($\lambda \|\mathbf{w}\|_2^2$). If feature $x_1$ is measured in cents (`0-10,000,000`) and $x_2$ in years (`0-50`), $w_1$ is naturally tiny while $w_2$ is large: regularization unfairly crushes $w_2$! Decision trees only compare rank order (`x <= threshold`), making them invariant to monotonic scaling.
 
 **Q4: Name three subtle forms of Data Leakage beyond "fitting `StandardScaler` before `train_test_split`".**
 *Answer:*
@@ -44,7 +44,7 @@ L1/L2 penalties shrink raw weight magnitudes ($\lambda \|\mathbf{w}\|_2^2$). If 
 
 **Q6: Live F1 dropped 12% this month, yet feature `PSI` across every input column is `< 0.04`. What happened?**
 *Answer:*
-**Concept Drift** ($P(Y \mid X)$ shifted while $P(X)$ stayed constant) — e.g., fraudsters adapted behavior within normal transaction ranges, or a macroeconomic shift altered buyer conversion. Fix by collecting fresh ground-truth labels, retraining on a recent sliding window with sample decay, and validating via Shadow -> Canary -> A/B rollout.
+**Concept Drift** ($P(Y \mid X)$ shifted while $P(X)$ stayed constant): e.g., fraudsters adapted behavior within normal transaction ranges, or a macroeconomic shift altered buyer conversion. Fix by collecting fresh ground-truth labels, retraining on a recent sliding window with sample decay, and validating via Shadow -> Canary -> A/B rollout.
 
 **Q7: What is Training-Serving Skew, and how do you eliminate it?**
 *Answer:*

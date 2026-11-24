@@ -41,7 +41,7 @@
   <rect x="691" y="1" width="268" height="5" fill="#00A9F4"/>
 
   <text x="32" y="34" class="kicker">VISUAL INTUITION  |  COVARIATE DRIFT (PSI) &amp; SELF-HEALING ROLLOUT</text>
-  <text x="32" y="60" class="title">When Real-World Users Shift Away from Training Data — Automated MLOps Responds</text>
+  <text x="32" y="60" class="title">When Real-World Users Shift Away from Training Data: Automated MLOps Responds</text>
   <line x1="32" y1="74" x2="928" y2="74" stroke="#E2E8F0" stroke-width="1"/>
 
   <!-- LEFT PANEL: Sliding Bell Curves -->
@@ -78,7 +78,7 @@
 
   <rect x="508" y="188" width="416" height="52" rx="4" class="st2"/>
   <text x="526" y="211" class="box-txt">Step B: Shadow Mode (Mirror 100% Live Traffic)</text>
-  <text x="526" y="229" class="small">Verify latency &amp; memory silently — 0% user impact!</text>
+  <text x="526" y="229" class="small">Verify latency &amp; memory silently: 0% user impact!</text>
 
   <rect x="508" y="254" width="416" height="52" rx="4" class="st3"/>
   <text x="526" y="277" class="box-txt">Step C: Canary (1% → 10% → 50%) &amp; A/B Promotion ✓</text>

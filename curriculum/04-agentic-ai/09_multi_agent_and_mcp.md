@@ -1,15 +1,15 @@
 # Module 09: Multi-Agent Systems & Model Context Protocol (MCP)
 
-> **Estimated Study Time:** 6–7 Hours | **Prerequisites:** [Module 08](./08_tools_langgraph_and_adk.md) | **Focus:** Multi-Agent Topologies, Subagent Context Isolation & Modern MCP (`stdio` / `Streamable HTTP`)
+> **Estimated Study Time:** 6-7 Hours | **Prerequisites:** [Module 08](./08_tools_langgraph_and_adk.md) | **Focus:** Multi-Agent Topologies, Subagent Context Isolation & Modern MCP (`stdio` / `Streamable HTTP`)
 
-[← Previous: Module 08 — Tools, LangGraph & ADK](./08_tools_langgraph_and_adk.md) | [Home](../../README.md) | [Next: Module 10 — Agent Evaluation, Safety & Governance →](./10_agent_evals_and_safety.md)
+[← Previous: Module 08: Tools, LangGraph & ADK](./08_tools_langgraph_and_adk.md) | [Home](../../README.md) | [Next: Module 10: Agent Evaluation, Safety & Governance →](./10_agent_evals_and_safety.md)
 
 ---
 
 ## Mental Model: Specialist Teams, USB-C Cables (`MCP`) & Phone Lines (`A2A`)
 
-In [Module 08](./08_tools_langgraph_and_adk.md), you built a durable single agent. As an agent grows beyond 15–20 tools, though, accuracy drops sharply—just like handing one overwhelmed intern the keys to Legal, Finance, and IT all at once:
-- **Why Multi-Agent?** Splitting one bloated generalist into **focused Subagents** gives each specialist a clean context window and just 2–3 tools.
+In [Module 08](./08_tools_langgraph_and_adk.md), you built a durable single agent. As an agent grows beyond 15-20 tools, though, accuracy drops sharply: just like handing one overwhelmed intern the keys to Legal, Finance, and IT all at once:
+- **Why Multi-Agent?** Splitting one bloated generalist into **focused Subagents** gives each specialist a clean context window and just 2-3 tools.
 - **`MCP` vs. `A2A`:** **`MCP`** is the **universal USB-C cable** plugging an agent into its *own* databases and tools; **`A2A`** is the **inter-office phone line** letting your Finance Agent ask another team's Supply-Chain Agent for help without peeking inside its private database.
 
 ```mermaid
@@ -42,7 +42,7 @@ flowchart TD
 1. **Tool Selection Confusion:** Tool-routing accuracy drops sharply once an LLM must discriminate among 20+ overlapping JSON schemas.
 2. **Context Pollution:** Raw logs from step 1 pollute reasoning at step 6. Subagents run in **isolated context windows** and return only a distilled 200-token artifact to the supervisor!
 3. **Model Heterogeneity:** Pair a frontier reasoning model (`Gemini 3.1 Pro` / `Claude 4.6 Sonnet` / `GPT-5`) as the **Supervisor** with fast, low-cost workers (`Gemini 3 Flash` / local `Qwen 3.5 8B`) for high-volume extraction.
-> **Tradeoff Warning:** Multi-agent handoffs multiply token usage and latency — only split into multiple agents when tool count (`>10–15`), security privilege boundaries, or context isolation genuinely require it.
+> **Tradeoff Warning:** Multi-agent handoffs multiply token usage and latency, only split into multiple agents when tool count (`>10-15`), security privilege boundaries, or context isolation genuinely require it.
 
 #### 1.2 Sequential, Hierarchical Supervisor, Parallel Map-Reduce & Critic Topologies
 When splitting *is* justified, almost every multi-agent system in production follows one of four clean coordination patterns:
@@ -52,7 +52,7 @@ When splitting *is* justified, almost every multi-agent system in production fol
 | **1. Sequential Handoff** | `Researcher -> Writer -> Verifier` | `LangGraph`, `Google ADK`, `PydanticAI` | Deterministic ETL, report, or code-gen pipelines |
 | **2. Hierarchical Supervisor** | Central coordinator delegates to workers & synthesizes | `Google ADK`, `LangGraph Supervisor` | Enterprise support copilots, multi-domain analytics |
 | **3. Parallel Fan-Out / Map-Reduce** | Spawns $K$ concurrent workers on shards, merges results | `LangGraph Send()`, `ADK ParallelAgent` | Auditing 20 files or 5 security angles simultaneously |
-| **4. Generator–Critic Loop** | Coder <-> Test/Security Verifier iterate up to `max_steps` | `LangGraph`, `OpenAI Agents SDK` | Code synthesis, SQL/math verification |
+| **4. Generator-Critic Loop** | Coder <-> Test/Security Verifier iterate up to `max_steps` | `LangGraph`, `OpenAI Agents SDK` | Code synthesis, SQL/math verification |
 
 ```python
 from google.adk.agents.llm_agent import Agent
@@ -86,7 +86,7 @@ supervisor = Agent(
 
 ## Tier 2: Production Architecture & Scale (Model Context Protocol & MCP Security)
 
-Organizing subagents inside one codebase is half the battle; **Tier 2** solves how those agents plug into **external databases, SaaS tools, and other teams' agents** using two open industry standards (**`MCP`** and **`A2A`**)—without opening giant security holes.
+Organizing subagents inside one codebase is half the battle; **Tier 2** solves how those agents plug into **external databases, SaaS tools, and other teams' agents** using two open industry standards (**`MCP`** and **`A2A`**), without opening giant security holes.
 
 ### 2. Model Context Protocol (`MCP`) Architecture & Transports
 
@@ -97,7 +97,7 @@ Open-sourced by Anthropic and adopted across IDEs, cloud platforms, and agent SD
 3. **`Prompts` (User-Controlled):** Reusable workflow templates/slash commands parameterized by the server.
 
 **Standard Transports:**
-- **`stdio` (Standard Input/Output):** Local subprocess communication on the user's machine — zero network overhead, ideal for IDE/desktop tools.
+- **`stdio` (Standard Input/Output):** Local subprocess communication on the user's machine: zero network overhead, ideal for IDE/desktop tools.
 - **`Streamable HTTP`:** Modern remote production transport (superseding legacy dual-endpoint HTTP+SSE) supporting stateless load-balanced servers, OAuth 2.1 authorization headers, and optional streaming responses over a single HTTP endpoint.
 
 ```python
@@ -121,7 +121,7 @@ def fetch_order_summary(order_id: str) -> dict[str, str | float]:
 ```
 
 #### 2.2 Securing `MCP` Ecosystems Against Tool Poisoning & Schema Rug-Pulls
-Plugging third-party `MCP` servers into your agent is convenient—but just like plugging an untrusted USB stick into your laptop, it introduces new attack surfaces you must lock down:
+Plugging third-party `MCP` servers into your agent is convenient, but just like plugging an untrusted USB stick into your laptop, it introduces new attack surfaces you must lock down:
 1. **Tool Description Poisoning:** A malicious MCP server hides covert prompt-injection instructions inside its tool `description` metadata (invisible to the human user, read directly by the LLM), tricking the agent into exfiltrating `~/.ssh` keys or environment variables via another legitimate MCP server!
 2. **Dynamic Tool Rug-Pulls:** An unpinned remote MCP server passes security review on Day 1, then silently mutates its tool definitions on Day 5.
 3. **Production Defenses:** Pin and cryptographic-hash MCP tool schemas, scope OAuth 2.1 tokens per server with least privilege, isolate local `stdio` servers in containers, and require explicit `HITL` consent whenever cross-server data flows to external network endpoints.
@@ -140,7 +140,7 @@ In modern enterprise architectures, agents built on different stacks (e.g., a `L
 | Dimension | `MCP` (Model Context Protocol) | `A2A` (Agent-to-Agent Protocol) |
 |---|---|---|
 | **Integration Axis** | **Vertical (`Agent ↔ Tools, DBs & Resources`)** | **Horizontal (`Client Agent ↔ Remote Peer Agent`)** |
-| **Abstraction Model** | White-box deterministic function/schema invocation | **Opaque ("Black-Box") peer agent** — hides internal prompts, weights & private tools |
+| **Abstraction Model** | White-box deterministic function/schema invocation | **Opaque ("Black-Box") peer agent**: hides internal prompts, weights & private tools |
 | **Discovery & Transport** | Server capability handshake over `stdio` or `Streamable HTTP` | Publishes JSON **Agent Card** at `/.well-known/agent-card.json`; communicates via HTTPS + JSON-RPC 2.0 + `SSE` task streams |
 
 ```json
@@ -194,7 +194,7 @@ print("Lab 09 Passed! Distilled Supervisor Output:", final_report)
 ---
 
 ## Key Engineering Takeaways
-- Use **Multi-Agent Subagents** primarily for **context isolation**, **tool-count reduction (`<10` tools/agent)**, and **privilege separation** — not for simple tasks solvable by a 2-step workflow.
+- Use **Multi-Agent Subagents** primarily for **context isolation**, **tool-count reduction (`<10` tools/agent)**, and **privilege separation**, not for simple tasks solvable by a 2-step workflow.
 - Know the **3 MCP Primitives (`Tools`, `Resources`, `Prompts`)** and **2 Transports (`stdio` for local, `Streamable HTTP` with OAuth 2.1 for remote production)**.
 - Call out **MCP Tool Poisoning** (prompt injection hidden inside tool schemas) when auditing third-party tool integrations.
 
@@ -202,4 +202,4 @@ print("Lab 09 Passed! Distilled Supervisor Output:", final_report)
 
 ---
 
-[← Previous: Module 08 — Tools, LangGraph & ADK](./08_tools_langgraph_and_adk.md) | [Home](../../README.md) | [Next: Module 10 — Agent Evaluation, Safety & Governance →](./10_agent_evals_and_safety.md)
+[← Previous: Module 08: Tools, LangGraph & ADK](./08_tools_langgraph_and_adk.md) | [Home](../../README.md) | [Next: Module 10: Agent Evaluation, Safety & Governance →](./10_agent_evals_and_safety.md)

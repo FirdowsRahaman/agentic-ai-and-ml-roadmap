@@ -1,14 +1,14 @@
 # Module 05: NLP, Transformers, Computer Vision & Multimodal AI
 
-> **Estimated Study Time:** 9–11 Hours | **Prerequisites:** [Module 04](../02-core-ml-and-dl/04_deep_learning_and_rl.md) | **Lab:** [Mini-Transformer Attention Notebook](../../notebooks/03_mini_transformer_attention.ipynb) | **[Open in Colab](https://colab.research.google.com/github/FirdowsRahaman/ai-ml-fresher-roadmap/blob/main/notebooks/03_mini_transformer_attention.ipynb)**
+> **Estimated Study Time:** 9-11 Hours | **Prerequisites:** [Module 04](../02-core-ml-and-dl/04_deep_learning_and_rl.md) | **Lab:** [Mini-Transformer Attention Notebook](../../notebooks/03_mini_transformer_attention.ipynb) | **[Open in Colab](https://colab.research.google.com/github/FirdowsRahaman/ai-ml-fresher-roadmap/blob/main/notebooks/03_mini_transformer_attention.ipynb)**
 
-[← Previous: Module 04 — Deep Learning & RL](../02-core-ml-and-dl/04_deep_learning_and_rl.md) | [Home](../../README.md) | [Next: Module 06 — LLMs, Fine-Tuning & Advanced RAG →](./06_llms_finetuning_and_rag.md)
+[← Previous: Module 04: Deep Learning & RL](../02-core-ml-and-dl/04_deep_learning_and_rl.md) | [Home](../../README.md) | [Next: Module 06: LLMs, Fine-Tuning & Advanced RAG →](./06_llms_finetuning_and_rag.md)
 
 ---
 
 ## Mental Model: Convergence of Language, Vision & Audio
 
-In [Module 04](../02-core-ml-and-dl/04_deep_learning_and_rl.md), you learned how `PyTorch` trains deep layers of tensors. Historically, text, images, and audio each required completely separate neural network families. Today, modern AI unifies **all three modalities** with one elegant trick: chop text into subwords, chop images into pixel squares, and chop sound into tiny spectrogram slices—then feed all of them as token vectors into the exact same **Transformer Self-Attention** engine!
+In [Module 04](../02-core-ml-and-dl/04_deep_learning_and_rl.md), you learned how `PyTorch` trains deep layers of tensors. Historically, text, images, and audio each required completely separate neural network families. Today, modern AI unifies **all three modalities** with one elegant trick: chop text into subwords, chop images into pixel squares, and chop sound into tiny spectrogram slices, then feed all of them as token vectors into the exact same **Transformer Self-Attention** engine!
 
 ```mermaid
 flowchart LR
@@ -38,7 +38,7 @@ flowchart LR
 #### 1.1 Subword Byte-Pair Encoding (`BPE`) vs. Lexical Weighting (`TF-IDF` / `BM25`)
 > **2026 Scope Note:** Legacy preprocessing pipelines (manual regex stemming, stopword stripping, `CountVectorizer` Bag-of-Words, and static 2013 `Word2Vec` CBOW/Skip-gram tables) are obsolete in modern AI engineering. Focus on **subword tokenizers (`BPE`)** for neural models and **`TF-IDF` / `BM25`** for sparse hybrid search.
 
-- **Byte-Pair Encoding (`BPE` / `Tiktoken`):** Modern LLMs preserve exact casing, punctuation, and syntax — iteratively merging frequent byte/character pairs into a fixed vocabulary (`~100k–200k` subword tokens) to represent arbitrary text, code, and multilingual scripts with **zero Out-Of-Vocabulary (`<UNK>`) failures**.
+- **Byte-Pair Encoding (`BPE` / `Tiktoken`):** Modern LLMs preserve exact casing, punctuation, and syntax: iteratively merging frequent byte/character pairs into a fixed vocabulary (`~100k-200k` subword tokens) to represent arbitrary text, code, and multilingual scripts with **zero Out-Of-Vocabulary (`<UNK>`) failures**.
 - **Sparse Lexical Scoring (`TF-IDF` & `BM25`):** Multiplies local term frequency by inverse corpus rarity:
   $$\text{TF-IDF}(t, d, D) = \text{TF}(t, d) \times \log\left(\frac{N}{|\{d \in D : t \in d\}|}\right)$$
   While purely lexical (zero semantic overlap between `"car"` and `"automobile"`), **Okapi `BM25`** (which adds saturating term frequency and document-length normalization) remains indispensable as the sparse half of **Hybrid RAG** (`Module 06`).
@@ -80,10 +80,10 @@ Depending on whether we leave that Causal Mask **off** (letting every token read
 
 ### 3. Computer Vision: CNNs, ResNet & Transfer Learning
 
-Now let's switch from words to **images**. Before chopping images into Transformer patches, let's understand the classic spatial workhorse of computer vision—and why its skip-connection highway also lives inside every Transformer layer!
+Now let's switch from words to **images**. Before chopping images into Transformer patches, let's understand the classic spatial workhorse of computer vision, and why its skip-connection highway also lives inside every Transformer layer!
 
 #### 3.1 Spatial Convolutions (`CNNs`), Residual Skip Highways & Transfer Learning
-- **In Plain English (The Sliding Flashlight):** Connecting every pixel of a `1000×1000` color photo to 1,000 neurons creates **3 billion weights** in layer 1 alone! Instead, a **Convolutional Neural Network (`CNN`)** slides a tiny `3×3` "flashlight" (**kernel/filter**) across the image—reusing those exact 9 weights everywhere to spot edges in layer 1, textures in layer 2, and whole objects in deeper layers.
+- **In Plain English (The Sliding Flashlight):** Connecting every pixel of a `1000×1000` color photo to 1,000 neurons creates **3 billion weights** in layer 1 alone! Instead, a **Convolutional Neural Network (`CNN`)** slides a tiny `3×3` "flashlight" (**kernel/filter**) across the image, reusing those exact 9 weights everywhere to spot edges in layer 1, textures in layer 2, and whole objects in deeper layers.
 
 <details>
 <summary><b>Deep Dive: Convolution Output Size Formula</b></summary>
@@ -138,16 +138,16 @@ optimizer = torch.optim.AdamW(model.fc.parameters(), lr=1e-3)
 
 ## Tier 2: Production Architecture & Scale (Detection, ViT, CLIP & Audio AI)
 
-In Tier 1, we handled text tokens and single-label photos separately. **Tier 2** brings everything together—locating multiple objects inside busy scenes (`IoU`/`mAP`), merging vision and language into one shared space (`ViT` & `CLIP`), and extending the exact same Transformer pipeline to live speech and audio (`Whisper`).
+In Tier 1, we handled text tokens and single-label photos separately. **Tier 2** brings everything together, locating multiple objects inside busy scenes (`IoU`/`mAP`), merging vision and language into one shared space (`ViT` & `CLIP`), and extending the exact same Transformer pipeline to live speech and audio (`Whisper`).
 
 ### 4. Vision Hierarchy (`IoU`, `mAP`, `ViT`) & Multimodal Alignment (`CLIP`)
 
 #### 4.1 Detection/Segmentation Metrics (`IoU`, `mAP`), Vision Transformers (`ViT`) & `CLIP`
 - **Classification** (`ConvNeXt`, `ViT`) -> single image label; evaluated via Accuracy / Top-5.
-- **Object Detection** (`YOLO26` — native NMS-free edge flagship, `YOLO11`, `RT-DETR`) -> `[x, y, w, h, class, conf]` boxes; evaluated via **IoU** ($\frac{\text{Area}(B_p \cap B_{gt})}{\text{Area}(B_p \cup B_{gt})}$) and **mAP@0.5:0.95**.
+- **Object Detection** (`YOLO26`: native NMS-free edge flagship, `YOLO11`, `RT-DETR`) -> `[x, y, w, h, class, conf]` boxes; evaluated via **IoU** ($\frac{\text{Area}(B_p \cap B_{gt})}{\text{Area}(B_p \cup B_{gt})}$) and **mAP@0.5:0.95**.
 - **Semantic vs. Instance Segmentation** (`SegFormer`, `SAM 2`) -> pixel-level class mask (`mIoU`) vs. distinct per-object instance masks (`Mask AP`).
 - **`CNN` vs. `Vision Transformer (ViT)`:** CNNs have built-in "neighboring pixels belong together" intuition (win on smaller `<100k` image datasets); `ViT` chops an image into `16×16` square tiles like words in a sentence (wins at internet scale).
-- **`CLIP` / `SigLIP 2` (Connecting Images & Text in One Map):** Imagine a memory-matching game with 32 photos and 32 captions on a table. Contrastive vision-language models (`CLIP`, Google's `SigLIP 2`) train an Image Encoder and a Text Encoder together so Photo #1's vector lands right on top of Caption #1's vector while pushing all 31 wrong captions away—unlocking instant image search and zero-shot labeling without retraining!
+- **`CLIP` / `SigLIP 2` (Connecting Images & Text in One Map):** Imagine a memory-matching game with 32 photos and 32 captions on a table. Contrastive vision-language models (`CLIP`, Google's `SigLIP 2`) train an Image Encoder and a Text Encoder together so Photo #1's vector lands right on top of Caption #1's vector while pushing all 31 wrong captions away, unlocking instant image search and zero-shot labeling without retraining!
 
 <details>
 <summary><b>Deep Dive: `IoU` Formula & `CLIP` Symmetric `InfoNCE` Loss</b></summary>
@@ -159,10 +159,10 @@ In Tier 1, we handled text tokens and single-label photos separately. **Tier 2**
 
 ### 5. Audio & Speech AI (`Mel Spectrograms`, `Whisper` & Native Audio Models)
 
-Having connected text and images, only one major human sense remains: **sound**. Remarkably, we don't even need a brand-new architecture—we convert sound waves into a 2D visual heatmap and hand it straight to the Transformer:
+Having connected text and images, only one major human sense remains: **sound**. Remarkably, we don't even need a brand-new architecture: we convert sound waves into a 2D visual heatmap and hand it straight to the Transformer:
 
 #### 5.1 Log-Mel Spectrograms, `Whisper` ASR & Native Neural Audio Codecs
-- **In Plain English (Turning Sound Into a Picture):** How do you feed sound into a Transformer? First, slice the sound wave into tiny 25-millisecond windows and plot a **Log-Mel Spectrogram**—a "sheet-music heatmap" where **left-to-right is time**, **bottom-to-top is pitch (bass to treble)**, and **brightness is loudness**! Once sound is a 2D picture, vision/sequence Transformers can read it directly:
+- **In Plain English (Turning Sound Into a Picture):** How do you feed sound into a Transformer? First, slice the sound wave into tiny 25-millisecond windows and plot a **Log-Mel Spectrogram**: a "sheet-music heatmap" where **left-to-right is time**, **bottom-to-top is pitch (bass to treble)**, and **brightness is loudness**! Once sound is a 2D picture, vision/sequence Transformers can read it directly:
 1. **Waveform to Log-Mel Spectrogram:** Raw 16 kHz audio converted via Short-Time Fourier Transform (STFT) into `80` or `128` human-ear pitch bands (`Mel` bins).
 2. **`Whisper` Architecture (OpenAI):** Passes the Log-Mel spectrogram through 2 `1D Conv` layers + a **Transformer Encoder**, then decodes timestamps, language IDs, and transcribed/translated text autoregressively via a **Transformer Decoder**.
 3. **Native Multimodal Audio Tokens:** Frontier voice models (`Gemini Live` / `gemini-3.1-flash-live`, OpenAI `gpt-realtime`) discretize audio directly into neural codec tokens (`SoundStream` / `EnCodec`), enabling low-latency speech-in, speech-out reasoning while preserving emotion, tone, and speaker prosody without a brittle `ASR -> Text LLM -> TTS` cascade.
@@ -205,12 +205,12 @@ print("Lab 05 Passed! Causal attention verified with zero future leakage.")
 ---
 
 ## Key Engineering Takeaways
-- Know the **Scaled Dot-Product Attention** equation $\text{softmax}(QK^\top / \sqrt{d_k} + M)V$ cold — especially why $\frac{1}{\sqrt{d_k}}$ prevents softmax gradient saturation and how causal masking prevents future token leakage.
-- Contrast **Encoder (`ModernBERT`/`Qwen3-Embedding` — embeddings/reranking)** vs. **Decoder (`Gemini 3`/`GPT-5`/`Llama 4` — generation)** vs. **Encoder-Decoder (`Whisper`)**.
+- Know the **Scaled Dot-Product Attention** equation $\text{softmax}(QK^\top / \sqrt{d_k} + M)V$ cold, especially why $\frac{1}{\sqrt{d_k}}$ prevents softmax gradient saturation and how causal masking prevents future token leakage.
+- Contrast **Encoder (`ModernBERT`/`Qwen3-Embedding`: embeddings/reranking)** vs. **Decoder (`Gemini 3`/`GPT-5`/`Llama 4`: generation)** vs. **Encoder-Decoder (`Whisper`)**.
 - Explain **ResNet skip connections** via the `+1` identity gradient term, **`CLIP`** via symmetric InfoNCE contrastive alignment, and **Audio AI** via Log-Mel Spectrograms vs. native neural audio codecs.
 
 > **Next in the Journey:** Now that you know how the **Decoder-Only Transformer** predicts tokens under the hood, how do we transform a raw internet-autocomplete LLM into an accurate, cited, fast enterprise system using **Context Engineering, `Qdrant` Hybrid RAG, `LoRA`/`DPO`, and `vLLM`**? Let's flow into **[Module 06: Generative AI, Fine-Tuning, `Qdrant` & Production RAG](./06_llms_finetuning_and_rag.md)**.
 
 ---
 
-[← Previous: Module 04 — Deep Learning & RL](../02-core-ml-and-dl/04_deep_learning_and_rl.md) | [Home](../../README.md) | [Next: Module 06 — LLMs, Fine-Tuning & Advanced RAG →](./06_llms_finetuning_and_rag.md)
+[← Previous: Module 04: Deep Learning & RL](../02-core-ml-and-dl/04_deep_learning_and_rl.md) | [Home](../../README.md) | [Next: Module 06: LLMs, Fine-Tuning & Advanced RAG →](./06_llms_finetuning_and_rag.md)

@@ -1,14 +1,14 @@
 # Module 13: Hands-On Coding Challenges & ML Algorithms from Scratch
 
-> **Estimated Study Time:** 8–10 Hours | **Prerequisites:** Modules 01–06 | **Interactive Lab:** [Open Scratch Challenges Notebook](../../notebooks/02_ml_from_scratch_challenges.ipynb) | **[Open in Colab](https://colab.research.google.com/github/FirdowsRahaman/ai-ml-fresher-roadmap/blob/main/notebooks/02_ml_from_scratch_challenges.ipynb)**
+> **Estimated Study Time:** 8-10 Hours | **Prerequisites:** Modules 01-06 | **Interactive Lab:** [Open Scratch Challenges Notebook](../../notebooks/02_ml_from_scratch_challenges.ipynb) | **[Open in Colab](https://colab.research.google.com/github/FirdowsRahaman/ai-ml-fresher-roadmap/blob/main/notebooks/02_ml_from_scratch_challenges.ipynb)**
 
-[← Previous: Module 12 — Practical Troubleshooting Scenarios](./12_system_troubleshooting_scenarios.md) | [Home](../../README.md) | [Explore Portfolio Projects →](../../projects/README.md)
+[← Previous: Module 12: Practical Troubleshooting Scenarios](./12_system_troubleshooting_scenarios.md) | [Home](../../README.md) | [Explore Portfolio Projects →](../../projects/README.md)
 
 ---
 
 ## Mental Model: The 5-Step Algorithm Implementation Protocol
 
-Welcome to the hands-on finale of the 13-module curriculum! Across [Modules 01–12](./12_system_troubleshooting_scenarios.md), you saw how `NumPy`, `Scikit-Learn`, `PyTorch`, and `Qdrant` work together in production. Nothing cements those concepts deeper—or prepares you better for live engineering rounds—than building the core algorithms yourself in **clean, vectorized, numerically stable Python** with zero `NaN` explosions or slow nested loops:
+Welcome to the hands-on finale of the 13-module curriculum! Across [Modules 01-12](./12_system_troubleshooting_scenarios.md), you saw how `NumPy`, `Scikit-Learn`, `PyTorch`, and `Qdrant` work together in production. Nothing cements those concepts deeper, or prepares you better for live engineering rounds, than building the core algorithms yourself in **clean, vectorized, numerically stable Python** with zero `NaN` explosions or slow nested loops:
 
 ```mermaid
 flowchart LR
@@ -199,10 +199,10 @@ assert lbls[0] == lbls[1] and lbls[2] == lbls[3] and lbls[0] != lbls[2]
 
 ## Tier 2: Retrieval, Vector Search & Production LLM Infrastructure
 
-Now let's build the three core building blocks behind every modern **Hybrid RAG & Agent service** (`Modules 06–11`): fast **Dense Vector Search** (`Challenge 6`), **Sparse `BM25` Keyword Search** (`Challenge 7`), and **Resilient API Retries** (`Challenge 8`).
+Now let's build the three core building blocks behind every modern **Hybrid RAG & Agent service** (`Modules 06-11`): fast **Dense Vector Search** (`Challenge 6`), **Sparse `BM25` Keyword Search** (`Challenge 7`), and **Resilient API Retries** (`Challenge 8`).
 
 ### Challenge 6: Vectorized Top-$K$ Cosine Similarity Search (`O(N)` `argpartition`)
-Sorting 1,000,000 document scores takes $O(N \log N)$—when you only want the `Top-5` chunks, `np.argpartition` grabs them in linear $O(N)$ time:
+Sorting 1,000,000 document scores takes $O(N \log N)$: when you only want the `Top-5` chunks, `np.argpartition` grabs them in linear $O(N)$ time:
 
 ```python
 import numpy as np
@@ -267,7 +267,7 @@ assert idx.search("vllm kv cache")[0][0] == 2
 ```
 
 ### Challenge 8: Jittered Exponential Backoff API Client (Surviving HTTP `429` Storms)
-Finally, once Hybrid Search hands its top chunks to an LLM API under heavy traffic, rate-limit `429` errors are inevitable—let's add exponential backoff + **random jitter** so 100 workers don't retry at the exact same millisecond (**thundering herd**):
+Finally, once Hybrid Search hands its top chunks to an LLM API under heavy traffic, rate-limit `429` errors are inevitable: let's add exponential backoff + **random jitter** so 100 workers don't retry at the exact same millisecond (**thundering herd**):
 
 ```python
 import random
@@ -307,8 +307,8 @@ assert call_with_backoff(transient_endpoint) == "200_OK" and calls == 3
 - Use **`np.argpartition`** to cut top-$K$ search from $O(N \log N)$ to $O(N)$.
 - Always add **random jitter** to exponential backoff to prevent thundering-herd retry storms against rate-limited LLM endpoints.
 
-> **Where the River Flows Next — Build & Ship!** You have completed all 13 modules from raw SQL/NumPy foundations to Transformers, `Qdrant` Hybrid RAG, `MCP`/`A2A` Agents, and Production MLOps. Next, see how every piece connects inside **one single product** in the **[End-to-End AI Engineering Lifecycle Playbook](../../projects/end_to_end_lifecycle_playbook.md)**, run the **[Portfolio Starter Kits](../../projects/README.md)** locally, and test your skills in the **[Interview & Code-Audit Kits](../../interview-kits/ml_system_design_framework.md)**!
+> **Where the River Flows Next: Build & Ship!** You have completed all 13 modules from raw SQL/NumPy foundations to Transformers, `Qdrant` Hybrid RAG, `MCP`/`A2A` Agents, and Production MLOps. Next, see how every piece connects inside **one single product** in the **[End-to-End AI Engineering Lifecycle Playbook](../../projects/end_to_end_lifecycle_playbook.md)**, run the **[Portfolio Starter Kits](../../projects/README.md)** locally, and test your skills in the **[Interview & Code-Audit Kits](../../interview-kits/ml_system_design_framework.md)**!
 
 ---
 
-[← Previous: Module 12 — Practical Troubleshooting Scenarios](./12_system_troubleshooting_scenarios.md) | [Home](../../README.md) | [Explore Portfolio Projects →](../../projects/README.md)
+[← Previous: Module 12: Practical Troubleshooting Scenarios](./12_system_troubleshooting_scenarios.md) | [Home](../../README.md) | [Explore Portfolio Projects →](../../projects/README.md)
