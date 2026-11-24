@@ -51,15 +51,13 @@ flowchart TD
 
 *Build a strong foundation in programming, data processing, mathematics, and statistical reasoning.*
 
-**[Module 01](./curriculum/01-foundations/01_python_sql_and_data_stack.md) — Python, SQL & Modern Data Stack** 
+**[Module 01](./curriculum/01-foundations/01_python_sql_and_data_stack.md) — Python, SQL & Modern Data Stack**
 
 - Difficulty: Foundational
 - Study time: 6–8 hours
 - Prerequisites: Basic programming
 - Topics: Vectorized operations, memory views, CTEs, SQL window functions, analytical joins, and asynchronous I/O.
 - Practical lab: [Interactive NumPy, Pandas & SQL Lab](./notebooks/01_numpy_pandas_sql_lab.ipynb)
-
-
 
 **[Module 02](./curriculum/01-foundations/02_math_and_statistics.md) — Mathematics & Statistics for AI/ML**
 
@@ -68,35 +66,29 @@ flowchart TD
 - Prerequisites: Module 01
 - Topics: Matrix decompositions, gradient descent intuition, probability distributions, Bayes' theorem, and hypothesis testing.
 
-
-
 ### Phase 2: Core Machine Learning & Deep Learning
 
 *Move from data processing to predictive modeling, neural architectures, and optimization.*
 
-**[Module 03(./curriculum/02-core-ml-and-dl/03_classical_ml_and_recsys.md) — Classical Machine Learning & Recommendation Systems**
+**[Module 03](./curriculum/02-core-ml-and-dl/03_classical_ml_and_recsys.md) — Classical Machine Learning & Recommendation Systems**
 
 - Difficulty: Intermediate
 - Study time: 8–10 hours
 - Prerequisites: Modules 01 and 02
 - Topics: Leak-free pipelines, gradient-boosted trees (XGBoost/LightGBM), SHAP explainability, and two-stage recommendation systems.
 
-
-
-**Module 04 — Deep Learning, PyTorch & Reinforcement Learning**
+**[Module 04](./curriculum/02-core-ml-and-dl/04_deep_learning_and_rl.md) — Deep Learning, PyTorch & Reinforcement Learning**
 
 - Difficulty: Intermediate
 - Study time: 7–9 hours
 - Prerequisites: Modules 02 and 03
 - Topics: Tensor operations, autograd mechanics, normalization layers, AdamW, and policy optimization.
 
-[Open Module 04 →](./curriculum/02-core-ml-and-dl/04_deep_learning_and_rl.md)
-
 ### Phase 3: Generative AI, LLMs & Retrieval
 
 *Understand modern Transformer architectures, multimodal learning, fine-tuning, and production retrieval systems.*
 
-**Module 05 — NLP, Computer Vision & Multimodal AI**
+**[Module 05](./curriculum/03-modern-ai-and-genai/05_nlp_cv_and_multimodal.md) — NLP, Computer Vision & Multimodal AI**
 
 - Difficulty: Intermediate
 - Study time: 9–11 hours
@@ -104,88 +96,70 @@ flowchart TD
 - Topics: Tokenization algorithms, multi-head scaled dot-product attention, Vision Transformers (ViT), and multimodal contrastive learning (CLIP).
 - Practical lab: [Mini-Transformer Attention Lab](./notebooks/03_mini_transformer_attention.ipynb)
 
-[Open Module 05 →](./curriculum/03-modern-ai-and-genai/05_nlp_cv_and_multimodal.md)
-
-**Module 06 — Generative AI, Fine-Tuning & Production RAG**
+**[Module 06](./curriculum/03-modern-ai-and-genai/06_llms_finetuning_and_rag.md) — Generative AI, Fine-Tuning & Production RAG**
 
 - Difficulty: Advanced
 - Study time: 10–12 hours
 - Prerequisites: Module 05
 - Topics: Parameter-efficient fine-tuning (LoRA/QLoRA), alignment (DPO), hybrid vector search, reciprocal rank fusion (RRF), and cross-encoder reranking.
 
-[Open Module 06 →](./curriculum/03-modern-ai-and-genai/06_llms_finetuning_and_rag.md)
-
 ### Phase 4: Autonomous Agents & Systems
 
 *Build stateful autonomous agents with tool integration, memory, orchestration, and safety controls.*
 
-**Module 07 — AI Agent Fundamentals & Reasoning Loops**
+**[Module 07](./curriculum/04-agentic-ai/07_ai_agents_fundamentals.md) — AI Agent Fundamentals & Reasoning Loops**
 
 - Difficulty: Intermediate
 - Study time: 6–8 hours
 - Prerequisites: Module 06
 - Topics: Deterministic workflows vs. autonomous agents, ReAct loops, execution sandboxing, and circuit breakers.
 
-[Open Module 07 →](./curriculum/04-agentic-ai/07_ai_agents_fundamentals.md)
-
-**Module 08 — Function Calling, LangGraph & Google ADK**
+**[Module 08](./curriculum/04-agentic-ai/08_tools_langgraph_and_adk.md) — Function Calling, LangGraph & Google ADK**
 
 - Difficulty: Advanced
 - Study time: 6–8 hours
 - Prerequisites: Module 07
 - Topics: Schema enforcement, state machines, cyclic execution graphs, human-in-the-loop checkpoints, and framework patterns.
 
-[Open Module 08 →](./curriculum/04-agentic-ai/08_tools_langgraph_and_adk.md)
-
-**Module 09 — Multi-Agent Systems & Model Context Protocol (MCP)**
+**[Module 09](./curriculum/04-agentic-ai/09_multi_agent_and_mcp.md) — Multi-Agent Systems & Model Context Protocol (MCP)**
 
 - Difficulty: Advanced
 - Study time: 6–7 hours
 - Prerequisites: Module 08
 - Topics: Supervisor, parallel and swarm architectures, context isolation, MCP clients and servers, and agent communication.
 
-[Open Module 09 →](./curriculum/04-agentic-ai/09_multi_agent_and_mcp.md)
-
-**Module 10 — Agent Evaluation, Safety & Governance**
+**[Module 10](./curriculum/04-agentic-ai/10_agent_evals_and_safety.md) — Agent Evaluation, Safety & Governance**
 
 - Difficulty: Advanced
 - Study time: 7–9 hours
 - Prerequisites: Module 09
 - Topics: Evaluation-driven development, LLM-as-a-judge debiasing, prompt injection defense, regulatory risk frameworks, and token budgets.
 
-[Open Module 10 →](./curriculum/04-agentic-ai/10_agent_evals_and_safety.md)
-
 ### Phase 5: Production MLOps & Engineering Practice
 
 *Learn to deploy, monitor, troubleshoot, and optimize AI systems under real-world production constraints.*
 
-**Module 11 — Production MLOps, Drift & Cloud FinOps**
+**[Module 11](./curriculum/05-production-and-practice/11_mlops_cloud_and_finops.md) — Production MLOps, Drift & Cloud FinOps**
 
 - Difficulty: Advanced
 - Study time: 8–10 hours
 - Prerequisites: Modules 03 and 10
 - Topics: FastAPI serving lifecycles, point-in-time feature stores, population stability index (PSI), drift monitoring, and container security.
 
-[Open Module 11 →](./curriculum/05-production-and-practice/11_mlops_cloud_and_finops.md)
-
-**Module 12 — Real-World Troubleshooting Scenarios**
+**[Module 12](./curriculum/05-production-and-practice/12_system_troubleshooting_scenarios.md) — Real-World Troubleshooting Scenarios**
 
 - Difficulty: Advanced
 - Study time: 6–8 hours
 - Prerequisites: Modules 01–11
 - Topics: Train-serve skew, out-of-memory recovery, catastrophic forgetting, and latency bottleneck diagnosis.
 
-[Open Module 12 →](./curriculum/05-production-and-practice/12_system_troubleshooting_scenarios.md)
-
-**Module 13 — Hands-On ML Algorithms from Scratch**
+**[Module 13](./curriculum/05-production-and-practice/13_algorithms_from_scratch.md) — Hands-On ML Algorithms from Scratch**
 
 - Difficulty: Intermediate
 - Study time: 8–10 hours
 - Prerequisites: Modules 01–06
 - Topics: Numerical stability, logistic regression, k-means clustering, BM25 indexing, and vector cosine search implemented in Python/NumPy.
 - Practical lab: [Algorithms from Scratch Notebook](./notebooks/02_ml_from_scratch_challenges.ipynb)
-
-[Open Module 13 →](./curriculum/05-production-and-practice/13_algorithms_from_scratch.md)
 
 ---
 
