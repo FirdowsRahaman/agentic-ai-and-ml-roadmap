@@ -28,14 +28,13 @@ flowchart LR
 
 ---
 
-## Tier 1: Core Foundations (Must-Know Foundations)
+## Tier 1: Core Foundations
 
 ### 1. Python Core Mechanics
 
-#### 1.1 Python as a High-Performance C++/CUDA/Rust Glue Layer
-Python acts as an ergonomic **glue language** over high-performance C, C++, CUDA, and Rust backends:
-- Libraries like **NumPy**, **PyTorch**, and **Polars** execute heavy matrix algebra in compiled C++/CUDA/Rust while exposing concise Python APIs.
-- Unmatched ecosystem across classical ML (`scikit-learn`), deep learning (`torch`), data validation (`pydantic`), and GenAI (`langgraph`, `vllm`).
+#### 1.1 Why Python Runs AI (The "Steering Wheel" Mental Model)
+- **In Plain English:** Think of Python as the steering wheel of a race car—you write readable, concise Python commands, while the heavy math engine underneath (`NumPy`, `PyTorch`, `Polars`) executes at full speed in compiled C++, CUDA, or Rust.
+- **When to Use / Skip:** Write orchestration, data glue, and model definitions in Python; **never** write raw Python `for` loops over millions of numbers when a vectorized library function exists.
 
 ---
 
@@ -74,7 +73,7 @@ items2.extend([3, 4])  # [1, 2, 3, 4]
 ---
 
 #### 1.4 Lazy Batch Streaming with Python Generators (`yield`)
-A generator yields items **lazily one batch at a time** instead of materializing an entire dataset in RAM.
+- **In Plain English:** A normal function is like downloading an entire 50 GB movie before watching frame 1 (crashing your RAM); a **generator (`yield`)** works like Netflix streaming—handing you one small batch at a time and pausing until you ask for the next.
 
 ```python
 from typing import Iterator
@@ -97,9 +96,16 @@ def stream_batches(file_path: str, batch_size: int = 64) -> Iterator[list[str]]:
 
 ### 2. Vectorized Computing with NumPy
 
-#### 2.1 SIMD Memory Layout & NumPy Broadcasting Rules
-1. **Contiguous Memory & SIMD:** NumPy arrays store homogeneous C types (`float32`, `int64`) in contiguous memory blocks, unlocking CPU SIMD vectorization without Python's dynamic type-checking overhead per element.
-2. **Broadcasting:** NumPy automatically stretches dimensions of size `1` (without copying memory) when shapes are compatible from right to left.
+#### 2.1 Why NumPy Is 30×–100× Faster & How Broadcasting Works
+- **In Plain English:** A Python `list` scatters numbers in separate boxes across memory and checks every item's type one by one. A **NumPy array** packs same-type numbers side-by-side in one solid strip of memory, letting your CPU multiply dozens of numbers in a single step.
+- **Broadcasting (Stretching Shapes Automatically):** When you subtract a 3-number average from a 4-row table `(4, 3) - (3,)`, NumPy automatically "stretches" that 3-number row across all 4 rows without duplicating memory.
+
+<details>
+<summary><b>Deep Dive: Contiguous C Memory & CPU SIMD Vectorization</b></summary>
+
+NumPy stores homogeneous C primitives (`float32`, `int64`) in contiguous memory buffers, eliminating per-element Python object pointer dereferencing and unlocking CPU **SIMD (Single Instruction, Multiple Data)** vector registers. Broadcasting aligns shapes from right to left: two axes are compatible when they are equal or one of them is `1`.
+
+</details>
 
 ```python
 import numpy as np

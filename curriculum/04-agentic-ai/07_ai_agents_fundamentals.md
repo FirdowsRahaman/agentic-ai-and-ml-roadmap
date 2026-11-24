@@ -6,9 +6,10 @@
 
 ---
 
-## Mental Model: Workflows vs. Autonomous Agents
+## Mental Model: Workflows (Trains on Tracks) vs. Agents (Taxis with GPS)
 
-The #1 architectural mistake junior engineers make is wrapping a simple deterministic task inside an open-ended autonomous agent (multiplying latency, cost, and failure modes). Senior AI engineers distinguish **Agentic Workflows** (code-driven control flow) from **Autonomous Agents** (LLM-driven control flow):
+- **In Plain English:** A **Workflow** is a train on fixed tracks—your Python `if/else` code decides the exact sequence of steps (fast, cheap, easy to test). An **Autonomous Agent** is a taxi driver with GPS—you give a destination, and the **LLM itself decides** which tools to call, reads error messages, and detours dynamically until it arrives.
+- **Golden Rule:** Never use an open-ended taxi when a 3-stop train track solves the problem!
 
 ```mermaid
 flowchart TD

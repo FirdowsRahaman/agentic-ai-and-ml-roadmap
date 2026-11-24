@@ -8,7 +8,14 @@
 
 ## Mental Model: Choosing the Right Classical Paradigm
 
-While enterprise AI adoption across analytical ML and generative AI reached **88%–89%** by 2025–2026, **only ~37% of organizations report measurable enterprise EBIT impact** — separating the top **6% "AI high performers"** who engineer end-to-end production workflows from isolated pilot demos ([McKinsey *The State of AI*, 2026](https://www.mckinsey.com/capabilities/quantumblack/our-insights/the-state-of-ai); [Stanford HAI *AI Index*](https://hai.stanford.edu/ai-index)). Across high-throughput structured workloads (fraud scoring, credit underwriting, churn, dynamic pricing, and feed ranking), **gradient-boosted trees (`XGBoost`, `LightGBM`, `CatBoost`)**, **tabular foundation models (`TabPFN`)** ([Hollmann et al., *Nature* 2025](https://www.nature.com/articles/s41586-024-08328-6)), and **two-stage recommendation engines** remain foundational due to deterministic sub-10ms latency SLAs and tabular inductive bias ([`TabArena`, NeurIPS 2025](https://arxiv.org/abs/2506.16791); [Grinsztajn et al., NeurIPS 2022](https://arxiv.org/abs/2207.08815)).
+**In Plain English:** LLMs dominate text, code, and images, but **structured spreadsheet/database tables** (credit scores, fraud detection, dynamic pricing, churn, and shopping feeds) are still ruled by **tree ensembles (`XGBoost`, `LightGBM`), tabular foundation models (`TabPFN`), and two-stage recommendation funnels**—because they run in under 10 milliseconds on cheap CPUs and handle messy columns naturally.
+
+<details>
+<summary><b>Deep Dive: 2026 Enterprise Adoption & Tabular Research Benchmarks</b></summary>
+
+While enterprise AI adoption reached **88%–89%** by 2025–2026, **only ~37% of organizations report measurable enterprise EBIT impact** — separating the top **6% "AI high performers"** who engineer end-to-end workflows from isolated pilot demos ([McKinsey *The State of AI*, 2026](https://www.mckinsey.com/capabilities/quantumblack/our-insights/the-state-of-ai); [Stanford HAI *AI Index*](https://hai.stanford.edu/ai-index)). Across structured tabular benchmarks, gradient-boosted trees and in-context tabular foundation models (`TabPFN`) consistently outperform standard deep neural networks due to axis-aligned feature selection and irregular boundary handling ([Hollmann et al., *Nature* 2025](https://www.nature.com/articles/s41586-024-08328-6); [`TabArena`, NeurIPS 2025](https://arxiv.org/abs/2506.16791); [Grinsztajn et al., NeurIPS 2022](https://arxiv.org/abs/2207.08815)).
+
+</details>
 
 ```mermaid
 flowchart TD
@@ -131,17 +138,25 @@ flowchart LR
 ---
 
 #### 4.2 Model Explainability (`SHAP`) & Probability Calibration (`Platt` / `Isotonic`)
-In regulated domains (banking, underwriting, healthcare — classified as **High-Risk** under the EU AI Act), shipping an uncalibrated black-box `XGBoost` score is non-compliant:
-1. **Probability Calibration ([Niculescu-Mizil & Caruana, ICML 2005](https://dl.acm.org/doi/10.1145/1102351.1102430)):** Raw boosted-tree and neural-network `predict_proba()` scores distort true empirical probabilities (pushing predictions away from or toward `0` and `1`). Wrap classifiers in `CalibratedClassifierCV(method="isotonic")` (or `"sigmoid"` Platt scaling on smaller validation sets) and evaluate with **Brier Score** ($\frac{1}{N}\sum (\hat{p}_i - y_i)^2$) so a predicted `0.20` default risk genuinely defaults 20% of the time.
-2. **`SHAP` (`SHapley Additive exPlanations`, [Lundberg & Lee, NeurIPS 2017](https://arxiv.org/abs/1705.07874)):** Uses game-theoretic Shapley values (`shap.TreeExplainer(model)`) to decompose *every individual prediction* into exact additive feature contributions ($\hat{y}_i = \phi_0 + \sum_j \phi_{ij}$), providing both **global feature importance** and **per-customer adverse-action explanations** (*"Loan declined primarily due to debt-to-income +0.31 and 3 recent delinquencies +0.24"*).
+- **In Plain English:**
+  1. **Calibration:** Just because an `XGBoost` model outputs `0.80` does **not** mean the borrower actually has an 80% chance of defaulting—raw tree scores are often stretched or squished. **Calibration** adjusts those raw scores against real outcomes so `0.80` truly means "8 out of 10".
+  2. **`SHAP` Explainability:** Banks and hospitals aren't allowed to say *"The AI black box said no."* **`SHAP`** breaks every single prediction into exact credit/blame points per column (e.g., `Baseline 15% + High Debt (+31%) + Late Payments (+24%) = 70% Risk`).
+
+<details>
+<summary><b>Deep Dive: Calibration Methods, Brier Score & Shapley References</b></summary>
+
+- **Calibration (`CalibratedClassifierCV`):** Use `method="sigmoid"` (Platt Scaling) on small validation sets (`<1,000` rows) and `method="isotonic"` on larger sets; measure calibration quality via **Brier Score** ($\frac{1}{N}\sum (\hat{p}_i - y_i)^2$, lower is better — [Niculescu-Mizil & Caruana, ICML 2005](https://dl.acm.org/doi/10.1145/1102351.1102430)).
+- **`SHAP` (`shap.TreeExplainer`):** Computes exact game-theoretic Shapley values in polynomial time on trees ($\hat{y}_i = \phi_0 + \sum_j \phi_{ij}$ — [Lundberg & Lee, NeurIPS 2017](https://arxiv.org/abs/1705.07874)), satisfying EU AI Act High-Risk adverse-action auditability.
+
+</details>
 
 ---
 
 ### 5. Unsupervised Essentials: `K-Means` & `PCA`
 
 #### 5.1 Clustering (`K-Means` / `DBSCAN`) & Dimensionality Reduction (`PCA`)
-- **`K-Means`:** Iteratively assigns points to the nearest of $K$ centroids (Euclidean distance) and recomputes centroids as cluster means. Choose $K$ via the **Elbow Method (inertia)** + **Silhouette Score**. *Pitfalls:* Assumes spherical, equal-sized clusters; fails on outliers and non-convex shapes (use `DBSCAN` or `HDBSCAN` for arbitrary shapes/noise).
-- **`PCA` (Principal Component Analysis):** Projects scaled data onto orthogonal eigenvectors of the covariance matrix ordered by explained variance — used to compress correlated features, speed up training, and visualize embeddings in 2D.
+- **`K-Means` (Grouping Similar Rows):** Drops $K$ pins ("centroids") on the map, assigns every data point to its closest pin, moves each pin to the center of its group, and repeats until stable. *When to skip:* Fails on ring/crescent shapes or heavy outliers—use `DBSCAN` / `HDBSCAN` instead.
+- **`PCA` (Compressing Redundant Columns):** Imagine photographing a 3D cloud of points from the single camera angle that spreads the points out the widest—`PCA` squashes 100 correlated columns down to the few combined directions ("principal components") that preserve the most information.
 
 ---
 

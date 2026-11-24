@@ -33,9 +33,16 @@ flowchart LR
 
 ### 1. Neurons, Layers & Non-Linearity
 
-#### 1.1 Affine Projections & Why Non-Linear Activations Prevent Layer Collapse
-A neuron computes an affine dot product $z = \mathbf{w}^\top \mathbf{x} + b$ followed by a non-linear activation $\phi(z)$.
-- **Why non-linearity is mandatory:** A stack of linear matrices without activations collapses into a single linear matrix: $W_2(W_1 \mathbf{x}) = (W_2 W_1)\mathbf{x} = W_{\text{eff}}\mathbf{x}$. Without non-linear activations, a 100-layer network has the exact same expressive power as 1-layer Linear Regression!
+#### 1.1 How a Neuron Works & Why Activations Are Mandatory
+- **In Plain English:** A single neuron works like a weighted scorecard: it multiplies each input by an importance weight, adds a baseline (`bias`), and passes the total through a **curved switch (`activation function`)** to decide whether to fire.
+- **Why that curved switch is mandatory:** Stacking 100 straight-line equations without curved activations just simplifies into **one single straight line**—giving a 100-layer network zero advantage over basic Linear Regression!
+
+<details>
+<summary><b>Deep Dive: Matrix Collapse Proof</b></summary>
+
+Without a non-linear activation $\phi(\cdot)$ between layers, consecutive linear transformations collapse associatively: $W_2(W_1 \mathbf{x}) = (W_2 W_1)\mathbf{x} = W_{\text{eff}}\mathbf{x}$. Non-linear activations (`ReLU`, `GELU`) bend the coordinate space at every layer, enabling universal function approximation.
+
+</details>
 
 ```python
 import numpy as np
@@ -117,13 +124,20 @@ with torch.no_grad():                  # Disables autograd graph -> halves memor
 
 ### 3. Vanishing/Exploding Gradients, Normalization & Modern Optimizers
 
-#### 3.1 Jacobian Products & The 4 Fixes for Vanishing / Exploding Gradients
-By the Chain Rule, backpropagating through $L$ layers multiplies $L$ Jacobian matrices. If singular values are $< 1$, gradients shrink exponentially ($0.5^{50} \approx 10^{-15}$ — early layers freeze); if $> 1$, gradients explode to `NaN`.
-**The 4 Engineering Fixes:**
-1. **Non-saturating activations** (`ReLU`, `GELU`) instead of `Sigmoid`.
-2. **Variance-preserving Initialization:** **He / Kaiming init** ($\text{Var}(W) = 2 / d_{\text{in}}$) for ReLU; **Xavier / Glorot init** for Tanh/Linear.
-3. **Residual Skip Connections** ($x + \mathcal{F}(x)$) creating an identity gradient highway.
-4. **Normalization Layers (`BatchNorm` / `LayerNorm` / `RMSNorm`)** + **Gradient Clipping** (`clip_grad_norm_`).
+#### 3.1 Vanishing & Exploding Gradients — And the 4 Fixes That Solved Them
+- **In Plain English:** Backpropagation sends error feedback backward from the last layer to the first, like a game of "Telephone" down a line of 50 people. If each layer shrinks the signal by half (`0.5 × 0.5 × ...`), the message vanishes to zero before reaching early layers (**Vanishing Gradient**—early layers stop learning). If each layer doubles it (`2 × 2 × ...`), numbers blow up to `NaN` (**Exploding Gradient**).
+- **The 4 Engineering Fixes:**
+  1. **Non-saturating switches** (`ReLU`, `GELU`) instead of flat-tailed `Sigmoid`.
+  2. **Smart starting weights** (`He` / `Xavier` initialization so layer outputs neither shrink nor balloon on step 1).
+  3. **Residual Skip Highways** ($x + \mathcal{F}(x)$) letting error signals bypass layers cleanly.
+  4. **Normalization (`LayerNorm` / `BatchNorm`)** + **Gradient Clipping** (`clip_grad_norm_`).
+
+<details>
+<summary><b>Deep Dive: Chain-Rule Jacobian Math</b></summary>
+
+By the multivariate Chain Rule, $\frac{\partial \mathcal{L}}{\partial h_1} = \frac{\partial \mathcal{L}}{\partial h_L} \prod_{l=2}^{L} \frac{\partial h_l}{\partial h_{l-1}}$. Repeated multiplication of $L$ Jacobian matrices causes exponential decay ($0.5^{50} \approx 10^{-15}$) when singular values are $<1$, or overflow when $>1$. **He initialization** sets $\text{Var}(W) = \frac{2}{d_{\text{in}}}$ to preserve unit activation variance across `ReLU` layers.
+
+</details>
 
 ---
 
@@ -146,18 +160,31 @@ By the Chain Rule, backpropagating through $L$ layers multiplies $L$ Jacobian ma
 ---
 
 #### 3.4 Multi-GPU Distributed Training (`DDP` vs. `FSDP` / `DeepSpeed ZeRO-3`)
-During `BF16` mixed-precision training with `AdamW`, **1 billion parameters consumes ~16 GB of VRAM just for model state** (`2B` weights + `2B` gradients + `12B` FP32 master weights & Adam $m_t, v_t$ moments — [Rajbhandari et al., SC20 (`ZeRO`)](https://arxiv.org/abs/1910.02054)):
-- **`DDP` (Distributed Data Parallel):** Replicates the **entire model + optimizer** on every GPU, splitting mini-batches across GPUs and averaging gradients via `AllReduce`. Fast, but fails the moment a model exceeds a single GPU's VRAM.
-- **`FSDP` (PyTorch Fully Sharded Data Parallel / `ZeRO-3`):** Shards **parameters, gradients, and optimizer states** across all $N$ GPUs (`1/N` memory per GPU), gathering layer weights just-in-time via `AllGather` before each forward/backward pass.
-- **Tensor Parallelism (`TP`):** Splits individual matrix multiplications *within* a layer across fast intra-node `NVLink` GPUs (essential for 70B+ LLM serving/training).
+- **In Plain English:**
+  - **`DDP` (Copy the Cookbook to Every Chef):** Every GPU holds a full copy of the model, cooks a different slice of data, and averages notes after each batch. Simple and fast—until the model is too big to fit on one GPU!
+  - **`FSDP` / `ZeRO-3` (Split the Cookbook Pages Across Chefs):** When a 70B model won't fit on one GPU, `FSDP` gives each of your 8 GPUs just **1/8th of the model's layers & optimizer memory**, passing pages over fast GPU cables right when needed.
+
+<details>
+<summary><b>Deep Dive: Exact 16 GB per 1B Parameter `AdamW` VRAM Breakdown</b></summary>
+
+During mixed-precision `BF16` training with `AdamW`, **every 1B parameters requires ~16 GB of static GPU memory** before activations: `2 GB` (`BF16` weights) + `2 GB` (`BF16` gradients) + `12 GB` (`FP32` master weights + `FP32` Adam $m_t$ and $v_t$ momentum/variance states — [Rajbhandari et al., SC20 (`ZeRO`)](https://arxiv.org/abs/1910.02054)). **Tensor Parallelism (`TP`)** goes one level deeper, splitting single matrix multiplications across intra-node `NVLink` GPUs.
+
+</details>
 
 ---
 
 ### 4. Reinforcement Learning (RL) & Connection to Post-Training LLMs
 
-#### 4.1 Markov Decision Processes (MDP) & Policy Optimization (`PPO` / `GRPO`)
-An RL **Agent** interacts with an **Environment** modeled as a Markov Decision Process $(S, A, P, R, \gamma)$: at state $s_t$, policy $\pi_\theta(a_t \mid s_t)$ selects action $a_t$, transitioning to $s_{t+1}$ and receiving scalar reward $r_t$ to maximize discounted return $G_t = \sum_{k=0}^{\infty} \gamma^k r_{t+k}$.
-- **Modern LLM Connection:** In **RLHF (`PPO`)** and **Reasoning RL (`GRPO` — Group Relative Policy Optimization)**, the prompt is the initial state, each generated token is an action, and a Reward Model (or deterministic unit-test/math verifier!) scores the completed response to teach models human alignment and multi-step reasoning.
+#### 4.1 Trial-and-Error Learning & How RL Teaches LLMs to Reason (`PPO` / `GRPO`)
+- **In Plain English:** Supervised learning teaches with an answer key (*"Here is the exact right essay"*). **Reinforcement Learning (RL)** teaches like coaching a game—the AI tries multiple strategies, sees which attempt wins a **Reward** (e.g., code passes all unit tests or math answer matches), and shifts its probabilities toward winning strategies.
+- **How Modern Reasoning LLMs Use It:** In **`GRPO` (Group Relative Policy Optimization)**, the model generates 8 candidate step-by-step solutions to a coding/math problem, runs them against a deterministic compiler/verifier, and reinforces the solutions that scored above the group average!
+
+<details>
+<summary><b>Deep Dive: Formal Markov Decision Process (MDP) Notation</b></summary>
+
+Formally modeled as $(S, A, P, R, \gamma)$: at state $s_t$ (prompt + tokens generated so far), policy $\pi_\theta(a_t \mid s_t)$ samples action $a_t$ (next token), transitioning to $s_{t+1}$ to maximize discounted cumulative return $G_t = \sum_{k=0}^{\infty} \gamma^k r_{t+k}$.
+
+</details>
 
 ---
 

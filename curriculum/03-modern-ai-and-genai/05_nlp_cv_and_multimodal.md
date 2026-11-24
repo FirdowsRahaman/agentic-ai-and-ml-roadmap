@@ -47,16 +47,21 @@ flowchart LR
 ### 2. Transformer Architecture & Self-Attention Mechanics
 
 #### 2.1 Scaled Dot-Product Attention ($Q, K, V$), Causal Masking & `RoPE`
-Given input token embeddings $X \in \mathbb{R}^{T \times d_{\text{model}}}$, we project each token into three learned subspaces:
-- **Query ($Q = X W_Q$):** *"What information am I looking for?"*
-- **Key ($K = X W_K$):** *"What information do I contain?"*
-- **Value ($V = X W_V$):** *"What payload do I pass forward if attended to?"*
+- **In Plain English (The Library Analogy):** When reading *"The server crashed because **it** ran out of RAM"*, how does the word **`"it"`** figure out it refers to `"server"` and not `"RAM"`? Every token creates three vectors:
+  - **Query ($Q$):** A sticky note asking *"What am I looking for?"* (e.g., `"it"` looking for a singular noun subject).
+  - **Key ($K$):** The label on every word's spine announcing *"Here is what I am!"*
+  - **Value ($V$):** The actual meaning inside each word passed forward when its Key matches your Query.
+- **Causal Masking (No Peeking Ahead):** During training, an LLM reads the whole sentence at once for speed, so we grey out future words (`-inf`) to stop word #3 from cheating by peeking at word #4.
+- **`RoPE` (Word Order):** Since pure attention treats a sentence like an unordered bag, **Rotary Positional Embeddings (`RoPE`)** slightly rotate each word's Query/Key angle by its position (`1st, 2nd, 3rd...`) so the model feels exact word distance.
+
+<details>
+<summary><b>Deep Dive: Attention Equation & Why We Divide by $\sqrt{d_k}$</b></summary>
 
 $$\text{Attention}(Q, K, V) = \text{softmax}\left(\frac{Q K^\top}{\sqrt{d_k}} + M\right) V$$
 
-1. **Why divide by $\sqrt{d_k}$?** For large head dimension $d_k$, dot products $q \cdot k$ grow in variance ($\propto d_k$), pushing `softmax` into flat saturation regions where gradients vanish. Scaling by $\frac{1}{\sqrt{d_k}}$ restores unit variance!
-2. **Causal Mask ($M$):** Decoder LLMs set future positions ($j > i$) to $-\infty$ before `softmax` so token $i$ cannot cheat by peeking at future tokens during parallel training.
-3. **Multi-Head Attention (`MHA`) & `RoPE`:** Splits $d_{\text{model}}$ into $h$ parallel heads (capturing syntax, coreference, and long-range semantics simultaneously). Because attention is permutation-invariant, modern LLMs rotate $Q$ and $K$ by token index angles using **Rotary Positional Embeddings (`RoPE`)** to encode relative token distance.
+Why divide by $\sqrt{d_k}$? When head dimension $d_k$ is large (e.g., `64` or `128`), raw dot products $q \cdot k$ grow large in variance ($\propto d_k$), pushing `softmax` into extreme `0.9999 / 0.0001` saturation where gradients vanish to zero. Dividing by $\sqrt{d_k}$ keeps scores well-behaved with unit variance. **Multi-Head Attention (`MHA`)** runs $h$ independent $(Q,K,V)$ heads in parallel so one head tracks grammar while another tracks long-range facts.
+
+</details>
 
 ---
 
@@ -126,8 +131,16 @@ optimizer = torch.optim.AdamW(model.fc.parameters(), lr=1e-3)
 - **Classification** (`ConvNeXt`, `ViT`) -> single image label; evaluated via Accuracy / Top-5.
 - **Object Detection** (`YOLOv11`, `RT-DETR`) -> `[x, y, w, h, class, conf]` boxes; evaluated via **IoU** ($\frac{\text{Area}(B_p \cap B_{gt})}{\text{Area}(B_p \cup B_{gt})}$) and **mAP@0.5:0.95**.
 - **Semantic vs. Instance Segmentation** (`SegFormer`, `SAM 2`) -> pixel-level class mask (`mIoU`) vs. distinct per-object instance masks (`Mask AP`).
-- **`CNN` vs. `Vision Transformer (ViT)`:** CNNs bake in spatial locality and translation equivariance (better on `<100k` images); `ViT` splits images into `16×16` patches with global self-attention from layer 1 (dominates at massive pretraining scale).
-- **`CLIP` Contrastive Alignment:** Trains an Image Encoder and Text Encoder jointly with **InfoNCE loss** over $N \times N$ batch pairs — maximizing diagonal cosine similarity of matched `(image_i, text_i)` pairs while pushing apart $N^2 - N$ mismatched pairs, unlocking zero-shot classification and cross-modal image search.
+- **`CNN` vs. `Vision Transformer (ViT)`:** CNNs have built-in "neighboring pixels belong together" intuition (win on smaller `<100k` image datasets); `ViT` chops an image into `16×16` square tiles like words in a sentence (wins at internet scale).
+- **`CLIP` (Connecting Images & Text in One Map):** Imagine a memory-matching game with 32 photos and 32 captions on a table. `CLIP` trains an Image Encoder and a Text Encoder together so Photo #1's vector lands right on top of Caption #1's vector while pushing all 31 wrong captions away—unlocking instant image search and zero-shot labeling without retraining!
+
+<details>
+<summary><b>Deep Dive: `IoU` Formula & `CLIP` Symmetric `InfoNCE` Loss</b></summary>
+
+- **Intersection over Union (`IoU`):** $\text{IoU} = \frac{\text{Area}(B_{\text{pred}} \cap B_{\text{gt}})}{\text{Area}(B_{\text{pred}} \cup B_{\text{gt}})}$. Predictions with $\text{IoU} \ge 0.5$ (or swept across `0.50:0.95` for `mAP`) count as True Positives.
+- **`InfoNCE` Contrastive Objective:** Computes the $N \times N$ cosine similarity matrix across a batch of $N$ `(image, text)` pairs and applies symmetric cross-entropy along rows and columns to maximize the $N$ diagonal matches against $N^2 - N$ negatives.
+
+</details>
 
 ---
 

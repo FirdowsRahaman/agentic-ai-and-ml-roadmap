@@ -156,10 +156,10 @@ root_agent = Agent(
 ### 4. Durable Persistence & Human-in-the-Loop (`HITL`) Interrupts
 
 #### 4.1 Durable State Checkpointing & Asynchronous `HITL` Approval Flows
-Holding a `time.sleep()` or open WebSocket for 4 hours while a manager reviews a `\$5,000` refund crashes worker pools! Production frameworks (`LangGraph Checkpointers` backed by Postgres/Redis, or `Google ADK` session state) use **Durable State Serialization**:
-1. Before running a mutating tool (`issue_refund`, `delete_user`, `send_external_email`), an **`interrupt_before`** hook serializes the exact graph state + `thread_id` to Postgres and **releases all compute resources**.
-2. A webhook notifies a Slack/UI review queue with the proposed tool name and arguments.
-3. Hours later, when the reviewer clicks **Approve** (or edits the refund amount), the runtime rehydrates `thread_id` from Postgres and resumes execution from that exact node!
+- **In Plain English (The Video-Game "Save Slot" Pattern):** Never leave a server thread hanging on `time.sleep()` for 4 hours waiting for a human manager to approve a `\$5,000` refund! Instead, `LangGraph` and `Google ADK` work like hitting **Save Game**:
+  1. Right before a risky tool runs (`issue_refund`, `delete_user`), an **`interrupt_before`** hook saves the agent's exact memory + `thread_id` into Postgres and **shuts down the worker cleanly (using zero RAM/CPU)**.
+  2. Slack/UI pings a human reviewer with the proposed action.
+  3. Hours later, when the human clicks **Approve**, the server reloads `thread_id` from Postgres and resumes from that exact step!
 
 ---
 

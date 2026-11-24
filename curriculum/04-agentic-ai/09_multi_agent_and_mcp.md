@@ -6,9 +6,11 @@
 
 ---
 
-## Mental Model: Divide Context, Standardize Connectivity
+## Mental Model: Specialist Teams, USB-C Cables (`MCP`) & Phone Lines (`A2A`)
 
-Multi-Agent architectures solve **context saturation** (splitting 40 tools and 100k noisy intermediate tokens across narrow, role-scoped specialists), while the **Model Context Protocol (MCP)** solves the **$M \times N$ integration explosion** (connecting $M$ AI hosts/agents to $N$ enterprise systems via one universal JSON-RPC 2.0 contract).
+- **In Plain English:**
+  - **Why Multi-Agent?** Handing one single agent 40 tools and 50 pages of instructions is like asking one overwhelmed intern to run Legal, Finance, and IT simultaneously—they mix up rules and hallucinate. Splitting into **focused Subagents** gives each worker a clean desk and just 2–3 tools.
+  - **`MCP` vs. `A2A`:** **`MCP`** is the **universal USB-C cable** plugging an agent into its *own* databases and tools; **`A2A`** is the **inter-office phone line** letting your Finance Agent ask another team's Supply-Chain Agent for help without peeking inside its private database.
 
 ```mermaid
 flowchart TD

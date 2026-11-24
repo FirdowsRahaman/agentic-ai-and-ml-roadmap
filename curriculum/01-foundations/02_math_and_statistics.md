@@ -47,9 +47,16 @@ flowchart LR
 ---
 
 #### 1.2 Dot Product vs. Cosine Similarity
-- **Dot Product:** $\mathbf{a} \cdot \mathbf{b} = \sum_i a_i b_i = \|\mathbf{a}\|\|\mathbf{b}\|\cos\theta$. Sensitive to both angle **and** vector length. Used inside linear layers (`X @ W + b`) and attention logits (`Q @ K.T`).
-- **Cosine Similarity:** Normalizes both vectors to unit length so only **directional alignment** matters (range `[-1, 1]`):
-  $$\cos(\theta) = \frac{\mathbf{a} \cdot \mathbf{b}}{\|\mathbf{a}\|_2 \|\mathbf{b}\|_2}$$
+- **In Plain English:** Imagine two arrows pointing in space. **Dot Product** measures both *whether they point the same way* AND *how long they are*. **Cosine Similarity** ignores arrow length completely and only checks *whether they point in the same direction* (`1.0` = identical topic, `0.0` = unrelated, `-1.0` = opposite).
+- **Rule of Thumb:** Use **Cosine Similarity** when comparing short vs. long text embeddings so a 10-page document doesn't overpower a 1-sentence query just by having larger numbers.
+
+<details>
+<summary><b>Deep Dive: Exact Vector Equations</b></summary>
+
+- **Dot Product:** $\mathbf{a} \cdot \mathbf{b} = \sum_i a_i b_i = \|\mathbf{a}\|\|\mathbf{b}\|\cos\theta$ (used inside neural linear layers `X @ W + b` and raw attention scores `Q @ K.T`).
+- **Cosine Similarity:** $\cos(\theta) = \frac{\mathbf{a} \cdot \mathbf{b}}{\|\mathbf{a}\|_2 \|\mathbf{b}\|_2} \in [-1, 1]$. Note: if vectors are already L2-normalized ($\|\mathbf{a}\|_2 = \|\mathbf{b}\|_2 = 1$), Dot Product and Cosine Similarity are identical!
+
+</details>
 
 ```python
 import numpy as np
@@ -115,14 +122,21 @@ Pearson correlation ($r \in [-1, 1]$) measures **linear** co-movement only:
 
 ### 3. Conditional Probability, Base Rates & Bayes' Theorem
 
-#### 3.1 Bayes' Theorem & The Low-Base-Rate False-Positive Paradox
+#### 3.1 Bayes' Theorem & The Rare-Event False-Positive Trap
+- **In Plain English:** Bayes' Theorem updates your belief after seeing new evidence—balancing **how accurate a detector is** against **how rare the event was to begin with**. If an event is ultra-rare (`1 in 1,000`), even a "99% accurate" alarm will mostly ring on false positives!
+
+<details>
+<summary><b>Deep Dive: Formal Bayes' Equation</b></summary>
+
 $$P(A \mid B) = \frac{P(B \mid A) \cdot P(A)}{P(B)}$$
 
-- $P(A)$: **Prior** probability (base rate before seeing evidence).
-- $P(B \mid A)$: **Likelihood** (sensitivity / true positive rate).
-- $P(A \mid B)$: **Posterior** probability (updated belief after evidence).
+- $P(A)$: **Prior** (how common $A$ is before testing).
+- $P(B \mid A)$: **Likelihood / Sensitivity** (probability the alarm triggers when $A$ is truly present).
+- $P(A \mid B)$: **Posterior** (true probability of $A$ given the alarm went off).
 
-**Base-Rate Example:** A disease affects **0.1%** of the population ($P(D) = 0.001$). A test has **99% sensitivity** ($P(+\mid D)=0.99$) and **99% specificity** ($P(-\mid \neg D)=0.99$, so false-positive rate $P(+\mid \neg D)=0.01$). If a random person tests positive, what is $P(D \mid +)$?
+</details>
+
+**Concrete Example:** A disease affects **0.1%** of people ($P(D) = 0.001$). A test catches **99%** of sick people and falsely flags only **1%** of healthy people. If a random person tests positive, what is the chance they actually have the disease?
 
 ```python
 p_disease = 0.001

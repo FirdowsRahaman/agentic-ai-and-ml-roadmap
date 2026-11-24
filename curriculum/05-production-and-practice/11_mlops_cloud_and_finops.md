@@ -119,11 +119,10 @@ CMD ["uvicorn", "src.app:app", "--host", "0.0.0.0", "--port", "8000"]
 
 ---
 
-#### 3.2 Eliminating Training-Serving Skew with Dual Offline/Online Feature Stores (`Feast`)
-**Training-Serving Skew** occurs when offline training features (computed in batch SQL/Pandas) subtly diverge from live inference features (re-implemented in Go/Python microservices with different null handling or window boundaries).
-- **`Feast` Dual-Store Architecture:** Defines feature transformations **once**:
-  1. **Offline Store (`BigQuery` / `Snowflake` / `Parquet`):** Generates historical training sets using **point-in-time joins** (preventing future label leakage).
-  2. **Online Store (`Redis` / `DynamoDB`):** Materializes the exact same latest feature values for `<5ms` real-time inference lookups.
+#### 3.2 Eliminating Training-Serving Skew with Feature Stores (`Feast`)
+- **In Plain English:** Imagine a Data Scientist calculates `"user_30d_spend"` in Pandas (including tax, UTC time) to train a model, and a Backend Engineer rewrites `"user_30d_spend"` in Go (excluding tax, local time) for the live app. That tiny mismatch (**Training-Serving Skew**) silently ruins live predictions! A **Feature Store (`Feast`)** computes the feature **once** and serves it to both:
+  1. **Offline Store (`BigQuery` / `Snowflake` / `Parquet`):** Historical tables with **point-in-time joins** for training.
+  2. **Online Store (`Redis` / `DynamoDB`):** Latest precomputed values in `<5ms` for live API requests.
 
 ---
 
@@ -157,11 +156,19 @@ async def chat_stream(session_id: str, q: str) -> StreamingResponse:
 
 ### 4. Statistical Drift (`PSI`), Safe Deployments & Cloud GPU FinOps
 
-#### 4.1 Detecting Covariate Shift (`PSI`, K-S) vs. Concept Drift
-- **Data / Covariate Drift ($P(X)$ shifts):** Input distribution changes (e.g., inflation shifts transaction amounts upward). Quantified via **Kolmogorov-Smirnov (K-S) test** or **PSI**:
-  $$\text{PSI} = \sum_{i=1}^{B} (p_{\text{prod}, i} - p_{\text{train}, i}) \cdot \ln\left(\frac{p_{\text{prod}, i}}{p_{\text{train}, i}}\right)$$
-  - Standard credit-risk & MLOps thresholds (*Siddiqi, Credit Risk Scorecards*): `PSI < 0.10`: Stable | `0.10 <= PSI < 0.25`: Moderate shift (investigate) | **`PSI >= 0.25`: Significant shift -> trigger automated CI/CD retraining**.
-- **Concept Drift ($P(Y \mid X)$ shifts):** Input histograms look identical (`PSI < 0.05`), yet fraudsters changed tactics so precision collapses — detected via delayed ground-truth label monitoring and business KPIs.
+#### 4.1 Detecting Data Drift (`PSI`) vs. Concept Drift
+- **In Plain English:**
+  - **Data / Covariate Drift ($P(X)$ changes):** *The customers walking into your store changed*—e.g., your loan model was trained on `\$50k` average salaries, and suddenly `\$120k` applicants flood in. Measured with **`PSI`** (`< 0.10` safe, `>= 0.25` retrain!).
+  - **Concept Drift ($P(Y \mid X)$ changes):** *The same customers changed what their behavior means*—e.g., input salaries look identical (`PSI = 0.02`), yet a recession makes people default twice as often! Caught only by tracking real outcomes and accuracy over time.
+
+<details>
+<summary><b>Deep Dive: Population Stability Index (`PSI`) Equation & Thresholds</b></summary>
+
+$$\text{PSI} = \sum_{i=1}^{B} (p_{\text{prod}, i} - p_{\text{train}, i}) \cdot \ln\left(\frac{p_{\text{prod}, i}}{p_{\text{train}, i}}\right)$$
+
+Standard MLOps & credit-risk thresholds (*Siddiqi, Credit Risk Scorecards*): `PSI < 0.10` = Stable | `0.10 <= PSI < 0.25` = Moderate shift (investigate) | **`PSI >= 0.25` = Significant shift -> trigger automated CI/CD retraining**. Pair with the non-parametric **Kolmogorov-Smirnov (K-S)** test on continuous columns.
+
+</details>
 
 ---
 

@@ -33,14 +33,21 @@ flowchart LR
 
 ### 1. LLM Landscape, VRAM Sizing & Quantization
 
-#### 1.1 Discriminative vs. Generative Paradigms & GPU Memory Sizing
-- **Discriminative Models** learn conditional boundaries $P(y \mid x)$ to classify or score inputs; **Generative Models** model autoregressive or diffusion distributions $P(x_t \mid x_{<t})$ to synthesize text, code, images, or audio.
+#### 1.1 Discriminative vs. Generative AI & Quick GPU Memory Math
+- **In Plain English:** A **Discriminative model** acts like a referee sorting existing items into buckets (*"Is this email spam?"*); a **Generative model** acts like an author writing new content one token (word piece) at a time (*autoregressive generation*).
 - **Modern 2026 Model Ecosystem:**
   - *Frontier API Models:* **Google Gemini 3 / 3.1 Pro & Flash** (and `Gemini 2.5`), **OpenAI GPT-5 / GPT-5.4** (unified dynamic test-time reasoning), **Anthropic Claude 4.5 / 4.6 Opus & Sonnet**.
   - *Open-Weight Models (Self-Hostable):* **Meta Llama 4** (multimodal MoE), **Alibaba Qwen 3 / 3.5**, **DeepSeek-V3 / R1**, **Google Gemma 3 / Mistral**.
-- **GPU VRAM Capacity Formula:**
-  - `FP32` = 4 bytes/param | `FP16` / `BF16` = **2 bytes/param** | `INT8` / `FP8` = **1 byte/param** | `INT4` (`AWQ` / `GGUF`) = **0.5 bytes/param** (+ ~20% overhead for KV cache & activations).
-  - *Sizing Example:* A **70B** model in `BF16` requires $70 \times 2 \times 1.2 \approx \mathbf{168\text{ GB VRAM}}$ (2× 80GB GPUs), whereas **4-bit quantization** shrinks it to $70 \times 0.5 \times 1.2 \approx \mathbf{42\text{ GB VRAM}}$.
+- **Rule-of-Thumb GPU Memory (`VRAM`) Math:**
+  - Full `FP16`/`BF16` precision = **2 GB per 1B parameters** | Compressed `4-bit` (`INT4` / `AWQ` / `GGUF`) = **0.5 GB per 1B parameters** (+ ~20% breathing room for active chat memory).
+  - *Quick Example:* A **70B** model needs $70 \times 2 \times 1.2 \approx \mathbf{168\text{ GB VRAM}}$ in `BF16`, or just **$\sim 42\text{ GB VRAM}$** in `4-bit`!
+
+<details>
+<summary><b>Deep Dive: Probabilistic Formulation ($P(y \mid x)$ vs. $P(x_t \mid x_{<t})$)</b></summary>
+
+Discriminative classifiers directly estimate decision boundaries $P(y \mid x)$, whereas autoregressive decoder LLMs factorize joint sequence likelihood via the chain rule $P(x_1, \dots, x_T) = \prod_{t=1}^{T} P(x_t \mid x_{<t})$, sampling or beam-searching tokens sequentially.
+
+</details>
 
 ---
 
@@ -54,7 +61,7 @@ Standalone single-turn "prompt engineering" has evolved into **Context Engineeri
 ---
 
 #### 2.2 Constrained Decoding & Guaranteed JSON Schemas
-In production software, asking an LLM *"Please reply in valid JSON"* via plain-text prompting frequently fails on complex schemas due to markdown wrappers, trailing commas, or missing keys. Modern APIs and open-source engines (`Outlines`, `vLLM`) enforce **Grammar-Constrained Decoding** — masking invalid vocabulary tokens at every decoding step to achieve **100% structural schema compliance** ([OpenAI Structured Outputs Report, 2024](https://openai.com/index/introducing-structured-outputs-in-the-api/); [Willard & Louf, 2023](https://arxiv.org/abs/2307.09702)):
+- **In Plain English:** Asking an LLM *"Please reply in valid JSON"* in a prompt is just a polite request—it can still add extra chat text or miss a comma and crash your app. **Constrained Decoding (Structured Outputs)** acts like a smart keyboard that physically greys out any letter/token that would violate your `Pydantic` JSON schema, guaranteeing **100% valid JSON** every single call ([OpenAI Structured Outputs, 2024](https://openai.com/index/introducing-structured-outputs-in-the-api/); [Willard & Louf, 2023](https://arxiv.org/abs/2307.09702)):
 
 ```python
 from pydantic import BaseModel, Field
@@ -102,10 +109,19 @@ Poor chunking destroys retrieval quality before embeddings even run:
 
 ### 4. Post-Training (`SFT`, `LoRA`/`QLoRA`, `DPO`/`GRPO`) & Test-Time Compute
 
-#### 4.1 Parameter-Efficient Fine-Tuning & Alignment Mechanics
-1. **`LoRA` (Low-Rank Adaptation):** Freezes pretrained weight matrix $W_0 \in \mathbb{R}^{d \times k}$ and injects trainable low-rank adapters $\Delta W = B A$ where $A \in \mathbb{R}^{r \times k}, B \in \mathbb{R}^{d \times r}$ with rank $r \ll d$ (e.g., $r = 16$) — reducing trainable parameters by up to **10,000× (>99.9%)** and GPU memory by **3×** ([Hu et al., ICLR 2022](https://arxiv.org/abs/2106.09685)). **`QLoRA`** ([Dettmers et al., NeurIPS 2023](https://arxiv.org/abs/2305.14314)) quantizes frozen $W_0$ to 4-bit `NF4` while training `BF16` LoRA adapters on a single consumer/24 GB GPU.
-2. **Preference Alignment (`RLHF` vs. `DPO`):** **Direct Preference Optimization (`DPO`)** ([Rafailov et al., NeurIPS 2023](https://arxiv.org/abs/2305.18290)) optimizes the policy directly on `(prompt, chosen, rejected)` preference pairs via a closed-form loss without maintaining a separate `PPO` reward model.
-3. **Reasoning Models (`GRPO` & Unified Test-Time Compute):** Frontier 2025–2026 architectures (`GPT-5`, `Gemini 3 Deep Think`, `Claude 4.5/4.6 Extended Thinking`, `DeepSeek-R1`) train via **Reinforcement Learning with Verifiable Rewards (`GRPO`)** ([Shao et al., 2024](https://arxiv.org/abs/2402.03300); [DeepSeek-AI, 2025](https://arxiv.org/abs/2501.12948)) against code/math verifiers, dynamically allocating **test-time thinking tokens** based on task difficulty.
+#### 4.1 Parameter-Efficient Fine-Tuning (`LoRA` / `QLoRA`) & Alignment (`DPO` / `GRPO`)
+- **In Plain English:**
+  1. **`LoRA` & `QLoRA` (Sticky Notes on a Locked Encyclopedia):** Full fine-tuning rewrites all 70 billion weights (expensive and risks erasing general intelligence). **`LoRA`** locks the encyclopedia shut and trains tiny "sticky-note" adapter layers alongside it (`<0.1%` of weights!). **`QLoRA`** shrinks that locked encyclopedia to `4-bit` so you can fine-tune a large model on a single 24 GB GPU.
+  2. **`DPO` (Learning from Side-by-Side Preferences):** Shows the model pairs of answers `(Winner vs. Loser)` for the same prompt and nudges it to sound more like the Winner.
+  3. **`GRPO` & Test-Time Thinking:** Used by modern reasoning models (`GPT-5`, `Gemini 3 Deep Think`, `Claude 4.5/4.6`, `DeepSeek-R1`)—letting the model "think out loud" on scratch paper and rewarding answers that pass real code/math checks.
+
+<details>
+<summary><b>Deep Dive: Low-Rank Matrix Math ($\Delta W = BA$) & Primary Papers</b></summary>
+
+- **`LoRA`** ([Hu et al., ICLR 2022](https://arxiv.org/abs/2106.09685)): Freezes $W_0 \in \mathbb{R}^{d \times k}$ and learns $\Delta W = B A$ with $A \in \mathbb{R}^{r \times k}, B \in \mathbb{R}^{d \times r}$ ($r \ll d$, e.g., $r = 16$), cutting trainable parameters up to **10,000×** and VRAM by **3×**. **`QLoRA`** ([Dettmers et al., NeurIPS 2023](https://arxiv.org/abs/2305.14314)) stores $W_0$ in 4-bit NormalFloat (`NF4`).
+- **`DPO`** ([Rafailov et al., NeurIPS 2023](https://arxiv.org/abs/2305.18290)) & **`GRPO`** ([Shao et al., 2024](https://arxiv.org/abs/2402.03300); [DeepSeek-AI, 2025](https://arxiv.org/abs/2501.12948)): Eliminate the separate critic/reward model overhead of classic `PPO` RLHF.
+
+</details>
 
 ---
 
@@ -123,12 +139,12 @@ Poor chunking destroys retrieval quality before embeddings even run:
 ---
 
 #### 5.2 Why `Qdrant` Excels: Filterable HNSW, Native Hybrid RRF & Quantization
-1. **Solving the Metadata Filtering Trap (`Filterable HNSW`):**
-   - *Naive Post-Filtering* runs ANN `Top-K` first and drops unauthorized/mismatched tenant docs afterward — often returning **0 results** when a tenant owns `<1%` of the index!
-   - *Naive Pre-Filtering* masks out nodes in an `HNSW` graph, severing graph edges and ruining recall.
-   - **`Qdrant` Filterable HNSW** ([Qdrant Architecture Guide](https://qdrant.tech/articles/filtrable-hnsw/)) builds additional payload-indexed subgraph links directly inside `HNSW` (and switches automatically to exact/indexed scan at tiny filter cardinality), guaranteeing low-latency filtered recall for multi-tenant ACLs (`tenant_id`, `role`, `date_range`).
-2. **Binary & Scalar Quantization:** Compresses `FP32` vectors to `INT8` (**4× less RAM**) or 1-bit **Binary Quantization** (**32× less RAM** and up to **40× faster retrieval** on high-dimensional embeddings $\ge 1024$d; [Qdrant Quantization Docs](https://qdrant.tech/documentation/concepts/quantization/)), oversampling candidates in RAM and rescoring top hits from disk.
-3. **Single-Call Hybrid Search (`Prefetch` + Server-Side `RRF`):**
+- **In Plain English (The Multi-Tenant Filtering Trap):** Suppose 500 companies share one vector database, and tiny Client `"Acme"` owns only `0.2%` of the documents.
+  - *If you search Top-10 globally first, then filter for `"Acme"` (`Post-Filtering`):* All 10 results belong to bigger clients—`"Acme"` gets **0 results**!
+  - *If you cross out non-Acme nodes before walking the search graph (`Naive Pre-Filtering`):* You chop up the highway bridges connecting the graph, breaking search accuracy!
+  - **How `Qdrant` Solves It (`Filterable HNSW`):** `Qdrant` pre-builds dedicated mini-bridges per tenant/tag right inside the graph ([Qdrant Filterable HNSW Guide](https://qdrant.tech/articles/filtrable-hnsw/)), giving fast, accurate filtered results every time.
+- **32× Memory Compression (`Binary Quantization`):** Turns bulky 32-bit decimal numbers into tiny `1-bit` (`+` or `-`) signs in RAM (**32× smaller** and up to **40× faster**; [Qdrant Quantization Docs](https://qdrant.tech/documentation/concepts/quantization/)), then double-checks the top few finalists from disk so accuracy barely budges.
+- **Single-Call Hybrid Search (`Prefetch` + Server-Side `RRF`):**
 
 ```python
 from qdrant_client import QdrantClient, models
@@ -206,10 +222,18 @@ flowchart TD
 
 ### 7. LLM Inference Optimization: `TTFT`, `TPOT`, `KV Cache` & `vLLM`
 
-#### 7.1 Prefill vs. Decode Bottlenecks & `PagedAttention`
-- **`TTFT` (Time-To-First-Token — Prefill):** Processes all prompt tokens in parallel; **compute-bound**. Accelerated via **Prefix / Prompt Caching**.
-- **`TPOT` (Time-Per-Output-Token — Decode):** Emits 1 token per step; **memory-bandwidth bound** (streams weights + KV cache from HBM every token). Accelerated via **Quantization (`FP8`/`AWQ`)** and **Speculative Decoding**.
-- **`PagedAttention` (`vLLM`) & Continuous Batching:** Traditional contiguous KV-cache pre-allocation wastes **60%–80% of GPU memory** on internal/external fragmentation; `PagedAttention` stores `KV Cache` in non-contiguous fixed-size memory pages (cutting waste to **`<4%`**) and swaps finished requests at token granularity, increasing serving throughput **2×–4×** ([Kwon et al., SOSP 2023](https://arxiv.org/abs/2309.06180)).
+#### 7.1 Prefill (`TTFT`) vs. Decode (`TPOT`) & Why `vLLM` Exists
+- **Two Phases of Every LLM Reply:**
+  1. **`TTFT` (Time-To-First-Token — Reading Your Prompt):** Reads all input words at once; bottlenecked by **GPU math speed** (*compute-bound*). Speed up with **Prefix Caching**.
+  2. **`TPOT` (Time-Per-Output-Token — Typing the Reply):** Emits 1 word at a time; bottlenecked by **shipping giant weight matrices from GPU RAM into compute cores for every single word** (*memory-bandwidth bound*). Speed up with **Quantization** or **Speculative Decoding**.
+- **Why `vLLM` (`PagedAttention`) Multiplies Throughput 2×–4×:** Imagine a restaurant blocking off a 12-seat table for every solo diner *"just in case 11 friends show up later"*—most seats sit empty! Standard GPU serving wastes **60%–80% of VRAM** reserving contiguous chat-history (`KV Cache`) blocks the exact same way. **`vLLM`** hands out memory **one small page at a time** as a chat grows and frees seats the instant a reply finishes (**Continuous Batching**).
+
+<details>
+<summary><b>Deep Dive: OS-Style `PagedAttention` Block Tables & Citation</b></summary>
+
+Modeled on operating-system virtual memory, `PagedAttention` maps logical `KV Cache` blocks to non-contiguous physical GPU HBM blocks via a lightweight block table, slashing memory waste below **`4%`** and unlocking zero-copy shared system-prompt prefixes across concurrent users ([Kwon et al., SOSP 2023](https://arxiv.org/abs/2309.06180)).
+
+</details>
 
 ---
 
