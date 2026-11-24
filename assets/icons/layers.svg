@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+  <defs>
+    <linearGradient id="layerGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38BDF8"/>
+      <stop offset="100%" stop-color="#0284C7"/>
+    </linearGradient>
+    <linearGradient id="layerGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#818CF8"/>
+      <stop offset="100%" stop-color="#4F46E5"/>
+    </linearGradient>
+    <linearGradient id="layerGrad3" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#34D399"/>
+      <stop offset="100%" stop-color="#059669"/>
+    </linearGradient>
+  </defs>
+  <!-- Top Layer -->
+  <polygon points="12,2 22,7 12,12 2,7" fill="url(#layerGrad1)"/>
+  <!-- Middle Layer -->
+  <polygon points="2,12 12,17 22,12 20,13 12,17 4,13" fill="url(#layerGrad2)"/>
+  <path d="M2 11 L12 16 L22 11 L22 13 L12 18 L2 13 Z" fill="url(#layerGrad2)"/>
+  <!-- Bottom Layer -->
+  <path d="M2 16 L12 21 L22 16 L22 18 L12 23 L2 18 Z" fill="url(#layerGrad3)"/>
+</svg>

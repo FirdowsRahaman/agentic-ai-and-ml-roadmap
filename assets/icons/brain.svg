@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+  <defs>
+    <linearGradient id="brainGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#A855F7"/>
+      <stop offset="100%" stop-color="#6366F1"/>
+    </linearGradient>
+  </defs>
+  <!-- Brain Left Hemisphere -->
+  <path d="M11 5 C9 5 7.5 6.2 7.5 8 C6 8.5 5 9.8 5 11.5 C5 12.8 5.7 13.8 6.6 14.4 C6.2 15.2 6.5 16.3 7.3 16.9 C8 17.5 9 17.5 9.8 17.1 C10.4 18.2 11.8 19 11 19 L11 5 Z" fill="url(#brainGrad)" opacity="0.9"/>
+  <!-- Brain Right Hemisphere -->
+  <path d="M13 5 C15 5 16.5 6.2 16.5 8 C18 8.5 19 9.8 19 11.5 C19 12.8 18.3 13.8 17.4 14.4 C17.8 15.2 17.5 16.3 16.7 16.9 C16 17.5 15 17.5 14.2 17.1 C13.6 18.2 12.2 19 13 19 L13 5 Z" fill="url(#brainGrad)"/>
+  <!-- Synapse connection nodes -->
+  <circle cx="9" cy="9" r="1" fill="#38BDF8"/>
+  <circle cx="15" cy="9" r="1" fill="#38BDF8"/>
+  <circle cx="9" cy="14" r="1" fill="#F472B6"/>
+  <circle cx="15" cy="14" r="1" fill="#F472B6"/>
+</svg>

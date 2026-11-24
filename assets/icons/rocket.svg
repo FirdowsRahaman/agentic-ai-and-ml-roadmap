@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+  <defs>
+    <linearGradient id="rocketGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#EC4899"/>
+      <stop offset="100%" stop-color="#8B5CF6"/>
+    </linearGradient>
+    <linearGradient id="flameGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FBBF24"/>
+      <stop offset="100%" stop-color="#EF4444"/>
+    </linearGradient>
+  </defs>
+  <!-- Rocket Body -->
+  <path d="M14.5 2.5 C14.5 2.5 19 3.5 21 9 C21.5 10.5 20.5 12 19 13.5 L10.5 5 C12 3.5 13.5 2.5 14.5 2.5 Z" fill="url(#rocketGrad)"/>
+  <!-- Window -->
+  <circle cx="16" cy="8" r="1.8" fill="#FFFFFF"/>
+  <circle cx="16" cy="8" r="1" fill="#38BDF8"/>
+  <!-- Fins -->
+  <path d="M10 5.5 L6.5 6 C5.5 6.2 5 7.2 5.5 8 L8.5 11 Z" fill="#7C3AED"/>
+  <path d="M18.5 14 L18 17.5 C17.8 18.5 16.8 19 16 18.5 L13 15.5 Z" fill="#7C3AED"/>
+  <!-- Exhaust Flame -->
+  <path d="M9 15 C7 17 4 19 3 21 C5 20 7 17 9 15 Z" fill="url(#flameGrad)"/>
+</svg>

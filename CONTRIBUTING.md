@@ -4,7 +4,7 @@ Thank you for your interest in improving the **Agentic AI & ML Roadmap**! This r
 
 ---
 
-## 1. Development Principles
+## <img src="assets/icons/target.svg" width="20" height="20" align="absmiddle" /> 1. Development Principles
 
 1. **Production-First Rigor:** Code examples should reflect real-world engineering standards (proper error handling, explicit typing, clean separation of concerns). Avoid toy snippets that would fail in production.
 2. **First-Principles Understanding:** Prioritize mathematical and algorithmic clarity over opaque framework wrappers.
@@ -13,7 +13,7 @@ Thank you for your interest in improving the **Agentic AI & ML Roadmap**! This r
 
 ---
 
-## 2. Standard Curriculum Module Format
+## <img src="assets/icons/toc.svg" width="20" height="20" align="absmiddle" /> 2. Standard Curriculum Module Format
 
 All modules in `curriculum/` must adhere to the **13-Section Pedagogical Standard**:
 
@@ -41,7 +41,7 @@ All modules in `curriculum/` must adhere to the **13-Section Pedagogical Standar
 
 ---
 
-## 3. Local Development & Quality Gates
+## <img src="assets/icons/tools.svg" width="20" height="20" align="absmiddle" /> 3. Local Development & Quality Gates
 
 Before submitting a Pull Request, run the local validation suite to ensure that your changes pass all quality checks:
 
@@ -58,7 +58,7 @@ pytest tests/
 
 ---
 
-## 4. Pull Request Checklist
+## <img src="assets/icons/contribute.svg" width="20" height="20" align="absmiddle" /> 4. Pull Request Checklist
 
 When opening a Pull Request, verify the following:
 
@@ -70,6 +70,6 @@ When opening a Pull Request, verify the following:
 
 ---
 
-## 5. Licensing
+## <img src="assets/icons/license.svg" width="20" height="20" align="absmiddle" /> 5. Licensing
 
 By contributing to this repository, you agree that your contributions will be licensed under the project's [MIT License](./LICENSE).

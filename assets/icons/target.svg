@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+  <defs>
+    <linearGradient id="targetGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F43F5E"/>
+      <stop offset="100%" stop-color="#E11D48"/>
+    </linearGradient>
+  </defs>
+  <circle cx="12" cy="12" r="10" fill="none" stroke="url(#targetGrad)" stroke-width="1.8"/>
+  <circle cx="12" cy="12" r="6.8" fill="none" stroke="#FB7185" stroke-width="1.6"/>
+  <circle cx="12" cy="12" r="3.2" fill="url(#targetGrad)"/>
+  <!-- Target crosshairs -->
+  <line x1="12" y1="0.5" x2="12" y2="3.5" stroke="#E11D48" stroke-width="1.8" stroke-linecap="round"/>
+  <line x1="12" y1="20.5" x2="12" y2="23.5" stroke="#E11D48" stroke-width="1.8" stroke-linecap="round"/>
+  <line x1="0.5" y1="12" x2="3.5" y2="12" stroke="#E11D48" stroke-width="1.8" stroke-linecap="round"/>
+  <line x1="20.5" y1="12" x2="23.5" y2="12" stroke="#E11D48" stroke-width="1.8" stroke-linecap="round"/>
+</svg>

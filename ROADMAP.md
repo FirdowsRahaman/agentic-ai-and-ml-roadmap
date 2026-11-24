@@ -4,7 +4,7 @@
 
 ---
 
-## Roadmap Overview & Prerequisite Dependency Graph
+## <img src="assets/icons/roadmap.svg" width="22" height="22" align="absmiddle" /> Roadmap Overview & Prerequisite Dependency Graph <a id="roadmap-overview"></a>
 
 The curriculum is structured into **six progressive engineering tiers**. Each tier builds directly upon the mathematical and software primitives developed in previous tiers:
 
@@ -44,7 +44,7 @@ flowchart TD
 
 ---
 
-## Tier 1: Engineering Foundations
+## <img src="assets/icons/layers.svg" width="20" height="20" align="absmiddle" /> Tier 1: Engineering Foundations <a id="tier-1"></a>
 Focuses on vectorization, modern SQL analytical window functions, linear algebra geometry, and statistical hypothesis testing.
 
 | Module | Core Topics | Key Hands-On Lab | Difficulty |
@@ -54,7 +54,7 @@ Focuses on vectorization, modern SQL analytical window functions, linear algebra
 
 ---
 
-## Tier 2: Classical Machine Learning
+## <img src="assets/icons/tools.svg" width="20" height="20" align="absmiddle" /> Tier 2: Classical Machine Learning <a id="tier-2"></a>
 Emphasizes leak-free preprocessing, cost-matrix optimization under severe class imbalance, and recommendation systems.
 
 | Module | Core Topics | Key Hands-On Lab | Difficulty |
@@ -63,7 +63,7 @@ Emphasizes leak-free preprocessing, cost-matrix optimization under severe class 
 
 ---
 
-## Tier 3: Deep Learning & Representation Learning
+## <img src="assets/icons/brain.svg" width="20" height="20" align="absmiddle" /> Tier 3: Deep Learning & Representation Learning <a id="tier-3"></a>
 Builds computational graphs, autograd backpropagation, and PyTorch training loops from mathematical first principles.
 
 | Module | Core Topics | Key Hands-On Lab | Difficulty |
@@ -72,7 +72,7 @@ Builds computational graphs, autograd backpropagation, and PyTorch training loop
 
 ---
 
-## Tier 4: Generative AI, LLMs & Retrieval-Augmented Generation
+## <img src="assets/icons/ai.svg" width="20" height="20" align="absmiddle" /> Tier 4: Generative AI, LLMs & Retrieval-Augmented Generation <a id="tier-4"></a>
 Deep dives into multi-head causal attention, parameter-efficient fine-tuning (LoRA), hybrid vector search, and token inference engines.
 
 | Module | Core Topics | Key Hands-On Lab | Difficulty |
@@ -82,7 +82,7 @@ Deep dives into multi-head causal attention, parameter-efficient fine-tuning (Lo
 
 ---
 
-## Tier 5: Autonomous Agents & Distributed Protocols
+## <img src="assets/icons/automation.svg" width="20" height="20" align="absmiddle" /> Tier 5: Autonomous Agents & Distributed Protocols <a id="tier-5"></a>
 Teaches stateful graph cycles, multi-actor collaboration, durable execution checkpoints, and standardized tool protocols.
 
 | Module | Core Topics | Key Hands-On Lab | Difficulty |
@@ -94,7 +94,7 @@ Teaches stateful graph cycles, multi-actor collaboration, durable execution chec
 
 ---
 
-## Tier 6: Production AI, MLOps & High-Performance Engineering
+## <img src="assets/icons/rocket.svg" width="20" height="20" align="absmiddle" /> Tier 6: Production AI, MLOps & High-Performance Engineering <a id="tier-6"></a>
 Covers non-root Docker deployments, Population Stability Index drift tracking, real-world triage trees, and first-principles algorithm implementations.
 
 | Module | Core Topics | Key Hands-On Lab | Difficulty |
@@ -105,13 +105,15 @@ Covers non-root Docker deployments, Population Stability Index drift tracking, r
 
 ---
 
-## Portfolio Projects & Capstones
+## <img src="assets/icons/apps.svg" width="20" height="20" align="absmiddle" /> Portfolio Projects & Capstones <a id="portfolio-projects"></a>
 Pair your curriculum progress with real-world, portfolio-ready implementations:
 - **[Beginner Track ($0 Spend)](./projects/beginner/README.md):** Autograd & Mini-Transformer, Edge Computer Vision Tracker.
 - **[Intermediate Runnable Starters](./projects/intermediate/README.md):**
   - [Starter 1: Air-Gapped Hybrid RAG & SQL Agent](./projects/intermediate/starter-local-rag-agent/README.md)
   - [Starter 2: Full-Lifecycle Production MLOps Engine](./projects/intermediate/starter-local-mlops/README.md)
 - **[Advanced Cloud Blueprints](./projects/advanced/README.md):** Google ADK + MCP Copilot, Two-Stage RecSys Engine, Feast Real-Time Fraud, and vLLM Serving Infrastructure.
+
+[<img src="assets/icons/arrow-up.svg" width="14" height="14" align="absmiddle" /> Back to Top](#roadmap-overview)
 
 ---
 
