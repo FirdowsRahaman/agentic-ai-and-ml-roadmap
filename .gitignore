@@ -3,4 +3,9 @@ Thumbs.db
 __pycache__/
 *.py[cod]
 .ipynb_checkpoints/
+.pytest_cache/
+.venv/
+venv/
 .env
+site/
+projects/starter-local-mlops/artifacts/
