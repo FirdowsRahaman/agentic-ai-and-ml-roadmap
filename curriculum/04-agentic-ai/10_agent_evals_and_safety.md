@@ -8,7 +8,7 @@
 
 ## Mental Model: Defense-in-Depth Around Non-Deterministic Agents
 
-Shipping an autonomous agent without deterministic guardrails, trajectory evaluations, and session dollar circuit breakers exposes your company to **Indirect Prompt Injection**, **PII leaks**, **regulatory fines**, and **runaway recursive token bills**.
+In [McKinsey's *The State of AI* (2026)](https://www.mckinsey.com/capabilities/quantumblack/our-insights/the-state-of-ai), **roughly 1 in 5 organizations** reported that AI operating and token costs have begun constraining scale, while enterprise risk management has shifted from *what an LLM says* (hallucinations) to *what an autonomous agent does* (unauthorized tool actions). Shipping an agent without deterministic guardrails, trajectory evaluations, and session dollar circuit breakers exposes systems to **Indirect Prompt Injection**, **PII leaks**, **regulatory fines**, and **runaway recursive token bills**.
 
 ```mermaid
 flowchart LR

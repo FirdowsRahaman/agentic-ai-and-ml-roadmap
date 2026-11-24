@@ -8,7 +8,7 @@
 
 ## Mental Model: Choosing the Right Classical Paradigm
 
-Despite the rise of LLMs, **non-generative analytical AI and classical ML account for \$11.0T–\$17.7T (~75%+) of total projected global AI economic value** compared to \$2.6T–\$4.4T from generative AI use cases ([McKinsey Global Institute, *"The Economic Potential of Generative AI"*, 2023](https://www.mckinsey.com/capabilities/mckinsey-digital/our-insights/the-economic-potential-of-generative-ai-the-next-productivity-frontier)). Across structured tabular workloads (fraud scoring, credit underwriting, churn, dynamic pricing, and feed ranking), gradient-boosted decision trees still consistently outperform deep neural networks ([Grinsztajn et al., NeurIPS 2022](https://arxiv.org/abs/2207.08815)) while meeting sub-10ms latency SLAs.
+While enterprise AI adoption across analytical ML and generative AI reached **88%–89%** by 2025–2026, **only ~37% of organizations report measurable enterprise EBIT impact** — separating the top **6% "AI high performers"** who engineer end-to-end production workflows from isolated pilot demos ([McKinsey *The State of AI*, 2026](https://www.mckinsey.com/capabilities/quantumblack/our-insights/the-state-of-ai); [Stanford HAI *AI Index*](https://hai.stanford.edu/ai-index)). Across high-throughput structured workloads (fraud scoring, credit underwriting, churn, dynamic pricing, and feed ranking), **gradient-boosted trees (`XGBoost`, `LightGBM`, `CatBoost`)**, **tabular foundation models (`TabPFN`)** ([Hollmann et al., *Nature* 2025](https://www.nature.com/articles/s41586-024-08328-6)), and **two-stage recommendation engines** remain foundational due to deterministic sub-10ms latency SLAs and tabular inductive bias ([`TabArena`, NeurIPS 2025](https://arxiv.org/abs/2506.16791); [Grinsztajn et al., NeurIPS 2022](https://arxiv.org/abs/2207.08815)).
 
 ```mermaid
 flowchart TD
@@ -114,8 +114,9 @@ flowchart LR
 | **Tabular SOTA?** | Baseline interpretability only | Strong out-of-the-box baseline | **Industry standard** for tabular competitions & production |
 
 - **`XGBoost`** ([Chen & Guestrin, KDD 2016](https://arxiv.org/abs/1603.02754)): Depth-wise tree growth with exact/approximate second-order regularized objective + sparsity-aware missing-value routing.
-- **`LightGBM`** ([Ke et al., NeurIPS 2017](https://proceedings.neurips.cc/paper/2017/hash/6449f44a102fde848669bdd9eb6b76fa-Abstract.html)): Leaf-wise tree growth + histogram binning + GOSS/EFB — achieving **up to 20× faster training** and substantially lower memory on large datasets.
+- **`LightGBM`** ([Ke et al., NeurIPS 2017](https://proceedings.neurips.cc/paper/2017/hash/6449f44a102fde848669bdd9eb6b76fa-Abstract.html)): Leaf-wise tree growth + histogram binning + GOSS/EFB — achieving **up to 20× faster training** and lower memory on large datasets (`>10k–100M` rows).
 - **`CatBoost`:** Ordered target statistics for high-cardinality categorical columns with minimal tuning.
+- **2025–2026 Frontier — Tabular Foundation Models (`TabPFN`):** Pre-trained transformers using **in-context learning** over synthetic causal tabular priors ([Hollmann et al., *Nature* Jan 2025](https://www.nature.com/articles/s41586-024-08328-6); [`TabArena`, NeurIPS 2025](https://arxiv.org/abs/2506.16791)) now match or beat tuned GBDTs in a single `<1s` forward pass on small-to-medium datasets (`<=10,000` rows), while compiled GBDTs continue to lead at massive row scale and ultra-low CPU latency.
 
 ---
 

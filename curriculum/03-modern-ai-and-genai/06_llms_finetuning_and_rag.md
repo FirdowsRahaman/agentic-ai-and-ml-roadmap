@@ -35,9 +35,9 @@ flowchart LR
 
 #### 1.1 Discriminative vs. Generative Paradigms & GPU Memory Sizing
 - **Discriminative Models** learn conditional boundaries $P(y \mid x)$ to classify or score inputs; **Generative Models** model autoregressive or diffusion distributions $P(x_t \mid x_{<t})$ to synthesize text, code, images, or audio.
-- **Modern Model Ecosystem:**
-  - *Frontier API Models:* **Google Gemini 2.5 Pro / Flash**, **OpenAI GPT-4.1 / o3 / o4-mini**, **Anthropic Claude 4 Opus / Sonnet**.
-  - *Open-Weight Models (Self-Hostable):* **Meta Llama 3.3 / Llama 4**, **Qwen 3 / Qwen 2.5**, **DeepSeek-V3 / R1**, **Mistral / Gemma 3**.
+- **Modern 2026 Model Ecosystem:**
+  - *Frontier API Models:* **Google Gemini 3 / 3.1 Pro & Flash** (and `Gemini 2.5`), **OpenAI GPT-5 / GPT-5.4** (unified dynamic test-time reasoning), **Anthropic Claude 4.5 / 4.6 Opus & Sonnet**.
+  - *Open-Weight Models (Self-Hostable):* **Meta Llama 4** (multimodal MoE), **Alibaba Qwen 3 / 3.5**, **DeepSeek-V3 / R1**, **Google Gemma 3 / Mistral**.
 - **GPU VRAM Capacity Formula:**
   - `FP32` = 4 bytes/param | `FP16` / `BF16` = **2 bytes/param** | `INT8` / `FP8` = **1 byte/param** | `INT4` (`AWQ` / `GGUF`) = **0.5 bytes/param** (+ ~20% overhead for KV cache & activations).
   - *Sizing Example:* A **70B** model in `BF16` requires $70 \times 2 \times 1.2 \approx \mathbf{168\text{ GB VRAM}}$ (2× 80GB GPUs), whereas **4-bit quantization** shrinks it to $70 \times 0.5 \times 1.2 \approx \mathbf{42\text{ GB VRAM}}$.
@@ -98,7 +98,7 @@ Poor chunking destroys retrieval quality before embeddings even run:
 #### 4.1 Parameter-Efficient Fine-Tuning & Alignment Mechanics
 1. **`LoRA` (Low-Rank Adaptation):** Freezes pretrained weight matrix $W_0 \in \mathbb{R}^{d \times k}$ and injects trainable low-rank adapters $\Delta W = B A$ where $A \in \mathbb{R}^{r \times k}, B \in \mathbb{R}^{d \times r}$ with rank $r \ll d$ (e.g., $r = 16$) — reducing trainable parameters by up to **10,000× (>99.9%)** and GPU memory by **3×** ([Hu et al., ICLR 2022](https://arxiv.org/abs/2106.09685)). **`QLoRA`** ([Dettmers et al., NeurIPS 2023](https://arxiv.org/abs/2305.14314)) quantizes frozen $W_0$ to 4-bit `NF4` while training `BF16` LoRA adapters on a single consumer/24 GB GPU.
 2. **Preference Alignment (`RLHF` vs. `DPO`):** **Direct Preference Optimization (`DPO`)** ([Rafailov et al., NeurIPS 2023](https://arxiv.org/abs/2305.18290)) optimizes the policy directly on `(prompt, chosen, rejected)` preference pairs via a closed-form loss without maintaining a separate `PPO` reward model.
-3. **Reasoning Models (`GRPO` & Test-Time Compute):** Models like `o3`, `Gemini 2.5 Thinking`, and `DeepSeek-R1` train via **Reinforcement Learning with Verifiable Rewards (`GRPO`)** ([Shao et al., 2024](https://arxiv.org/abs/2402.03300); [DeepSeek-AI, 2025](https://arxiv.org/abs/2501.12948)) against code/math verifiers, spending dynamic **test-time thinking tokens** to backtrack and self-correct.
+3. **Reasoning Models (`GRPO` & Unified Test-Time Compute):** Frontier 2025–2026 architectures (`GPT-5`, `Gemini 3 Deep Think`, `Claude 4.5/4.6 Extended Thinking`, `DeepSeek-R1`) train via **Reinforcement Learning with Verifiable Rewards (`GRPO`)** ([Shao et al., 2024](https://arxiv.org/abs/2402.03300); [DeepSeek-AI, 2025](https://arxiv.org/abs/2501.12948)) against code/math verifiers, dynamically allocating **test-time thinking tokens** based on task difficulty.
 
 ---
 
