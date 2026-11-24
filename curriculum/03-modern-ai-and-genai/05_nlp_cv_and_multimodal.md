@@ -1,8 +1,9 @@
 # Module 05: NLP, Transformers, Computer Vision & Multimodal AI
 
-> **Estimated Study Time:** 9-11 Hours | **Prerequisites:** [Module 04](../02-core-ml-and-dl/04_deep_learning_and_rl.md) | **Lab:** [Mini-Transformer Attention Notebook](../../notebooks/03_mini_transformer_attention.ipynb) | **[Open in Colab](https://colab.research.google.com/github/FirdowsRahaman/agentic-ai-and-ml-roadmap/blob/main/notebooks/03_mini_transformer_attention.ipynb)**
+> **Difficulty:** Intermediate | **Estimated Study Time:** 9-11 Hours | **Prerequisites:** [Module 04](../02-core-ml-and-dl/04_deep_learning_and_rl.md) | **Lab:** [Mini-Transformer Attention Notebook](../../notebooks/03_mini_transformer_attention.ipynb) | **[Open in Colab](https://colab.research.google.com/github/FirdowsRahaman/agentic-ai-and-ml-roadmap/blob/main/notebooks/03_mini_transformer_attention.ipynb)**
+> **Focus:** BPE tokenizers, scaled dot-product attention, Vision Transformers (ViT), and CLIP multimodal alignment
 
-[← Previous: Module 04: Deep Learning & RL](../02-core-ml-and-dl/04_deep_learning_and_rl.md) | [Home](../../README.md) | [Next: Module 06: LLMs, Fine-Tuning & Advanced RAG →](./06_llms_finetuning_and_rag.md)
+[← Previous: Module 04: Deep Learning & RL](../02-core-ml-and-dl/04_deep_learning_and_rl.md) | [Roadmap Index](../../README.md) | [Next: Module 06: LLMs, Fine-Tuning & Advanced RAG →](./06_llms_finetuning_and_rag.md)
 
 ---
 

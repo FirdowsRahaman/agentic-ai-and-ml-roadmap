@@ -1,8 +1,9 @@
 # Module 08: Function Calling, LangGraph & Google Agent Development Kit (ADK)
 
-> **Estimated Study Time:** 6-8 Hours | **Prerequisites:** [Module 07](./07_ai_agents_fundamentals.md) | **Focus:** Strict Tool Schemas, Stateful Cyclical Graphs (`LangGraph`), `Google ADK` & `HITL` Checkpoints
+> **Difficulty:** Advanced | **Estimated Study Time:** 6-8 Hours | **Prerequisites:** [Module 07](./07_ai_agents_fundamentals.md)
+> **Focus:** Strict tool schemas, cyclical StateGraphs (LangGraph), Google ADK patterns, and human-in-the-loop checkpoints
 
-[← Previous: Module 07: AI Agents Fundamentals](./07_ai_agents_fundamentals.md) | [Home](../../README.md) | [Next: Module 09: Multi-Agent Systems & MCP →](./09_multi_agent_and_mcp.md)
+[← Previous: Module 07: AI Agents Fundamentals](./07_ai_agents_fundamentals.md) | [Roadmap Index](../../README.md) | [Next: Module 09: Multi-Agent Systems & MCP →](./09_multi_agent_and_mcp.md)
 
 ---
 

@@ -1,8 +1,9 @@
 # Module 09: Multi-Agent Systems & Model Context Protocol (MCP)
 
-> **Estimated Study Time:** 6-7 Hours | **Prerequisites:** [Module 08](./08_tools_langgraph_and_adk.md) | **Focus:** Multi-Agent Topologies, Subagent Context Isolation & Modern MCP (`stdio` / `Streamable HTTP`)
+> **Difficulty:** Advanced | **Estimated Study Time:** 6-7 Hours | **Prerequisites:** [Module 08](./08_tools_langgraph_and_adk.md)
+> **Focus:** Multi-agent topologies (supervisor, parallel), subagent context isolation, and Model Context Protocol (MCP)
 
-[← Previous: Module 08: Tools, LangGraph & ADK](./08_tools_langgraph_and_adk.md) | [Home](../../README.md) | [Next: Module 10: Agent Evaluation, Safety & Governance →](./10_agent_evals_and_safety.md)
+[← Previous: Module 08: Tools, LangGraph & ADK](./08_tools_langgraph_and_adk.md) | [Roadmap Index](../../README.md) | [Next: Module 10: Agent Evaluation, Safety & Governance →](./10_agent_evals_and_safety.md)
 
 ---
 

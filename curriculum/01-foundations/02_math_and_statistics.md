@@ -1,8 +1,9 @@
 # Module 02: Mathematics & Statistics for AI/ML Engineers
 
-> **Estimated Study Time:** 5-7 Hours | **Prerequisites:** [Module 01](./01_python_sql_and_data_stack.md) | **Focus:** Geometric & probabilistic intuition over rote memorization
+> **Difficulty:** Foundational | **Estimated Study Time:** 5-7 Hours | **Prerequisites:** [Module 01](./01_python_sql_and_data_stack.md)
+> **Focus:** Geometric & probabilistic intuition, matrix decompositions, Bayes' Theorem, and CLT
 
-[← Previous: Module 01: Python, SQL & Data Stack](./01_python_sql_and_data_stack.md) | [Home](../../README.md) | [Next: Module 03: Classical ML & RecSys →](../02-core-ml-and-dl/03_classical_ml_and_recsys.md)
+[← Previous: Module 01: Python, SQL & Data Stack](./01_python_sql_and_data_stack.md) | [Roadmap Index](../../README.md) | [Next: Module 03: Classical ML & RecSys →](../02-core-ml-and-dl/03_classical_ml_and_recsys.md)
 
 ---
 

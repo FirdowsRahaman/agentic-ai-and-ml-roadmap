@@ -1,8 +1,9 @@
 # Module 04: Deep Learning Fundamentals, PyTorch & Reinforcement Learning
 
-> **Estimated Study Time:** 7-9 Hours | **Prerequisites:** [Module 02](../01-foundations/02_math_and_statistics.md), [Module 03](./03_classical_ml_and_recsys.md) | **Focus:** Representation Learning, Backprop, Normalization, Modern Optimizers & RL
+> **Difficulty:** Intermediate | **Estimated Study Time:** 7-9 Hours | **Prerequisites:** [Module 02](../01-foundations/02_math_and_statistics.md), [Module 03](./03_classical_ml_and_recsys.md)
+> **Focus:** Representation learning, autograd backprop, normalization, AdamW, and policy optimization
 
-[← Previous: Module 03: Classical ML & RecSys](./03_classical_ml_and_recsys.md) | [Home](../../README.md) | [Next: Module 05: NLP, CV & Multimodal →](../03-modern-ai-and-genai/05_nlp_cv_and_multimodal.md)
+[← Previous: Module 03: Classical ML & RecSys](./03_classical_ml_and_recsys.md) | [Roadmap Index](../../README.md) | [Next: Module 05: NLP, CV & Multimodal →](../03-modern-ai-and-genai/05_nlp_cv_and_multimodal.md)
 
 ---
 

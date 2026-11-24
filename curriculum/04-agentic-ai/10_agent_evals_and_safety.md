@@ -1,8 +1,9 @@
 # Module 10: Agent Evaluation, Safety, Guardrails, Governance & Token FinOps
 
-> **Estimated Study Time:** 7-9 Hours | **Prerequisites:** [Module 09](./09_multi_agent_and_mcp.md) | **Focus:** `LLM-as-a-Judge`, OpenTelemetry Tracing, Defense-in-Depth Guardrails, EU AI Act / NIST RMF & Session Token Budgets
+> **Difficulty:** Advanced | **Estimated Study Time:** 7-9 Hours | **Prerequisites:** [Module 09](./09_multi_agent_and_mcp.md)
+> **Focus:** Eval-driven development (golden sets), LLM-as-a-judge, prompt injection defense, and token session budgeting
 
-[← Previous: Module 09: Multi-Agent Systems & MCP](./09_multi_agent_and_mcp.md) | [Home](../../README.md) | [Next: Module 11: MLOps, Cloud & FinOps →](../05-production-and-practice/11_mlops_cloud_and_finops.md)
+[← Previous: Module 09: Multi-Agent Systems & MCP](./09_multi_agent_and_mcp.md) | [Roadmap Index](../../README.md) | [Next: Module 11: MLOps, Cloud & FinOps →](../05-production-and-practice/11_mlops_cloud_and_finops.md)
 
 ---
 

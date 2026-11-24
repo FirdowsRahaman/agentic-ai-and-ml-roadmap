@@ -1,8 +1,9 @@
 # Module 06: Generative AI, LLMs, Fine-Tuning (`LoRA`/`DPO`), `Qdrant` & Production RAG
 
-> **Estimated Study Time:** 10-12 Hours | **Prerequisites:** [Module 05](./05_nlp_cv_and_multimodal.md) | **Focus:** LLM Post-Training, Structured Outputs, `Qdrant` Vector Indexing, Hybrid RAG & `vLLM` Serving
+> **Difficulty:** Advanced | **Estimated Study Time:** 10-12 Hours | **Prerequisites:** [Module 05](./05_nlp_cv_and_multimodal.md)
+> **Focus:** LoRA/QLoRA fine-tuning, DPO alignment, hybrid vector search (Qdrant), RRF reranking, and vLLM serving
 
-[← Previous: Module 05: NLP, CV & Multimodal](./05_nlp_cv_and_multimodal.md) | [Home](../../README.md) | [Next: Module 07: AI Agents Fundamentals →](../04-agentic-ai/07_ai_agents_fundamentals.md)
+[← Previous: Module 05: NLP, CV & Multimodal](./05_nlp_cv_and_multimodal.md) | [Roadmap Index](../../README.md) | [Next: Module 07: AI Agents Fundamentals →](../04-agentic-ai/07_ai_agents_fundamentals.md)
 
 ---
 

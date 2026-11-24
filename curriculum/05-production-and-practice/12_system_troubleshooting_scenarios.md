@@ -1,8 +1,9 @@
 # Module 12: Real-World ML & GenAI System Troubleshooting Scenarios
 
-> **Estimated Study Time:** 6-8 Hours | **Prerequisites:** Modules 01-11 | **Focus:** Diagnostic Thinking, Production Incidents, Leakage, Hallucinations, OOMs & Trade-Offs
+> **Difficulty:** Advanced | **Estimated Study Time:** 6-8 Hours | **Prerequisites:** Modules 01-11
+> **Focus:** Production triage, train-serve data leakage, CUDA OOM recovery, catastrophic forgetting, and latency bottlenecks
 
-[← Previous: Module 11: MLOps, Cloud & FinOps](./11_mlops_cloud_and_finops.md) | [Home](../../README.md) | [Next: Module 13: Hands-On Algorithms from Scratch →](./13_algorithms_from_scratch.md)
+[← Previous: Module 11: MLOps, Cloud & FinOps](./11_mlops_cloud_and_finops.md) | [Roadmap Index](../../README.md) | [Next: Module 13: Hands-On Algorithms from Scratch →](./13_algorithms_from_scratch.md)
 
 ---
 

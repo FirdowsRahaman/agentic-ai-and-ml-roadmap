@@ -1,8 +1,9 @@
 # Module 03: Classical Machine Learning, Ensembles & Recommendation Systems
 
-> **Estimated Study Time:** 8-10 Hours | **Prerequisites:** [Module 01](../01-foundations/01_python_sql_and_data_stack.md), [Module 02](../01-foundations/02_math_and_statistics.md) | **Focus:** Tabular ML, Gradient Boosting, Evaluation & Two-Stage RecSys
+> **Difficulty:** Intermediate | **Estimated Study Time:** 8-10 Hours | **Prerequisites:** [Module 01](../01-foundations/01_python_sql_and_data_stack.md), [Module 02](../01-foundations/02_math_and_statistics.md)
+> **Focus:** Leak-free tabular pipelines, gradient boosting (XGBoost/LightGBM), SHAP, and two-stage RecSys
 
-[← Previous: Module 02: Math & Statistics](../01-foundations/02_math_and_statistics.md) | [Home](../../README.md) | [Next: Module 04: Deep Learning & RL →](./04_deep_learning_and_rl.md)
+[← Previous: Module 02: Math & Statistics](../01-foundations/02_math_and_statistics.md) | [Roadmap Index](../../README.md) | [Next: Module 04: Deep Learning & RL →](./04_deep_learning_and_rl.md)
 
 ---
 

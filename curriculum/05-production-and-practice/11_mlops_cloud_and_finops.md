@@ -1,8 +1,9 @@
 # Module 11: Production MLOps, AI Engineering, Drift & Cloud FinOps
 
-> **Estimated Study Time:** 8-10 Hours | **Prerequisites:** [Module 03](../02-core-ml-and-dl/03_classical_ml_and_recsys.md), [Module 10](../04-agentic-ai/10_agent_evals_and_safety.md) | **Starter Repo:** [Local MLOps Starter Template](../../projects/starter-local-mlops/)
+> **Difficulty:** Advanced | **Estimated Study Time:** 8-10 Hours | **Prerequisites:** [Module 03](../02-core-ml-and-dl/03_classical_ml_and_recsys.md), [Module 10](../04-agentic-ai/10_agent_evals_and_safety.md) | **Starter Repo:** [Local MLOps Starter Template](../../projects/starter-local-mlops/)
+> **Focus:** FastAPI serving lifespans, feature stores (Feast), population stability index (PSI) drift, and spot GPU FinOps
 
-[← Previous: Module 10: Agent Evaluation & Safety](../04-agentic-ai/10_agent_evals_and_safety.md) | [Home](../../README.md) | [Next: Module 12: Practical Troubleshooting Scenarios →](./12_system_troubleshooting_scenarios.md)
+[← Previous: Module 10: Agent Evaluation & Safety](../04-agentic-ai/10_agent_evals_and_safety.md) | [Roadmap Index](../../README.md) | [Next: Module 12: Practical Troubleshooting Scenarios →](./12_system_troubleshooting_scenarios.md)
 
 ---
 

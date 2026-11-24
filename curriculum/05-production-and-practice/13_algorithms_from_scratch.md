@@ -1,8 +1,9 @@
 # Module 13: Hands-On Coding Challenges & ML Algorithms from Scratch
 
-> **Estimated Study Time:** 8-10 Hours | **Prerequisites:** Modules 01-06 | **Interactive Lab:** [Open Scratch Challenges Notebook](../../notebooks/02_ml_from_scratch_challenges.ipynb) | **[Open in Colab](https://colab.research.google.com/github/FirdowsRahaman/agentic-ai-and-ml-roadmap/blob/main/notebooks/02_ml_from_scratch_challenges.ipynb)**
+> **Difficulty:** Intermediate | **Estimated Study Time:** 8-10 Hours | **Prerequisites:** Modules 01-06 | **Lab:** [Scratch Challenges Notebook](../../notebooks/02_ml_from_scratch_challenges.ipynb) | **[Open in Colab](https://colab.research.google.com/github/FirdowsRahaman/agentic-ai-and-ml-roadmap/blob/main/notebooks/02_ml_from_scratch_challenges.ipynb)**
+> **Focus:** Numerically stable softmax, logistic regression, k-means clustering, and vectorized BM25 cosine search
 
-[← Previous: Module 12: Practical Troubleshooting Scenarios](./12_system_troubleshooting_scenarios.md) | [Home](../../README.md) | [Explore Portfolio Projects →](../../projects/README.md)
+[← Previous: Module 12: Practical Troubleshooting Scenarios](./12_system_troubleshooting_scenarios.md) | [Roadmap Index](../../README.md) | [Explore Portfolio Projects →](../../projects/README.md)
 
 ---
 

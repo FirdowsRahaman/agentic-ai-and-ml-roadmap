@@ -1,8 +1,9 @@
 # Module 07: AI Agents Fundamentals, Workflows & Reasoning Loops
 
-> **Estimated Study Time:** 6-8 Hours | **Prerequisites:** [Module 06](../03-modern-ai-and-genai/06_llms_finetuning_and_rag.md) | **Focus:** Workflows vs. Autonomous Agents, Safe `ReAct` Loops, Memory & Planning
+> **Difficulty:** Intermediate | **Estimated Study Time:** 6-8 Hours | **Prerequisites:** [Module 06](../03-modern-ai-and-genai/06_llms_finetuning_and_rag.md)
+> **Focus:** Deterministic workflows vs autonomous agents, safe ReAct execution loops, working memory, and circuit breakers
 
-[← Previous: Module 06: LLMs, Fine-Tuning & RAG](../03-modern-ai-and-genai/06_llms_finetuning_and_rag.md) | [Home](../../README.md) | [Next: Module 08: Tools, LangGraph & Google ADK →](./08_tools_langgraph_and_adk.md)
+[← Previous: Module 06: LLMs, Fine-Tuning & RAG](../03-modern-ai-and-genai/06_llms_finetuning_and_rag.md) | [Roadmap Index](../../README.md) | [Next: Module 08: Tools, LangGraph & Google ADK →](./08_tools_langgraph_and_adk.md)
 
 ---
 
