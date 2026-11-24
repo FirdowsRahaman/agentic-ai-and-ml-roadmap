@@ -1,5 +1,3 @@
-![Agentic AI and ML Roadmap Banner](./assets/banner.webp)
-
 # Agentic AI & Machine Learning Roadmap
 
 A structured, engineering-first roadmap for mastering classical machine learning, generative AI, and autonomous agent systems in production.
