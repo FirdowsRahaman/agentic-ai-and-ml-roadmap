@@ -8,7 +8,7 @@
 
 ## Mental Model: Inside One Training Iteration
 
-Deep Learning replaces hand-crafted feature engineering with **end-to-end differentiable representation learning** across unstructured modalities (text, images, audio, video). Every neural network — from a 2-layer MLP to a 400B-parameter LLM — repeats the exact same 5-step optimization cycle:
+In [Module 03](./03_classical_ml_and_recsys.md), tree ensembles excelled on pre-built spreadsheet columns (`age`, `monthly_spend`). But when your input is raw pixels, audio waves, or sentences, nobody can hand-write rules for pixel `#4,812`. **Deep Learning** replaces manual feature engineering by stacking layers that **discover their own features automatically**—repeating the exact same 5-step downhill learning heartbeat whether you are training a tiny 2-layer network or a 400B LLM:
 
 ```mermaid
 flowchart LR
@@ -64,9 +64,8 @@ assert np.isclose(out, 0.96)
 print(f"Neuron output: {out:.2f}")  # 0.96 -> active!
 ```
 
----
-
 #### 1.2 Modern Activation Functions (`ReLU`, `GELU`, `SwiGLU`, `Softmax`)
+In that toy neuron we used `ReLU`, which simply clips negatives to zero. As deep learning evolved from image networks to modern Transformers, engineers upgraded that curved switch depending on whether a layer sits hidden inside the network or at the final prediction output:
 
 | Activation | Formula / Behavior | Range | Where Used & Key Tradeoff |
 |---|---|---|---|
@@ -76,9 +75,9 @@ print(f"Neuron output: {out:.2f}")  # 0.96 -> active!
 | **GELU / SwiGLU** | Smooth gated non-linearities | `(-0.17, ∞)` | **Modern Transformer / LLM standard** (Llama, Gemini, GPT) — smooth gradients near zero |
 | **Softmax** | $\frac{e^{z_i}}{\sum_j e^{z_j}}$ | `(0, 1)`, sums to `1` | Multi-class output layer & Attention weight normalization |
 
----
-
 ### 2. Loss Functions, Backpropagation & `PyTorch` Idioms
+
+Stacking neurons and activations gives us a **Forward Pass** that makes guesses—now we need a scoreboard (**Loss Function**) to measure how wrong each guess was, and **`PyTorch`** to nudge millions of weights downhill automatically.
 
 > **What is `PyTorch` (`torch`)?** Think of `PyTorch` as **`NumPy` with two superpowers**: (1) its arrays (`torch.Tensor`) run 50×+ faster on GPUs, and (2) its **`Autograd`** engine secretly records every math operation during the forward pass so calling `loss.backward()` computes every weight's error slope automatically!
 
@@ -88,9 +87,8 @@ print(f"Neuron output: {out:.2f}")  # 0.96 -> active!
 - **Binary Classification (`Yes/No`):** `nn.BCEWithLogitsLoss()` — pass **raw logits** directly (it combines `Sigmoid + Log` internally so numbers never round off to `log(0) = -inf`!).
 - **Multi-Class / Next-Token Prediction:** `nn.CrossEntropyLoss()` — pass **raw logits** `(B, C)` and class IDs `(B,)`.
 
----
-
 #### 2.2 `Epoch` vs. `Batch` vs. `Iteration` & The Standard `PyTorch` Loop
+With our model and loss function chosen, how do we feed 10,000 training examples through the GPU step by step?
 - **Flashcard Analogy:** Suppose you have **10,000 flashcards** and study **100 cards at a time**:
   - **`Batch Size = 100`:** How many cards you read before updating your memory.
   - **`1 Iteration`:** Studying 1 batch of 100 cards + doing 1 weight update.
@@ -133,6 +131,8 @@ with torch.no_grad():                  # Disables autograd graph -> halves memor
 
 ## Tier 2: Production Architecture & Scale (Stability, Normalization, Optimizers & RL)
 
+A 2-layer `PyTorch` loop works effortlessly on a laptop—but when you stack **50 to 100+ layers** across multiple GPUs, gradients either die out or explode, and giant models overflow single-GPU memory. **Tier 2** introduces the exact engineering breakthroughs that keep deep networks stable at LLM scale.
+
 ### 3. Vanishing/Exploding Gradients, Normalization & Modern Optimizers
 
 #### 3.1 Vanishing & Exploding Gradients — And the 4 Fixes That Solved Them
@@ -150,9 +150,8 @@ By the multivariate Chain Rule, $\frac{\partial \mathcal{L}}{\partial h_1} = \fr
 
 </details>
 
----
-
 #### 3.2 `BatchNorm` vs. `LayerNorm` & `RMSNorm`
+Fix #4 above mentioned **Normalization**—keeping numbers centered near `0` and scaled near `1` between every layer. Depending on whether you are training an image CNN or a text Transformer, you normalize along different directions:
 
 | Property | Batch Normalization (`BatchNorm`) | Layer Normalization (`LayerNorm` / `RMSNorm`) |
 |---|---|---|
@@ -161,16 +160,14 @@ By the multivariate Chain Rule, $\frac{\partial \mathcal{L}}{\partial h_1} = \fr
 | **Train vs. Eval Behavior** | Uses batch stats at train time, running averages at eval | **Identical formula** at train and inference time |
 | **Variable Sequence Lengths** | Fails on padded variable-length text tokens | Works naturally per token; **`RMSNorm`** drops mean-centering for faster LLM training |
 
----
-
 #### 3.3 Decoupled Weight Decay (`AdamW`) & Warmup-Cosine Learning Rate Schedules
+Once `LayerNorm` keeps signals clean inside the network, how should `optimizer.step()` choose step sizes so weights converge fast without memorizing noise?
 - **`Adam`:** Tracks exponentially decaying 1st moment (momentum $m_t$) and 2nd moment (per-parameter variance $v_t$) for adaptive step sizes.
 - **Why `AdamW` beat `Adam`:** Classic `Adam` mixes L2 regularization into the adaptive gradient denominator, weakening weight decay for parameters with large historical gradients. **`AdamW` decouples weight decay** ($w \leftarrow w - \eta \lambda w$), dramatically improving generalization in ViTs and LLMs.
 - **LR Schedule:** Modern training pairs **Linear Warmup** (first 3–5% of steps so early Adam variance estimates stabilize) with **Cosine Annealing Decay**.
 
----
-
 #### 3.4 Multi-GPU Distributed Training (`DDP` vs. `FSDP` / `DeepSpeed ZeRO-3`)
+Notice a hidden cost in `AdamW`: tracking two extra momentum states per weight means a multi-billion parameter model quickly outgrows a single 24 GB or 80 GB GPU! That brings us to multi-GPU training:
 - **In Plain English:**
   - **`DDP` (Copy the Cookbook to Every Chef):** Every GPU holds a full copy of the model, cooks a different slice of data, and averages notes after each batch. Simple and fast—until the model is too big to fit on one GPU!
   - **`FSDP` / `ZeRO-3` (Split the Cookbook Pages Across Chefs):** When a 70B model won't fit on one GPU, `FSDP` gives each of your 8 GPUs just **1/8th of the model's layers & optimizer memory**, passing pages over fast GPU cables right when needed.
@@ -182,9 +179,9 @@ During mixed-precision `BF16` training with `AdamW`, **every 1B parameters requi
 
 </details>
 
----
-
 ### 4. Reinforcement Learning (RL) & Connection to Post-Training LLMs
+
+Everything so far assumed we had exact ground-truth labels (`y_batch`) for every input. What if there is no single "right" wording—only a final outcome you can verify, like passing unit tests or winning a game? That is **Reinforcement Learning**:
 
 #### 4.1 Trial-and-Error Learning & How RL Teaches LLMs to Reason (`PPO` / `GRPO`)
 - **In Plain English:** Supervised learning teaches with an answer key (*"Here is the exact right essay"*). **Reinforcement Learning (RL)** teaches like coaching a game—the AI tries multiple strategies, sees which attempt wins a **Reward** (e.g., code passes all unit tests or math answer matches), and shifts its probabilities toward winning strategies.
@@ -230,6 +227,8 @@ print("Lab 04 Passed! Output shape:", normed.shape)
 - Explain **Vanishing Gradients** via repeated Jacobian multiplication and cite the 4 fixes: ReLU/GELU, He/Xavier init, Residual skip connections, and LayerNorm/BatchNorm.
 - Know why **`LayerNorm`/`RMSNorm`** + **`AdamW`** + **Warmup-Cosine LR** is the universal recipe for Transformers.
 - Connect **Reinforcement Learning (`PPO` / `GRPO`)** directly to LLM alignment and verifiable reasoning training.
+
+> **Next in the Journey:** You now have the complete engine of deep learning (`PyTorch`, `LayerNorm`, `AdamW`, `FSDP`, and `RL`). Next, let's see how one single neural architecture—the **Transformer**—uses these exact building blocks to understand **human language, images, and spoken audio** in **[Module 05: NLP, Transformers, Computer Vision & Multimodal AI](../03-modern-ai-and-genai/05_nlp_cv_and_multimodal.md)**.
 
 ---
 

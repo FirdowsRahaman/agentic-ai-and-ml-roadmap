@@ -8,7 +8,7 @@
 
 ## Mental Model: Choosing the Right Classical Paradigm
 
-**In Plain English:** LLMs dominate text, code, and images, but **structured spreadsheet/database tables** (credit scores, fraud detection, dynamic pricing, churn, and shopping feeds) are still ruled by **tree ensembles (`XGBoost`, `LightGBM`), tabular foundation models (`TabPFN`), and two-stage recommendation funnels**—because they run in under 10 milliseconds on cheap CPUs and handle messy columns naturally.
+With clean feature matrices from [Module 01](../01-foundations/01_python_sql_and_data_stack.md) and vector/probability intuition from [Module 02](../01-foundations/02_math_and_statistics.md), we can now teach computers to learn patterns directly from historical data. While LLMs dominate text, code, and images, **structured spreadsheet/database tables** (credit scores, fraud detection, dynamic pricing, churn, and shopping feeds) are still ruled by **tree ensembles (`XGBoost`, `LightGBM`), tabular foundation models (`TabPFN`), and two-stage recommendation funnels**—because they run in under 10 milliseconds on cheap CPUs and handle messy columns naturally.
 
 <details>
 <summary><b>Deep Dive: 2026 Enterprise Adoption & Tabular Research Benchmarks</b></summary>
@@ -44,19 +44,19 @@ flowchart TD
 ### 1. Core Paradigms & Linear Models
 
 #### 1.1 Learning Paradigms: Supervised, Unsupervised & Ranking
-- **Traditional Rules:** Human writes `if-else` heuristics (`Data + Rules -> Output`). Brittle on edge cases.
-- **Supervised Learning:** Algorithm learns mapping $f: X \to y$ from historical `(features, label)` pairs (`Data + Labels -> Model`). Split into **Regression** (continuous target, e.g., house price) and **Classification** (discrete class, e.g., fraud vs. legitimate).
-- **Unsupervised Learning:** Discovers latent structure in unlabeled $X$ — e.g., **Clustering** (`K-Means` customer segmentation) and **Dimensionality Reduction** (`PCA` compressing correlated features).
-
----
+Instead of a programmer hand-coding brittle `if/else` rules (`Data + Rules -> Output`), machine learning flips the diagram (`Data + Answers -> Learned Rules`):
+- **Supervised Learning:** Learns a mapping $f: X \to y$ from labeled historical examples—split into **Regression** (predicting a number like house price) and **Classification** (predicting a category like fraud vs. legitimate).
+- **Unsupervised Learning:** Discovers hidden patterns in unlabeled $X$—like **Clustering** (`K-Means` customer groups) or **Dimensionality Reduction** (`PCA` compressing redundant columns).
+- **Ranking:** Orders items for each user by relevance (`User × Item -> Top-K feed`).
 
 #### 1.2 Linear Regression vs. Logistic Regression (And What a `Logit` Is)
+The simplest way to do Supervised Learning is with a straight line—either outputting a number directly or squashing that line into a `0%–100%` probability:
 - **Linear Regression (Predicting Any Number):** Draws the best-fitting line/plane $\hat{y} = \mathbf{w}^\top \mathbf{x} + b$ to predict continuous numbers (like house price `\$420,000` or tomorrow's temperature `31.5°C`), penalized by **Mean Squared Error (`MSE`)**.
 - **Logistic Regression (Predicting Probability `0%–100%`):** Takes that raw unbounded score $z = \mathbf{w}^\top \mathbf{x} + b$—called a **`logit`** (which can be `-50` or `+80`)—and passes it through an S-shaped **Sigmoid curve** $\sigma(z) = \frac{1}{1 + e^{-z}}$ that squashes any number smoothly between `0` and `1` (e.g., `0.87` = 87% chance of spam). Applying a cutoff (like `>= 0.50`) turns that probability into a Yes/No label!
 
----
-
 ### 2. Feature Scaling, Encoding & `Scikit-Learn` Pipelines
+
+Before feeding real data into Linear or Logistic Regression, there is a catch: if `salary` ranges up to `200,000` while `age` stops at `80`, the formula will obsess over `salary` simply because its numbers are bigger! Let's fix that cleanly without leaking test data.
 
 > **What is `Scikit-Learn` (`sklearn`)?** Python's gold-standard library for classic table-based ML. Every algorithm and data cleaner in `sklearn` follows one universal 2-step habit: **`.fit(X_train)`** (*learn averages/rules from training data ONLY*) and **`.transform(X_test)` / `.predict(X_test)`** (*apply those learned rules to new data*).
 
@@ -82,14 +82,12 @@ clf = Pipeline([
 ])
 ```
 
----
-
 #### 2.2 Stratified $K$-Fold Cross-Validation
-A single 80/20 split can get lucky or unlucky on small-to-medium datasets. **$K$-Fold Cross-Validation** partitions training data into $K$ folds (typically $K=5$), training on $K-1$ folds and validating on the held-out fold $K$ times. **`StratifiedKFold`** guarantees every fold preserves the exact minority-class ratio (vital when positive labels are `< 5%`).
-
----
+Wrapping preprocessing inside `Pipeline` stops data leakage on one train/test split—but a single 80/20 split can still get lucky or unlucky on smaller datasets. **$K$-Fold Cross-Validation** rotates through $K$ folds (typically $K=5$), training on $K-1$ slices and testing on the held-out slice each turn, while **`StratifiedKFold`** guarantees every slice keeps the exact same rare-event percentage (essential when fraud is `< 5%`).
 
 ### 3. Trees, Bagging (Random Forest) vs. Boosting (`XGBoost` / `LightGBM`)
+
+Linear models draw straight boundaries—so they struggle when risk depends on non-linear rules like *"young driver AND sports car, EXCEPT with 5 years of clean history"*. Decision tree ensembles capture those rules automatically:
 
 #### 3.1 Bagging (`Random Forest`) vs. Gradient Boosting (`XGBoost`, `LightGBM`, `CatBoost`)
 - **In Plain English (The Doctor Panel Analogy):**
@@ -131,9 +129,9 @@ flowchart LR
 - **`CatBoost`:** Ordered target statistics for high-cardinality categorical columns with minimal tuning.
 - **2025–2026 Frontier — Tabular Foundation Models (`TabPFN`):** Pre-trained transformers using **in-context learning** over synthetic causal tabular priors ([Hollmann et al., *Nature* Jan 2025](https://www.nature.com/articles/s41586-024-08328-6); [`TabArena`, NeurIPS 2025](https://arxiv.org/abs/2506.16791)) now match or beat tuned GBDTs in a single `<1s` forward pass on small-to-medium datasets (`<=10,000` rows), while compiled GBDTs continue to lead at massive row scale and ultra-low CPU latency.
 
----
-
 ### 4. Evaluation Metrics: Precision, Recall, F1, ROC-AUC vs. PR-AUC
+
+Once `XGBoost` or `TabPFN` outputs predictions, how do you grade it without falling into the rare-event trap we saw with Bayes' Theorem in Module 02?
 
 #### 4.1 Precision, Recall, F1 & Why `PR-AUC` Beats `ROC-AUC` Under Imbalance
 - $\text{Precision} = \frac{TP}{TP + FP}$ (*"When the model raises an alarm, how often is it right?"* — optimize for spam filters, kids' content recommendations).
@@ -141,9 +139,8 @@ flowchart LR
 - $\text{F1} = \frac{2 \cdot \text{Precision} \cdot \text{Recall}}{\text{Precision} + \text{Recall}}$ (harmonic mean).
 - **ROC-AUC vs. PR-AUC:** When negatives outnumber positives 1,000-to-1 (`0.1%` fraud), $TN$ is enormous, keeping False Positive Rate $\frac{FP}{FP + TN}$ artificially tiny and making **ROC-AUC look deceptively high (`0.98`)** even with thousands of false alarms. Always use **PR-AUC (`average_precision_score`)** on heavily imbalanced datasets!
 
----
-
 #### 4.2 Model Explainability (`SHAP`) & Probability Calibration (`Platt` / `Isotonic`)
+Winning on `PR-AUC` still leaves two questions every bank, hospital, or product manager will ask before letting you launch: *"Can I trust the exact probability number?"* and *"Can you explain WHY the model rejected this customer?"*
 - **In Plain English:**
   1. **Calibration:** Just because an `XGBoost` model outputs `0.80` does **not** mean the borrower actually has an 80% chance of defaulting—raw tree scores are often stretched or squished. **Calibration** adjusts those raw scores against real outcomes so `0.80` truly means "8 out of 10".
   2. **`SHAP` Explainability:** Banks and hospitals aren't allowed to say *"The AI black box said no."* **`SHAP`** breaks every single prediction into exact credit/blame points per column (e.g., `Baseline 15% + High Debt (+31%) + Late Payments (+24%) = 70% Risk`).
@@ -156,9 +153,9 @@ flowchart LR
 
 </details>
 
----
-
 ### 5. Unsupervised Essentials: `K-Means` & `PCA`
+
+What if your table has **zero labels** at all—say, 1 million new shoppers you want to group by behavior or 100 overlapping columns you want to compress?
 
 #### 5.1 Clustering (`K-Means` / `DBSCAN`) & Dimensionality Reduction (`PCA`)
 - **`K-Means` (Grouping Similar Rows):** Drops $K$ pins ("centroids") on the map, assigns every data point to its closest pin, moves each pin to the center of its group, and repeats until stable. *When to skip:* Fails on ring/crescent shapes or heavy outliers—use `DBSCAN` / `HDBSCAN` instead.
@@ -168,15 +165,17 @@ flowchart LR
 
 ## Tier 2: Production Architecture & Scale (Time Series, Fairness & RecSys)
 
+In Tier 1, rows were independent snapshots. **Tier 2** tackles what happens in live production when rows arrive over **time**, impact **protected user groups**, or scale to **10 million catalog items** in a recommendation feed.
+
 ### 6. Time Series & Subgroup Fairness
 
 #### 6.1 Chronological Splits (`TimeSeriesSplit`) & Subgroup Fairness Auditing
 1. **Temporal Leakage:** Random shuffling lets the model see Wednesday's stock/demand numbers while predicting Tuesday (**look-ahead bias**). Always use chronological splits (`TimeSeriesSplit`) and decompose into **Trend + Seasonality + Residual**.
 2. **Subgroup Fairness:** Overall accuracy hides demographic disparities. Audit **Equal Opportunity** (True Positive Rate parity) and **False Positive Rate parity** across protected slices before launch.
 
----
-
 ### 7. Two-Stage Recommendation & Ranking Architecture (Meta / Amazon / YouTube)
+
+Now combine embeddings from Module 02 with `LightGBM` from Section 3: how do YouTube, Netflix, and Amazon rank **10 million items** for a user in under `30ms`? No heavy tree model can score 10 million rows fast enough—so production feeds split the job into a **fast narrowing funnel**:
 
 > **What is `FAISS` / `ANN` (Approximate Nearest Neighbors)?** Checking a user's profile against 10 million products one-by-one takes seconds—way too slow! `ANN` libraries like Meta's **`FAISS`** organize vectors into neighborhood clusters/graphs (`HNSW`) so you jump straight to the 300 closest products in **under 10 milliseconds**.
 
@@ -234,6 +233,8 @@ print("Lab 03 Passed! Suboptimal NDCG@3 =", round(ndcg_at_k([0, 1, 2, 3], k=3), 
 - Contrast **Bagging (`Random Forest` — parallel variance reduction)** against **Boosting (`XGBoost`/`LightGBM` — sequential residual bias reduction)**.
 - Use **PR-AUC** (not Accuracy or ROC-AUC) for rare-event classification (`<1%` positives).
 - Explain scale recommendations via the **Two-Stage Funnel**: fast Two-Tower ANN retrieval (`Recall@300`) followed by feature-rich ranking (`NDCG@10`) and MMR diversity.
+
+> **Next in the Journey:** Tree ensembles rule structured spreadsheet columns—but what happens when your input isn't a neat table of `age` and `spend`, and is instead **raw pixels, spoken audio, or human language**? That is where trees hit a wall and neural networks take over in **[Module 04: Deep Learning, PyTorch & Reinforcement Learning](./04_deep_learning_and_rl.md)**.
 
 ---
 

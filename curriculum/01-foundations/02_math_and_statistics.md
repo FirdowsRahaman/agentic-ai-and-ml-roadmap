@@ -8,7 +8,7 @@
 
 ## Mental Model: How Math Powers Modern AI
 
-You do not need to solve page-long integrals by hand, but you **must** connect every mathematical pillar to where it shows up in code and production debugging:
+In [Module 01](./01_python_sql_and_data_stack.md), you turned messy SQL logs and CSVs into clean `NumPy` grids of numbers. Now, how does a machine turn those number grids into **meaning, predictions, and confident business decisions**? You never need to solve page-long integrals by hand—instead, every math concept here maps directly to one real engineering job:
 
 ```mermaid
 flowchart LR
@@ -45,9 +45,8 @@ flowchart LR
 > $$(N \times D) \cdot (D \times H) \longrightarrow (N \times H)$$
 > In batched Transformers: `(B, T, D) @ (B, D, T) -> (B, T, T)` (the `T x T` self-attention score matrix!).
 
----
-
 #### 1.2 Dot Product vs. Cosine Similarity
+Once data lives inside 1D vectors (like two user profiles or two text embeddings), how do we measure whether two rows mean the same thing?
 - **In Plain English:** Imagine two arrows pointing in space. **Dot Product** measures both *whether they point the same way* AND *how long they are*. **Cosine Similarity** ignores arrow length completely and only checks *whether they point in the same direction* (`1.0` = identical topic, `0.0` = unrelated, `-1.0` = opposite).
 - **Rule of Thumb:** Use **Cosine Similarity** when comparing short vs. long text embeddings so a 10-page document doesn't overpower a 1-sentence query just by having larger numbers.
 
@@ -73,9 +72,9 @@ print(f"Dot Product:       {np.dot(short_doc, long_duplicate_doc):.2f}")       #
 print(f"Cosine Similarity: {cosine_similarity(short_doc, long_duplicate_doc):.3f}")  # 1.000 (identical meaning!)
 ```
 
----
-
 ### 2. Averages, Outliers & Real-World Speed Metrics
+
+Comparing two rows with Cosine Similarity is step one; next, we need to summarize **entire columns** of thousands of rows—without letting a single extreme number trick us.
 
 #### 2.1 Mean vs. Median vs. Percentiles (`p50`, `p95`, `p99`)
 - **New Terms in Plain English:**
@@ -106,9 +105,8 @@ print(f"Median (p50):   {np.median(latencies_ms):.1f} ms")            # 53.5 ms
 print(f"p99 latency:    {np.percentile(latencies_ms, 99):.1f} ms")    # 3190.6 ms (catches tail risk)
 ```
 
----
-
 #### 2.2 Spread (`Variance` & `Std Dev`) & The Bell Curve (`Normal / Gaussian Distribution`)
+Knowing the center of a column (`Mean` or `Median`) still hides half the picture—we also need to know how tightly or wildly the numbers spread around that center:
 - **In Plain English:** Two classes can both have an average exam score of `75`. If Class A scored `[74, 75, 76]` and Class B scored `[30, 75, 100]`, how do we measure that Class B is wildly spread out?
   - **Variance ($\sigma^2$):** Average of squared distances from the mean (squaring stops `-10` and `+10` from canceling out, but turns `"cm"` into awkward `"square cm"`).
   - **Standard Deviation ($\sigma = \sqrt{\sigma^2}$):** Takes the square root so the spread is back in **normal everyday units** (`cm`, `dollars`, `ms`).
@@ -126,16 +124,16 @@ print(f"Mean: {heights_cm.mean():.1f} cm | Std: {heights_cm.std():.1f} cm")
 print(f"Fraction within 2 std devs: {within_2_std:.3f}")  # ~0.954 (95%)
 ```
 
----
-
 #### 2.3 Linear Correlation vs. Confounders & Non-Linear Dependence
-Pearson correlation ($r \in [-1, 1]$) measures **linear** co-movement only:
-1. **Confounders:** Ice cream sales and drowning incidents correlate positively ($r > 0.8$) because **summer heat** drives both — banning ice cream will not reduce drownings.
-2. **Non-linear blindness:** If $y = x^2$ on $x \in [-3, 3]$, $y$ is 100% determined by $x$, yet Pearson correlation is **$0.0$**! Use Spearman rank correlation or mutual information for monotonic/non-linear relationships.
+Once you understand one column's center and spread, the natural next question is: *do two columns move together?* Pearson correlation ($r \in [-1, 1]$) measures **straight-line** co-movement, which creates two classic traps:
+1. **Confounders (Correlation ≠ Causation):** Ice cream sales and drowning incidents correlate positively ($r > 0.8$) because **summer heat** drives both — banning ice cream will not reduce drownings.
+2. **Non-linear blindness:** If $y = x^2$ on $x \in [-3, 3]$, $y$ is 100% determined by $x$, yet Pearson correlation is **$0.0$**! Use Spearman rank correlation or mutual information for curved relationships.
 
 ---
 
 ## Tier 2: Production Architecture & Scale (Probability & Hypothesis Testing)
+
+Summarizing past data in Tier 1 is descriptive; **Tier 2** shifts to **making decisions under uncertainty**—judging whether a model's rare fraud alarm is trustworthy (`Bayes' Theorem`) and proving whether a new model truly beat the old one in live traffic (`A/B Testing`).
 
 ### 3. Conditional Probability, Base Rates & Bayes' Theorem
 
@@ -166,9 +164,9 @@ print(f"Actual probability of having the disease: {posterior:.1%}")  # Only 9.0%
 ```
 > **Why it matters in ML:** Even a "99% accurate" fraud or content-moderation classifier will generate **91% false alarms** when deployed on a `0.1%` base-rate stream unless you tune precision thresholds!
 
----
-
 ### 4. Central Limit Theorem (CLT), p-values & Confidence Intervals
+
+Bayes' Theorem helps us evaluate a single model's predictions—now how do we prove that **Model B** actually outperforms **Model A** when we test both on real users?
 
 #### 4.1 Why `A/B` Tests Work (`Central Limit Theorem`, `p-values` & Business Impact)
 - **In Plain English:** User spending is super lopsided (most users spend `\$0`, a few spend `\$500`)—not a neat bell curve at all! Yet if you take the *average* spend of 10,000 random users repeatedly, the **Central Limit Theorem (`CLT`)** proves those *averages* magically form a clean **Normal Bell Curve**—letting us calculate error bars (**Confidence Intervals**) and **`p-values`** when testing Model B against Model A!
@@ -213,6 +211,8 @@ print("Lab 02 Passed!", res)
 - Use **Cosine Similarity** when document length shouldn't bias semantic similarity, and report **`p50`/`p95`/`p99` percentiles** alongside means.
 - Apply **Bayes' Theorem** whenever base rates are rare (`< 1%` fraud/disease) — high accuracy does not imply high precision.
 - Distinguish **statistical significance ($p < 0.05$)** from **practical business effect size** in A/B experiments.
+
+> **Next in the Journey:** With clean data pipelines (`Module 01`) and geometric/statistical intuition (`Module 02`) in place, we are ready to train our first real predictive models! Let's step into **[Module 03: Classical Machine Learning, Ensembles & Recommendation Systems](../02-core-ml-and-dl/03_classical_ml_and_recsys.md)**.
 
 ---
 

@@ -8,7 +8,7 @@
 
 ## Mental Model: Convergence of Language, Vision & Audio
 
-Historically, NLP used recurrent networks, Vision used CNNs, and Audio used signal-processing pipelines. Modern AI unifies **all three modalities** by converting raw signals into sequences of dense patch/subword/frame tokens projected into a shared **Transformer Self-Attention** backbone.
+In [Module 04](../02-core-ml-and-dl/04_deep_learning_and_rl.md), you learned how `PyTorch` trains deep layers of tensors. Historically, text, images, and audio each required completely separate neural network families. Today, modern AI unifies **all three modalities** with one elegant trick: chop text into subwords, chop images into pixel squares, and chop sound into tiny spectrogram slices—then feed all of them as token vectors into the exact same **Transformer Self-Attention** engine!
 
 ```mermaid
 flowchart LR
@@ -44,9 +44,9 @@ flowchart LR
   While purely lexical (zero semantic overlap between `"car"` and `"automobile"`), **Okapi `BM25`** (which adds saturating term frequency and document-length normalization) remains indispensable as the sparse half of **Hybrid RAG** (`Module 06`).
 - **Contextual vs. Static Embeddings:** Unlike legacy static word tables that assigned one fixed vector to `"bank"` everywhere, Transformer encoders (`BERT`, `ModernBERT`, `BGE`) compute dynamic, context-sensitive token vectors via self-attention over the entire sequence.
 
----
-
 ### 2. Transformer Architecture & Self-Attention Mechanics
+
+How does a Transformer actually turn `"bank"` in *"river bank"* vs. *"bank account"* into two totally different meaning vectors? By letting every token look around the sentence and pull context from relevant neighbors via **Self-Attention**:
 
 #### 2.1 Scaled Dot-Product Attention ($Q, K, V$), Causal Masking & `RoPE`
 - **In Plain English (The Library Analogy):** When reading *"The server crashed because **it** ran out of RAM"*, how does the word **`"it"`** figure out it refers to `"server"` and not `"RAM"`? Every token creates three vectors:
@@ -69,9 +69,8 @@ Why divide by $\sqrt{d_k}$? When head dimension $d_k$ is large (e.g., `64` or `1
 
 </details>
 
----
-
 #### 2.2 Encoder-Only vs. Decoder-Only vs. Encoder-Decoder Topologies
+Depending on whether we leave that Causal Mask **off** (letting every token read both left and right) or **on** (generating strictly left-to-right), the exact same Self-Attention block gives us three distinct Transformer families:
 
 | Architecture | Attention Visibility | Representative Models | Primary Production Use Cases |
 |---|---|---|---|
@@ -79,9 +78,9 @@ Why divide by $\sqrt{d_k}$? When head dimension $d_k$ is large (e.g., `64` or `1
 | **Decoder-Only** | Causal / Autoregressive (left-to-right) | `GPT`, `Gemini`, `Claude`, `Llama`, `Qwen` | Generative chat, code generation, reasoning, autonomous agents |
 | **Encoder-Decoder** | Bidirectional input + Causal output | `T5`, `BART`, `Whisper` (Audio->Text) | Sequence-to-sequence translation, speech recognition (`Whisper`) |
 
----
-
 ### 3. Computer Vision: CNNs, ResNet & Transfer Learning
+
+Now let's switch from words to **images**. Before chopping images into Transformer patches, let's understand the classic spatial workhorse of computer vision—and why its skip-connection highway also lives inside every Transformer layer!
 
 #### 3.1 Spatial Convolutions (`CNNs`), Residual Skip Highways & Transfer Learning
 - **In Plain English (The Sliding Flashlight):** Connecting every pixel of a `1000×1000` color photo to 1,000 neurons creates **3 billion weights** in layer 1 alone! Instead, a **Convolutional Neural Network (`CNN`)** slides a tiny `3×3` "flashlight" (**kernel/filter**) across the image—reusing those exact 9 weights everywhere to spot edges in layer 1, textures in layer 2, and whole objects in deeper layers.
@@ -139,6 +138,8 @@ optimizer = torch.optim.AdamW(model.fc.parameters(), lr=1e-3)
 
 ## Tier 2: Production Architecture & Scale (Detection, ViT, CLIP & Audio AI)
 
+In Tier 1, we handled text tokens and single-label photos separately. **Tier 2** brings everything together—locating multiple objects inside busy scenes (`IoU`/`mAP`), merging vision and language into one shared space (`ViT` & `CLIP`), and extending the exact same Transformer pipeline to live speech and audio (`Whisper`).
+
 ### 4. Vision Hierarchy (`IoU`, `mAP`, `ViT`) & Multimodal Alignment (`CLIP`)
 
 #### 4.1 Detection/Segmentation Metrics (`IoU`, `mAP`), Vision Transformers (`ViT`) & `CLIP`
@@ -156,9 +157,9 @@ optimizer = torch.optim.AdamW(model.fc.parameters(), lr=1e-3)
 
 </details>
 
----
-
 ### 5. Audio & Speech AI (`Mel Spectrograms`, `Whisper` & Native Audio Models)
+
+Having connected text and images, only one major human sense remains: **sound**. Remarkably, we don't even need a brand-new architecture—we convert sound waves into a 2D visual heatmap and hand it straight to the Transformer:
 
 #### 5.1 Log-Mel Spectrograms, `Whisper` ASR & Native Neural Audio Codecs
 - **In Plain English (Turning Sound Into a Picture):** How do you feed sound into a Transformer? First, slice the sound wave into tiny 25-millisecond windows and plot a **Log-Mel Spectrogram**—a "sheet-music heatmap" where **left-to-right is time**, **bottom-to-top is pitch (bass to treble)**, and **brightness is loudness**! Once sound is a 2D picture, vision/sequence Transformers can read it directly:
@@ -207,6 +208,8 @@ print("Lab 05 Passed! Causal attention verified with zero future leakage.")
 - Know the **Scaled Dot-Product Attention** equation $\text{softmax}(QK^\top / \sqrt{d_k} + M)V$ cold — especially why $\frac{1}{\sqrt{d_k}}$ prevents softmax gradient saturation and how causal masking prevents future token leakage.
 - Contrast **Encoder (`BERT` — embeddings/reranking)** vs. **Decoder (`GPT`/`Llama` — generation)** vs. **Encoder-Decoder (`Whisper`/`T5`)**.
 - Explain **ResNet skip connections** via the `+1` identity gradient term, **`CLIP`** via symmetric InfoNCE contrastive alignment, and **Audio AI** via Log-Mel Spectrograms vs. native neural audio codecs.
+
+> **Next in the Journey:** Now that you know how the **Decoder-Only Transformer** predicts tokens under the hood, how do we transform a raw internet-autocomplete LLM into an accurate, cited, fast enterprise system using **Context Engineering, `Qdrant` Hybrid RAG, `LoRA`/`DPO`, and `vLLM`**? Let's flow into **[Module 06: Generative AI, Fine-Tuning, `Qdrant` & Production RAG](./06_llms_finetuning_and_rag.md)**.
 
 ---
 

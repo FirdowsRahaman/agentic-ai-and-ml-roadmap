@@ -8,7 +8,7 @@
 
 ## Mental Model: How Base Models Become Grounded Enterprise Systems
 
-A raw pre-trained LLM is merely a next-token internet autocomplete engine. Turning it into a reliable enterprise system requires **Post-Training Alignment (`SFT` + `DPO`/`GRPO`)**, **Structured Schema Constraints**, **Filterable Hybrid Vector Search (`Qdrant` + Reranking)**, and **Memory-Efficient Inference (`vLLM`)**.
+In [Module 05](./05_nlp_cv_and_multimodal.md), you built the causal self-attention engine inside every Decoder LLM. Yet a raw pre-trained LLM is merely a next-token internet autocomplete engine—it doesn't know your company's private policies, can break JSON syntax, and gobbles GPU memory. Turning it into a reliable enterprise product follows a clear 4-stage pipeline: **Post-Training Alignment (`SFT` + `DPO`/`GRPO`)**, **Context & Schema Engineering**, **Filterable Hybrid Vector Search (`Qdrant` + Reranking)**, and **Memory-Efficient Serving (`vLLM`)**.
 
 ```mermaid
 flowchart LR
@@ -49,18 +49,17 @@ Discriminative classifiers directly estimate decision boundaries $P(y \mid x)$, 
 
 </details>
 
----
-
 ### 2. Context Engineering, Structured Outputs & Hallucination Grounding
+
+Once you pick an API or open-weight model that fits your budget and VRAM, your first job is controlling *what goes into its context window* and *what shape comes out*:
 
 #### 2.1 Context Engineering (Replacing Legacy "Prompt Tweaking")
 Standalone single-turn "prompt engineering" has evolved into **Context Engineering** — architecting the exact information payload, token budget, and KV-cache layout fed into a model across multi-step execution:
 1. **Prefix-Cache-Friendly Ordering:** Place **100% static content first** (`System Policy -> Tool JSON Schemas -> Static Few-Shot Examples -> Domain Docs`) and **dynamic per-turn state last** (`Recent History -> User Query`). Even a 1-token timestamp change at the top invalidates the entire GPU `KV` prefix cache — costing **2×–10× higher latency and API spend** ([Anthropic Prompt Caching](https://docs.anthropic.com/en/docs/build-with-claude/prompt-caching); [Gemini Context Caching](https://ai.google.dev/gemini-api/docs/caching)).
 2. **Signal-to-Noise & Context Budgeting:** Even with `1M+` token windows, stuffing raw HTML or 50 unranked chunks degrades reasoning accuracy via *Lost-in-the-Middle* attention dilution ([Liu et al., TACL 2024](https://arxiv.org/abs/2307.03172)). Compress verbose tool observations, strip boilerplate fields, and inject only reranked `Top-5` evidence.
 
----
-
 #### 2.2 Constrained Decoding & Guaranteed JSON Schemas
+Careful context ordering controls the *input*; how do you guarantee the *output* won't crash your downstream Python code?
 - **In Plain English:** Asking an LLM *"Please reply in valid JSON"* in a prompt is just a polite request—it can still add extra chat text or miss a comma and crash your app. **Constrained Decoding (Structured Outputs)** acts like a smart keyboard that physically greys out any letter/token that would violate your `Pydantic` JSON schema, guaranteeing **100% valid JSON** every single call ([OpenAI Structured Outputs, 2024](https://openai.com/index/introducing-structured-outputs-in-the-api/); [Willard & Louf, 2023](https://arxiv.org/abs/2307.09702)):
 
 ```python
@@ -76,15 +75,13 @@ class InvoiceExtraction(BaseModel):
 json_schema = InvoiceExtraction.model_json_schema()
 ```
 
----
-
 #### 2.3 Why Hallucinations Happen — and What RAG Actually Guarantees
-LLMs optimize next-token likelihood rather than factual truth, smoothly extrapolating plausible-sounding fabrications when knowledge is missing or ambiguous.
+Even 100% valid JSON can still contain **invented facts**! Why? Because LLMs optimize next-token likelihood rather than factual truth, smoothly extrapolating plausible-sounding fabrications when knowledge is missing or ambiguous.
 - **Engineering Reality:** **RAG grounds the model in retrieved context and drastically reduces hallucinations, but NEVER 100% eliminates them.** If retrieval pulls noisy chunks, if key facts sit buried in the middle of a long context window, or if system prompts lack strict abstention rules, the model can still misinterpret context or fabricate citations. Always pair RAG with explicit abstention prompts (*"If unsupported by context, state insufficient information"*) and automated faithfulness checks.
 
----
-
 ### 3. Document Chunking & `RAG` vs. Fine-Tuning
+
+Since grounding factual answers depends on feeding the right private paragraphs into that context window, let's trace how **`RAG`** slices documents and when to use `RAG` vs. Fine-Tuning:
 
 > **What is `RAG` (Retrieval-Augmented Generation)?** Think of a closed-book exam vs. an **open-book exam**: instead of hoping an LLM memorized your company's 2026 refund PDF during training, `RAG` searches your private database for the 5 most relevant paragraphs first, pastes them into the prompt, and tells the LLM: *"Answer ONLY using these paragraphs and cite page numbers."*
 
@@ -95,9 +92,8 @@ Poor chunking destroys retrieval quality before embeddings even run:
 3. **Layout-Aware Parsing (`Docling`, `Marker`, AWS Textract):** Preserves multi-column PDFs, financial tables, and figures intact as structured Markdown/JSON.
 4. **Contextual Retrieval:** Prepends a concise document-level summary (e.g., *"From Acme Corp Q3 2026 10-Q filing:"*) to every chunk prior to embedding and BM25 indexing — reducing top-20 chunk retrieval failure rates by **49%** (and **67%** when paired with reranking; [Anthropic Engineering, 2024](https://www.anthropic.com/news/contextual-retrieval)).
 
----
-
 #### 3.2 Choosing Between RAG and Fine-Tuning (`LoRA`)
+Newcomers often ask: *"Why build a RAG search pipeline at all—can't we just fine-tune the LLM on our PDFs?"* Here is the crisp engineering boundary:
 
 | Dimension | Retrieval-Augmented Generation (RAG) | Fine-Tuning (`LoRA` / `SFT`) |
 |---|---|---|
@@ -108,6 +104,8 @@ Poor chunking destroys retrieval quality before embeddings even run:
 ---
 
 ## Tier 2: Production Architecture & Scale (Post-Training, `Qdrant`, Hybrid RAG & `vLLM`)
+
+Now that the roles of Context Engineering, RAG, and Fine-Tuning are clear, **Tier 2** dives under the hood of all three in production: how to fine-tune weights cheaply (`LoRA`/`DPO`), how to index millions of multi-tenant chunks in **`Qdrant`**, and how to serve thousands of concurrent users smoothly on **`vLLM`**.
 
 ### 4. Post-Training (`SFT`, `LoRA`/`QLoRA`, `DPO`/`GRPO`) & Test-Time Compute
 
@@ -125,9 +123,9 @@ Poor chunking destroys retrieval quality before embeddings even run:
 
 </details>
 
----
-
 ### 5. Production Vector Databases & `Qdrant` Architecture
+
+While `LoRA` shapes *how* the model speaks, **`Qdrant`** stores the live facts it reads. Let's see how vector databases index meaning alongside security filters:
 
 > **What is a `Vector Database`?** A traditional SQL database searches for exact spelling (`WHERE text LIKE '%refund%'`)—missing `"money-back guarantee"` completely. A **Vector Database (`Qdrant`)** stores meaning vectors (`embeddings`) alongside normal metadata fields (`tenant_id`, `date`) so you can search by **meaning + keywords + security filters** in a few milliseconds.
 
@@ -140,9 +138,8 @@ Poor chunking destroys retrieval quality before embeddings even run:
 | **`FAISS`** | C++/GPU in-memory ANN library (Meta) | Ultra-fast raw ANN math inside custom Python/C++ services; **not** a database (no CRUD API, WAL durability, or metadata filtering engine out of the box) |
 | **`OpenSearch`** | Distributed Lucene + `k-NN` cluster | Heavy enterprise log/search stacks already standardized on AWS OpenSearch |
 
----
-
 #### 5.2 Why `Qdrant` Excels: Filterable HNSW, Native Hybrid RRF & Quantization
+Why do production engineering teams reach for `Qdrant` specifically when scaling multi-tenant RAG? Because naive vector search breaks the moment you add customer security filters:
 - **In Plain English (The Multi-Tenant Filtering Trap):** Suppose 500 companies share one vector database, and tiny Client `"Acme"` owns only `0.2%` of the documents.
   - *If you search Top-10 globally first, then filter for `"Acme"` (`Post-Filtering`):* All 10 results belong to bigger clients—`"Acme"` gets **0 results**!
   - *If you cross out non-Acme nodes before walking the search graph (`Naive Pre-Filtering`):* You chop up the highway bridges connecting the graph, breaking search accuracy!
@@ -195,9 +192,9 @@ results = client.query_points(
 )
 ```
 
----
-
 ### 6. End-to-End Advanced RAG Pipeline & `RAGAS` Evaluation
+
+Pulling `Top-50` candidates from `Qdrant` gets high recall, but handing all 50 chunks straight to the LLM wastes tokens and dilutes attention. Let's snap a **Cross-Encoder Reranker** and **`RAGAS` quality gates** onto `Qdrant` to complete the retrieval pipeline:
 
 #### 6.1 Hybrid Retrieval, Cross-Encoder Reranking & The `RAGAS` Triad
 Dense embeddings capture semantic gist but blur exact part numbers, error codes (`ERR_409_AUTH`), and product SKUs. Combine `Qdrant` Hybrid `RRF` (`Top 50`) with a **Cross-Encoder Reranker (`BGE-Reranker` / `Cohere Rerank` -> `Top 5`)** and evaluate continuously using the **`RAGAS` Triad**:
@@ -222,9 +219,9 @@ flowchart TD
     class EVAL out;
 ```
 
----
-
 ### 7. LLM Inference Optimization: `TTFT`, `TPOT`, `KV Cache` & `vLLM`
+
+Once your RAG pipeline retrieves the exact right `Top-5` chunks, the final bottleneck is **GPU serving speed** when 500 users ask questions at the same moment:
 
 > **What is the `KV Cache`?** Without a memory cache, typing word #500 of an essay would force the LLM to re-read and re-calculate math for words #1 through #499 from scratch every single step! The **`KV Cache`** saves past words' Key and Value vectors in GPU memory so each new word only calculates *itself*—making generation 10×+ faster, at the cost of growing GPU RAM as chats get longer.
 
@@ -278,6 +275,8 @@ print("Lab 06 Passed! Top Hybrid RRF Results:", fused)
 - Enforce **Structured Outputs (grammar-constrained JSON decoding)** in production pipelines rather than regex parsing.
 - Use **`Qdrant` Filterable HNSW** (with payload ACL filters, native Dense+Sparse `RRF`, and Scalar/Binary Quantization) + **Cross-Encoder Reranking**, gated by the **`RAGAS` Triad**.
 - Choose **RAG** for dynamic/cited facts, **`LoRA`/`QLoRA`** for domain formatting or distillation, and **`vLLM`** to optimize compute-bound **`TTFT`** and memory-bound **`TPOT`**.
+
+> **Next in the Journey:** Our `Qdrant` RAG pipeline can now read documents and answer questions accurately—but it is still **passive** (it can't check live order statuses in SQL, run calculations, or recover when a query fails). Let's give our LLM **hands, memory, and reasoning loops** in **[Module 07: AI Agents Fundamentals, Workflows & Reasoning Loops](../04-agentic-ai/07_ai_agents_fundamentals.md)**.
 
 ---
 

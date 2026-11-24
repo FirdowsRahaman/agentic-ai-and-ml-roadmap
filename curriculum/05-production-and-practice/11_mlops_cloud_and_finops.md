@@ -8,7 +8,7 @@
 
 ## Mental Model: ML Modeling Code Is Only ~5%–10% of a Production System
 
-As Google researchers famously documented in *[Hidden Technical Debt in Machine Learning Systems](https://papers.nips.cc/paper_files/paper/2015/hash/86df7dcfd896fcaf2674f757a2463eba-Abstract.html)* (Sculley et al., NeurIPS 2015), core ML training code makes up **only a tiny fraction (~5%–10%)** of real-world ML infrastructure. A model scoring `0.94 AUC` in a local notebook delivers zero business value until surrounded by safe serialization, containerization, data/model versioning, feature stores, drift monitoring, and cloud FinOps guardrails.
+Across [Modules 01–10](../04-agentic-ai/10_agent_evals_and_safety.md), you learned how to train, align, ground, and evaluate AI models. Now comes the reality check that separates portfolio demos from real engineering: as Google researchers famously documented in *[Hidden Technical Debt in Machine Learning Systems](https://papers.nips.cc/paper_files/paper/2015/hash/86df7dcfd896fcaf2674f757a2463eba-Abstract.html)* (Sculley et al., NeurIPS 2015), core ML training code makes up **only ~5%–10%** of a live production system. A `0.94 AUC` model or smart agent delivers zero business value until surrounded by safe packaging, `FastAPI` endpoints, `Docker`, feature stores, drift monitors, and cloud GPU FinOps:
 
 ```mermaid
 flowchart LR
@@ -75,9 +75,9 @@ def predict_churn(payload: ChurnFeatures) -> dict[str, float | bool]:
     return {"churn_probability": round(prob, 4), "high_risk": prob >= 0.5}
 ```
 
----
-
 ### 2. Containerization (`Docker`) & Experiment/Data Versioning (`MLflow` + `DVC`)
+
+Your `FastAPI` endpoint runs smoothly on your laptop—now how do you make sure it runs identically on a Linux cloud server, and track *which exact dataset* trained *which model version*?
 
 > **Three Everyday MLOps Tools in Plain English:**
 > - **`Docker` (Sealed Shipping Container):** Solves *"It worked on my laptop, why did it crash on the server?"* by packing your code + exact Python version + system libraries into one portable **Image** (blueprint) that runs identically anywhere as a **Container** (live process).
@@ -105,9 +105,8 @@ EXPOSE 8000
 CMD ["uvicorn", "src.app:app", "--host", "0.0.0.0", "--port", "8000"]
 ```
 
----
-
 #### 2.2 Synchronizing Code, Datasets & Artifacts with `Git`, `DVC` & `MLflow`
+Before building that `Docker` image in CI/CD, these three versioning tools keep your code, data, and trained weights locked in sync:
 - **`Git`:** Versions source code, configs, and small `.dvc` pointer files.
 - **`DVC` (Data Version Control):** Stores 50 GB Parquet/image datasets in S3/GCS content-addressed storage while committing tiny SHA-256 pointer files into Git.
 - **`MLflow`:** Logs hyperparameters, validation metrics (`PR-AUC`, `p99` latency), Git commit SHA, and versioned model artifacts in a central **Model Registry** (`Staging -> Champion`).
@@ -116,9 +115,12 @@ CMD ["uvicorn", "src.app:app", "--host", "0.0.0.0", "--port", "8000"]
 
 ## Tier 2: Production Architecture & Scale (Serving Architectures, `Feast`, `PSI` Drift, Rollouts & Infra FinOps)
 
+Shipping Version 1 in a container is **Day 1**; **Tier 2** covers **Day 2 and beyond**—scaling GPU vs. CPU pods, keeping live features identical to training features (`Feast`), streaming real-time agent tokens (`SSE`), catching data drift (`PSI`), and slashing cloud GPU bills.
+
 ### 3. Classical ML Serving vs. LLM Serving, and Feature Stores (`Feast`)
 
 #### 3.1 Stateless CPU Model Serving vs. Stateful GPU `KV Cache` Serving
+First, notice how differently Kubernetes must autoscale a classical `XGBoost` microservice versus an LLM `vLLM` server:
 
 | Dimension | Classical ML (`XGBoost` / `LightGBM`) | LLM Serving (`vLLM` / `TensorRT-LLM`) |
 |---|---|---|
@@ -126,17 +128,14 @@ CMD ["uvicorn", "src.app:app", "--host", "0.0.0.0", "--port", "8000"]
 | **Batching** | Simple request or micro-batching | **Continuous iteration-level batching** + `PagedAttention` |
 | **Autoscaling Signal** | CPU utilization / RPS | **KV Cache VRAM % utilization** + waiting queue depth (CPU % stays near 0 on GPU pods!) |
 
----
-
 #### 3.2 Eliminating Training-Serving Skew with Feature Stores (`Feast`)
+On the classical ML side, how do you guarantee the live `FastAPI` server feeds `XGBoost` the exact same feature math used during training?
 - **In Plain English:** Imagine a Data Scientist calculates `"user_30d_spend"` in Pandas (including tax, UTC time) to train a model, and a Backend Engineer rewrites `"user_30d_spend"` in Go (excluding tax, local time) for the live app. That tiny mismatch (**Training-Serving Skew**) silently ruins live predictions! A **Feature Store (`Feast`)** computes the feature **once** and serves it to both:
   1. **Offline Store (`BigQuery` / `Snowflake` / `Parquet`):** Historical tables with **point-in-time joins** for training.
   2. **Online Store (`Redis` / `DynamoDB`):** Latest precomputed values in `<5ms` for live API requests.
 
----
-
 #### 3.3 Real-Time `SSE` Token/Tool Streaming (`FastAPI`) & User Feedback Data Flywheels
-Production GenAI and agent frontends never block on a synchronous 12-second `POST` request — they stream typed **Server-Sent Events (`SSE`)** so users see live tool progress (`"Querying Qdrant..."`) and sub-second `TTFT` tokens, then capture explicit/implicit user feedback into a **Data Flywheel**:
+On the GenAI & Agent side, users won't stare at a frozen spinner for 12 seconds—so instead of returning one blocking JSON blob, production APIs stream live **Server-Sent Events (`SSE`)** and wire user feedback straight back into training:
 
 ```python
 import json
@@ -161,9 +160,9 @@ async def chat_stream(session_id: str, q: str) -> StreamingResponse:
 ```
 - **Closing the Data Flywheel:** Binding frontend thumbs-up/down, copy events, and human-edited replies to `trace_id` automatically populates (a) **hard-negative regression tests** for your `EDD` Golden Set (`Module 10`) and (b) `(prompt, human_edited_chosen, model_rejected)` preference pairs for **`DPO` fine-tuning** (`Module 06`).
 
----
-
 ### 4. Statistical Drift (`PSI`), Safe Deployments & Cloud GPU FinOps
+
+Even a perfectly deployed model decays quietly as the outside world changes—so we close the production loop with **automated drift alarms**, **safe staged rollouts**, and **Spot GPU cost controls**:
 
 #### 4.1 Detecting Data Drift (`PSI`) vs. Concept Drift
 - **In Plain English:**
@@ -179,16 +178,14 @@ Standard MLOps & credit-risk thresholds (*Siddiqi, Credit Risk Scorecards*): `PS
 
 </details>
 
----
-
 #### 4.2 Progressive Delivery: Shadow Traffic, Canary Rollouts & Online A/B Tests
+When `PSI >= 0.25` triggers a newly retrained **Challenger** model, never swap 100% of live user traffic onto it overnight—promote it safely through three progressive gates:
 1. **Shadow (Dark Traffic):** Mirror 100% of live requests to the Challenger model asynchronously; discard Challenger outputs from user responses while verifying latency, memory, and prediction distributions at **zero user risk**.
 2. **Canary Rollout:** Route `1% -> 10% -> 50% -> 100%` of live traffic with automated rollback if `5xx` error rates or `p99` latency breach guardrails.
 3. **Online A/B Test:** Randomize by `user_id` (`50/50`), measuring **Primary Business KPI** statistical lift ($p < 0.05$) alongside strict **Guardrail Metrics** (latency, unsubscribe rate).
 
----
-
 #### 4.3 Preemptible Spot GPU Checkpointing & Automated Cloud Cost Kill-Switches
+Running those retraining jobs and GPU clusters on full-price On-Demand cloud instances gets expensive fast—here is how production infra teams slash GPU bills safely:
 1. **Spot / Preemptible GPUs + Emergency Checkpointing:** Rent spare cloud GPU capacity at **up to 60%–91% discount** compared to On-Demand rates ([AWS EC2 Spot](https://aws.amazon.com/ec2/spot/); [Google Cloud Spot VMs](https://cloud.google.com/spot-vms)). Save checkpoints to S3/GCS every $N$ steps and trap the cloud `SIGTERM` preemption signal to flush optimizer + model state cleanly so replacement nodes resume automatically.
 2. **Automated Cloud Infrastructure Kill-Switches:**
    - Cap Kubernetes autoscalers (`maxReplicas`), enforce idle-GPU auto-shutdown (`GPU utilization < 5%` for 30 mins), and wire **AWS Budgets -> SNS -> Lambda** (or **GCP Billing Budgets -> Pub/Sub -> Cloud Function**) to automatically scale non-prod GPU groups to zero when spend crosses threshold.
@@ -229,6 +226,8 @@ print(f"Lab 11 Passed! Stable PSI={compute_psi(train_dist, stable_prod):.3f}, Dr
 - Load models **once inside `FastAPI` `lifespan`** (never per request), prefer **`safetensors` / `ONNX`** over unsafe `pickle`, and run Docker containers as a non-root user.
 - Autoscale LLM GPU pods on **KV Cache VRAM utilization & queue depth**, not CPU %.
 - Prevent Training-Serving Skew with **`Feast`**, detect covariate shift with **`PSI >= 0.25`**, roll out via **Shadow -> Canary -> A/B**, and train on **Spot GPUs with preemption checkpointing**.
+
+> **Next in the Journey:** Your models and agents are now live in production! What happens at 2:00 AM when shadow AUC mysteriously drops to `0.54`, a `24 GB` GPU throws `CUDA out of memory`, or a RAG bot invents fake policy numbers? Let's sharpen your real-world incident instincts in **[Module 12: Real-World ML & GenAI System Troubleshooting Scenarios](./12_system_troubleshooting_scenarios.md)**.
 
 ---
 

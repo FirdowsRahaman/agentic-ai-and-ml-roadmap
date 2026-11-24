@@ -9,7 +9,7 @@
 
 A structured, **engineering-first** handbook and roadmap built to take learners, software engineers, and aspiring AI/ML engineers from **Python, SQL & Math foundations** all the way to **Transformers, `Qdrant` Hybrid RAG, Autonomous Agents (`LangGraph` / `Google ADK`), `MCP`, `vLLM` Serving, and Production MLOps**.
 
-> **How Every Module Is Designed:** Each module splits into **Tier 1 (Core Foundations)** for approachable first-pass learning + **Tier 2 (Production Architecture & Scale)** for real-world systems mastery, ending with a **15-Minute Runnable Lab** and **Key Engineering Takeaways** — while dedicated mock interview Q&A lives inside **[`interview-kits/`](./interview-kits/ml_system_design_framework.md)**.
+> **Designed to Flow Like One Connected Story:** Rather than a disconnected pile of flashcards, Modules `01 -> 13` read as **one continuous engineering narrative** — every section explains *why* the previous tool hit a limit before introducing the next, pairing **Plain-English analogies & animated `.svg` visuals** with collapsible `<details>` math/citations, a **15-Minute Runnable Lab**, and **[Portfolio Starters](./projects/end_to_end_lifecycle_playbook.md)** + **[Interview Kits](./interview-kits/ml_system_design_framework.md)**.
 
 ---
 

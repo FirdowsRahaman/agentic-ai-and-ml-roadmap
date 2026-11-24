@@ -8,9 +8,9 @@
 
 ## Mental Model: Specialist Teams, USB-C Cables (`MCP`) & Phone Lines (`A2A`)
 
-- **In Plain English:**
-  - **Why Multi-Agent?** Handing one single agent 40 tools and 50 pages of instructions is like asking one overwhelmed intern to run Legal, Finance, and IT simultaneously—they mix up rules and hallucinate. Splitting into **focused Subagents** gives each worker a clean desk and just 2–3 tools.
-  - **`MCP` vs. `A2A`:** **`MCP`** is the **universal USB-C cable** plugging an agent into its *own* databases and tools; **`A2A`** is the **inter-office phone line** letting your Finance Agent ask another team's Supply-Chain Agent for help without peeking inside its private database.
+In [Module 08](./08_tools_langgraph_and_adk.md), you built a durable single agent. As an agent grows beyond 15–20 tools, though, accuracy drops sharply—just like handing one overwhelmed intern the keys to Legal, Finance, and IT all at once:
+- **Why Multi-Agent?** Splitting one bloated generalist into **focused Subagents** gives each specialist a clean context window and just 2–3 tools.
+- **`MCP` vs. `A2A`:** **`MCP`** is the **universal USB-C cable** plugging an agent into its *own* databases and tools; **`A2A`** is the **inter-office phone line** letting your Finance Agent ask another team's Supply-Chain Agent for help without peeking inside its private database.
 
 ```mermaid
 flowchart TD
@@ -44,9 +44,8 @@ flowchart TD
 3. **Model Heterogeneity:** Pair a frontier model (`Gemini 2.5 Pro` / `Claude Sonnet`) as the **Supervisor** with fast, low-cost workers (`Gemini 2.5 Flash` / local `Qwen 7B`) for high-volume extraction.
 > **Tradeoff Warning:** Multi-agent handoffs multiply token usage and latency — only split into multiple agents when tool count (`>10–15`), security privilege boundaries, or context isolation genuinely require it.
 
----
-
 #### 1.2 Sequential, Hierarchical Supervisor, Parallel Map-Reduce & Critic Topologies
+When splitting *is* justified, almost every multi-agent system in production follows one of four clean coordination patterns:
 
 | Architecture | Control Flow | Production SDKs | Best Fit |
 |---|---|---|---|
@@ -87,6 +86,8 @@ supervisor = Agent(
 
 ## Tier 2: Production Architecture & Scale (Model Context Protocol & MCP Security)
 
+Organizing subagents inside one codebase is half the battle; **Tier 2** solves how those agents plug into **external databases, SaaS tools, and other teams' agents** using two open industry standards (**`MCP`** and **`A2A`**)—without opening giant security holes.
+
 ### 2. Model Context Protocol (`MCP`) Architecture & Transports
 
 #### 2.1 `MCP` Primitives (`Tools`, `Resources`, `Prompts`) & Transports (`stdio` / `Streamable HTTP`)
@@ -119,16 +120,15 @@ def fetch_order_summary(order_id: str) -> dict[str, str | float]:
 # Remote microservice mode: mcp.run(transport="streamable-http")
 ```
 
----
-
 #### 2.2 Securing `MCP` Ecosystems Against Tool Poisoning & Schema Rug-Pulls
+Plugging third-party `MCP` servers into your agent is convenient—but just like plugging an untrusted USB stick into your laptop, it introduces new attack surfaces you must lock down:
 1. **Tool Description Poisoning:** A malicious MCP server hides covert prompt-injection instructions inside its tool `description` metadata (invisible to the human user, read directly by the LLM), tricking the agent into exfiltrating `~/.ssh` keys or environment variables via another legitimate MCP server!
 2. **Dynamic Tool Rug-Pulls:** An unpinned remote MCP server passes security review on Day 1, then silently mutates its tool definitions on Day 5.
 3. **Production Defenses:** Pin and cryptographic-hash MCP tool schemas, scope OAuth 2.1 tokens per server with least privilege, isolate local `stdio` servers in containers, and require explicit `HITL` consent whenever cross-server data flows to external network endpoints.
 
----
-
 ### 3. `A2A` (Agent-to-Agent Protocol) vs. `MCP`
+
+`MCP` connects an agent *downward* to its own tools and databases. What when two full autonomous agents owned by **different departments or vendors** need to collaborate as peers?
 
 #### 3.1 Complementary Protocols: Vertical Tooling (`MCP`) vs. Horizontal Federation (`A2A`)
 In modern enterprise architectures, agents built on different stacks (e.g., a `LangGraph` Billing Agent in Finance and a `Google ADK` Inventory Agent in Supply Chain) must collaborate without sharing internal prompts, memory, or database credentials. The **[Agent2Agent (`A2A`) Protocol](https://github.com/a2aproject/A2A)** (introduced by Google and governed by the Linux Foundation) pairs directly with `MCP`:
@@ -197,6 +197,8 @@ print("Lab 09 Passed! Distilled Supervisor Output:", final_report)
 - Use **Multi-Agent Subagents** primarily for **context isolation**, **tool-count reduction (`<10` tools/agent)**, and **privilege separation** — not for simple tasks solvable by a 2-step workflow.
 - Know the **3 MCP Primitives (`Tools`, `Resources`, `Prompts`)** and **2 Transports (`stdio` for local, `Streamable HTTP` with OAuth 2.1 for remote production)**.
 - Call out **MCP Tool Poisoning** (prompt injection hidden inside tool schemas) when auditing third-party tool integrations.
+
+> **Next in the Journey:** You can now wire multi-agent teams across `MCP` tools and `A2A` peer networks! Before letting those agents touch real customer accounts or company budgets, how do we **test them automatically in CI/CD, trace every span, block prompt injections, satisfy AI regulations, and cap token bills**? Let's lock down safety and quality in **[Module 10: Agent Evaluation, Safety, Governance & Token FinOps](./10_agent_evals_and_safety.md)**.
 
 ---
 
