@@ -1,7 +1,8 @@
 site_name: Agentic AI & ML Roadmap
-site_description: Engineering-first roadmap from Python, SQL & Math to Advanced RAG, AI Agents, MCP & Production MLOps.
+site_description: A practical, production-first AI and ML engineering curriculum from mathematical foundations to distributed agentic systems.
+site_author: Firdows Rahaman
 repo_url: https://github.com/FirdowsRahaman/agentic-ai-and-ml-roadmap
-docs_dir: .
+docs_dir: docs
 
 theme:
   name: material
@@ -19,8 +20,10 @@ theme:
         icon: material/brightness-7
         name: Switch to dark mode
   features:
+    - navigation.tabs
     - navigation.sections
     - navigation.top
+    - navigation.indexes
     - search.suggest
     - search.highlight
     - content.code.copy
@@ -28,6 +31,9 @@ theme:
 markdown_extensions:
   - tables
   - admonition
+  - toc:
+      permalink: true
+  - pymdownx.details
   - pymdownx.arithmatex:
       generic: true
   - pymdownx.superfences:
@@ -36,36 +42,57 @@ markdown_extensions:
           class: mermaid
           format: !!python/name:pymdownx.superfences.fence_code_format
 
+plugins:
+  - search
+
 nav:
-  - Home: README.md
-  - 1. Foundations:
-      - "01: Python, SQL & Data Stack": curriculum/01-foundations/01_python_sql_and_data_stack.md
-      - "02: Math & Statistics": curriculum/01-foundations/02_math_and_statistics.md
-  - 2. Core ML & DL:
-      - "03: Classical ML & RecSys": curriculum/02-core-ml-and-dl/03_classical_ml_and_recsys.md
-      - "04: Deep Learning & RL": curriculum/02-core-ml-and-dl/04_deep_learning_and_rl.md
-  - 3. GenAI & Multimodal:
-      - "05: NLP, CV & Multimodal": curriculum/03-modern-ai-and-genai/05_nlp_cv_and_multimodal.md
-      - "06: LLMs, Fine-Tuning & RAG": curriculum/03-modern-ai-and-genai/06_llms_finetuning_and_rag.md
-  - 4. Autonomous Agents:
-      - "07: AI Agents Fundamentals": curriculum/04-agentic-ai/07_ai_agents_fundamentals.md
-      - "08: Tools, LangGraph & ADK": curriculum/04-agentic-ai/08_tools_langgraph_and_adk.md
-      - "09: Multi-Agent & MCP": curriculum/04-agentic-ai/09_multi_agent_and_mcp.md
-      - "10: Evals, Safety & FinOps": curriculum/04-agentic-ai/10_agent_evals_and_safety.md
-  - 5. Production & Practice:
-      - "11: MLOps, Drift & FinOps": curriculum/05-production-and-practice/11_mlops_cloud_and_finops.md
-      - "12: Troubleshooting Scenarios": curriculum/05-production-and-practice/12_system_troubleshooting_scenarios.md
-      - "13: Algorithms from Scratch": curriculum/05-production-and-practice/13_algorithms_from_scratch.md
+  - Home: index.md
+  - Getting Started: getting-started.md
+  - Roadmap: ROADMAP.md
+  - Learning Paths: learning-paths.md
+  - Prerequisites: prerequisites.md
+  - Curriculum:
+      - 1. Foundations:
+          - "01: Python, SQL & Data Stack": curriculum/01-foundations/01_python_sql_and_data_stack.md
+          - "02: Math & Statistics": curriculum/01-foundations/02_math_and_statistics.md
+      - 2. Classical Machine Learning:
+          - "03: Classical ML & RecSys": curriculum/02-machine-learning/03_classical_ml_and_recsys.md
+      - 3. Deep Learning & Systems:
+          - "04: Deep Learning & RL": curriculum/03-deep-learning/04_deep_learning_and_rl.md
+      - 4. Generative AI & RAG:
+          - "05: NLP, CV & Multimodal": curriculum/04-generative-ai/05_nlp_cv_and_multimodal.md
+          - "06: LLMs, Fine-Tuning & RAG": curriculum/04-generative-ai/06_llms_finetuning_and_rag.md
+      - 5. Autonomous Agents & MCP:
+          - "07: AI Agents Fundamentals": curriculum/05-agentic-ai/07_ai_agents_fundamentals.md
+          - "08: Tools, LangGraph & ADK": curriculum/05-agentic-ai/08_tools_langgraph_and_adk.md
+          - "09: Multi-Agent & MCP": curriculum/05-agentic-ai/09_multi_agent_and_mcp.md
+          - "10: Evals, Safety & FinOps": curriculum/05-agentic-ai/10_agent_evals_and_safety.md
+      - 6. Production AI & MLOps:
+          - "11: MLOps, Drift & FinOps": curriculum/06-production-ai/11_mlops_cloud_and_finops.md
+          - "12: Troubleshooting Scenarios": curriculum/06-production-ai/12_system_troubleshooting_scenarios.md
+          - "13: Algorithms from Scratch": curriculum/06-production-ai/13_algorithms_from_scratch.md
   - Portfolio Projects:
+      - "Project Catalog Overview": projects/README.md
       - "End-to-End Lifecycle Playbook": projects/end_to_end_lifecycle_playbook.md
-      - "All 10 Blueprints": projects/README.md
-      - "Starter 1: Local RAG + SQL Agent": projects/starter-local-rag-agent/README.md
-      - "Starter 2: Local MLOps API": projects/starter-local-mlops/README.md
+      - "Beginner Projects ($0 Spend)": projects/beginner/README.md
+      - "Intermediate Starters (Local Runnable)": projects/intermediate/README.md
+      - "Starter 1: Local RAG Agent": projects/intermediate/starter-local-rag-agent/README.md
+      - "Starter 2: Local MLOps API": projects/intermediate/starter-local-mlops/README.md
+      - "Advanced Cloud Blueprints": projects/advanced/README.md
   - Interview Kits:
-      - "System Design Framework": interview-kits/ml_system_design_framework.md
-      - "Classical ML & RecSys": interview-kits/classical_ml_questions.md
-      - "GenAI, RAG & Agents": interview-kits/genai_and_agents_questions.md
-      - "SQL & Coding Screenings": interview-kits/sql_and_coding_screenings.md
+      - "Interview Hub Overview": interview-kits/README.md
+      - "Machine Learning & RecSys": interview-kits/machine-learning/classical_ml_questions.md
+      - "Deep Learning & PyTorch": interview-kits/deep-learning/deep_learning_interview_prep.md
+      - "Generative AI, RAG & Agents": interview-kits/generative-ai/genai_and_agents_questions.md
+      - "System Design Framework": interview-kits/agentic-ai/ml_system_design_framework.md
+      - "SQL & Live Coding Screenings": interview-kits/machine-learning/sql_and_coding_screenings.md
       - "Resume Guide & Flashcards": interview-kits/resume_and_flashcards.md
-  - Resources: resources/recommended_resources.md
+  - Resources:
+      - "Resources Overview": resources/recommended_resources.md
+      - "Textbooks & Reference Books": resources/books.md
+      - "Courses & Video Lectures": resources/courses.md
+      - "Landmark Research Papers": resources/research-papers.md
+      - "Production Tools & Frameworks": resources/tools.md
+  - Glossary: glossary.md
+  - FAQ: faq.md
   - Contributing: CONTRIBUTING.md
