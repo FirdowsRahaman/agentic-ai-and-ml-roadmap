@@ -41,7 +41,7 @@ flowchart TD
 #### 1.1 Tool-Count Degradation, Context Isolation & Multi-Agent Trade-Offs
 1. **Tool Selection Confusion:** Tool-routing accuracy drops sharply once an LLM must discriminate among 20+ overlapping JSON schemas.
 2. **Context Pollution:** Raw logs from step 1 pollute reasoning at step 6. Subagents run in **isolated context windows** and return only a distilled 200-token artifact to the supervisor!
-3. **Model Heterogeneity:** Pair a frontier model (`Gemini 2.5 Pro` / `Claude Sonnet`) as the **Supervisor** with fast, low-cost workers (`Gemini 2.5 Flash` / local `Qwen 7B`) for high-volume extraction.
+3. **Model Heterogeneity:** Pair a frontier reasoning model (`Gemini 3.1 Pro` / `Claude 4.6 Sonnet` / `GPT-5`) as the **Supervisor** with fast, low-cost workers (`Gemini 3 Flash` / local `Qwen 3.5 8B`) for high-volume extraction.
 > **Tradeoff Warning:** Multi-agent handoffs multiply token usage and latency — only split into multiple agents when tool count (`>10–15`), security privilege boundaries, or context isolation genuinely require it.
 
 #### 1.2 Sequential, Hierarchical Supervisor, Parallel Map-Reduce & Critic Topologies
@@ -59,14 +59,14 @@ from google.adk.agents.llm_agent import Agent
 
 # Specialized Worker Subagents with isolated instructions & minimal toolsets
 sql_analyst = Agent(
-    model="gemini-2.5-flash",
+    model="gemini-3-flash-preview",
     name="sql_analyst",
     description="Executes read-only analytical SQL queries on sales tables.",
     instruction="Return concise metric tables with exact query filters used.",
 )
 
 policy_auditor = Agent(
-    model="gemini-2.5-flash",
+    model="gemini-3-flash-preview",
     name="policy_auditor",
     description="Checks compliance rules and refund eligibility.",
     instruction="Cite exact policy section numbers for every decision.",
@@ -74,7 +74,7 @@ policy_auditor = Agent(
 
 # Hierarchical Supervisor delegating to subagents
 supervisor = Agent(
-    model="gemini-2.5-pro",
+    model="gemini-3.1-pro",
     name="ops_supervisor",
     description="Coordinates analytics and compliance specialists.",
     instruction="Delegate data lookups to 'sql_analyst' and policy checks to 'policy_auditor'.",

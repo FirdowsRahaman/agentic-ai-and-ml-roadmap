@@ -18,6 +18,6 @@ python app.py
 ```
 
 ## Extend This into Your Portfolio Flagship
-- Swap the zero-dependency `HybridRetriever` with **`qdrant-client`** (`QdrantClient(path="./qdrant_db")`) using named Dense (`BAAI/bge-small-en-v1.5`) + Sparse (`BM25`/`SPLADE`) vectors and `FusionQuery(fusion=Fusion.RRF)`.
+- Swap the zero-dependency `HybridRetriever` with **`qdrant-client`** (`QdrantClient(path="./qdrant_db")`) using named Dense (`Qwen/Qwen3-Embedding-0.6B` or `BAAI/bge-m3`) + Sparse (`BM25`/`SPLADE`) vectors and `FusionQuery(fusion=Fusion.RRF)`.
 - Point `ReadOnlySQLTool` to `duckdb.connect()` over a 1M-row Parquet dataset.
 - Add a `Streamlit` chat UI displaying retrieved chunk IDs, Qdrant RRF scores, and executed SQL queries side by side.

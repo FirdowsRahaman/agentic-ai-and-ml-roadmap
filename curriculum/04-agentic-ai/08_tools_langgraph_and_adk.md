@@ -146,7 +146,7 @@ def get_order_status(order_id: str) -> dict[str, str]:
     return {"order_id": order_id, "status": "Out for Delivery", "eta": "Today 18:00"}
 
 root_agent = Agent(
-    model="gemini-2.5-flash",
+    model="gemini-3-flash-preview",
     name="logistics_copilot",
     description="Handles customer shipment tracking inquiries.",
     instruction=(

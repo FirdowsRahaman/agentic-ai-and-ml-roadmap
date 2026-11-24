@@ -42,7 +42,7 @@ flowchart LR
 - **Sparse Lexical Scoring (`TF-IDF` & `BM25`):** Multiplies local term frequency by inverse corpus rarity:
   $$\text{TF-IDF}(t, d, D) = \text{TF}(t, d) \times \log\left(\frac{N}{|\{d \in D : t \in d\}|}\right)$$
   While purely lexical (zero semantic overlap between `"car"` and `"automobile"`), **Okapi `BM25`** (which adds saturating term frequency and document-length normalization) remains indispensable as the sparse half of **Hybrid RAG** (`Module 06`).
-- **Contextual vs. Static Embeddings:** Unlike legacy static word tables that assigned one fixed vector to `"bank"` everywhere, Transformer encoders (`BERT`, `ModernBERT`, `BGE`) compute dynamic, context-sensitive token vectors via self-attention over the entire sequence.
+- **Contextual vs. Static Embeddings:** Unlike legacy static word tables that assigned one fixed vector to `"bank"` everywhere, modern Transformer encoders (`ModernBERT`, `Qwen3-Embedding`, `BGE-M3`) compute dynamic, context-sensitive token vectors via self-attention over the entire sequence.
 
 ### 2. Transformer Architecture & Self-Attention Mechanics
 
@@ -72,11 +72,11 @@ Why divide by $\sqrt{d_k}$? When head dimension $d_k$ is large (e.g., `64` or `1
 #### 2.2 Encoder-Only vs. Decoder-Only vs. Encoder-Decoder Topologies
 Depending on whether we leave that Causal Mask **off** (letting every token read both left and right) or **on** (generating strictly left-to-right), the exact same Self-Attention block gives us three distinct Transformer families:
 
-| Architecture | Attention Visibility | Representative Models | Primary Production Use Cases |
+| Architecture | Attention Visibility | Representative 2026 Models | Primary Production Use Cases |
 |---|---|---|---|
-| **Encoder-Only** | Bidirectional (sees full text) | `BERT`, `DeBERTa`, `BGE`, `ModernBERT` | Dense embeddings, Cross-Encoder reranking, NER, fast classification |
-| **Decoder-Only** | Causal / Autoregressive (left-to-right) | `GPT`, `Gemini`, `Claude`, `Llama`, `Qwen` | Generative chat, code generation, reasoning, autonomous agents |
-| **Encoder-Decoder** | Bidirectional input + Causal output | `T5`, `BART`, `Whisper` (Audio->Text) | Sequence-to-sequence translation, speech recognition (`Whisper`) |
+| **Encoder-Only** | Bidirectional (sees full text) | `ModernBERT`, `Qwen3-Embedding`, `BGE-M3` *(descended from `BERT`)* | Dense embeddings, Cross-Encoder reranking, NER, fast classification |
+| **Decoder-Only** | Causal / Autoregressive (left-to-right) | `Gemini 3/3.1`, `GPT-5`, `Claude 4.5/4.6`, `Llama 4`, `Qwen 3.5` | Generative chat, code generation, reasoning, autonomous agents |
+| **Encoder-Decoder** | Bidirectional input + Causal output | `Whisper-large-v3-turbo` (Audio->Text), `T5` family | Speech recognition (`Whisper`) & sequence-to-sequence tasks |
 
 ### 3. Computer Vision: CNNs, ResNet & Transfer Learning
 
@@ -144,10 +144,10 @@ In Tier 1, we handled text tokens and single-label photos separately. **Tier 2**
 
 #### 4.1 Detection/Segmentation Metrics (`IoU`, `mAP`), Vision Transformers (`ViT`) & `CLIP`
 - **Classification** (`ConvNeXt`, `ViT`) -> single image label; evaluated via Accuracy / Top-5.
-- **Object Detection** (`YOLOv11`, `RT-DETR`) -> `[x, y, w, h, class, conf]` boxes; evaluated via **IoU** ($\frac{\text{Area}(B_p \cap B_{gt})}{\text{Area}(B_p \cup B_{gt})}$) and **mAP@0.5:0.95**.
+- **Object Detection** (`YOLO26` — native NMS-free edge flagship, `YOLO11`, `RT-DETR`) -> `[x, y, w, h, class, conf]` boxes; evaluated via **IoU** ($\frac{\text{Area}(B_p \cap B_{gt})}{\text{Area}(B_p \cup B_{gt})}$) and **mAP@0.5:0.95**.
 - **Semantic vs. Instance Segmentation** (`SegFormer`, `SAM 2`) -> pixel-level class mask (`mIoU`) vs. distinct per-object instance masks (`Mask AP`).
 - **`CNN` vs. `Vision Transformer (ViT)`:** CNNs have built-in "neighboring pixels belong together" intuition (win on smaller `<100k` image datasets); `ViT` chops an image into `16×16` square tiles like words in a sentence (wins at internet scale).
-- **`CLIP` (Connecting Images & Text in One Map):** Imagine a memory-matching game with 32 photos and 32 captions on a table. `CLIP` trains an Image Encoder and a Text Encoder together so Photo #1's vector lands right on top of Caption #1's vector while pushing all 31 wrong captions away—unlocking instant image search and zero-shot labeling without retraining!
+- **`CLIP` / `SigLIP 2` (Connecting Images & Text in One Map):** Imagine a memory-matching game with 32 photos and 32 captions on a table. Contrastive vision-language models (`CLIP`, Google's `SigLIP 2`) train an Image Encoder and a Text Encoder together so Photo #1's vector lands right on top of Caption #1's vector while pushing all 31 wrong captions away—unlocking instant image search and zero-shot labeling without retraining!
 
 <details>
 <summary><b>Deep Dive: `IoU` Formula & `CLIP` Symmetric `InfoNCE` Loss</b></summary>
@@ -165,7 +165,7 @@ Having connected text and images, only one major human sense remains: **sound**.
 - **In Plain English (Turning Sound Into a Picture):** How do you feed sound into a Transformer? First, slice the sound wave into tiny 25-millisecond windows and plot a **Log-Mel Spectrogram**—a "sheet-music heatmap" where **left-to-right is time**, **bottom-to-top is pitch (bass to treble)**, and **brightness is loudness**! Once sound is a 2D picture, vision/sequence Transformers can read it directly:
 1. **Waveform to Log-Mel Spectrogram:** Raw 16 kHz audio converted via Short-Time Fourier Transform (STFT) into `80` or `128` human-ear pitch bands (`Mel` bins).
 2. **`Whisper` Architecture (OpenAI):** Passes the Log-Mel spectrogram through 2 `1D Conv` layers + a **Transformer Encoder**, then decodes timestamps, language IDs, and transcribed/translated text autoregressively via a **Transformer Decoder**.
-3. **Native Multimodal Audio Tokens:** Frontier voice models (`Gemini Live`, `GPT-4o Realtime`) discretize audio directly into neural codec tokens (`SoundStream` / `EnCodec`), enabling low-latency speech-in, speech-out reasoning while preserving emotion, tone, and speaker prosody without a brittle `ASR -> Text LLM -> TTS` cascade.
+3. **Native Multimodal Audio Tokens:** Frontier voice models (`Gemini Live` / `gemini-3.1-flash-live`, OpenAI `gpt-realtime`) discretize audio directly into neural codec tokens (`SoundStream` / `EnCodec`), enabling low-latency speech-in, speech-out reasoning while preserving emotion, tone, and speaker prosody without a brittle `ASR -> Text LLM -> TTS` cascade.
 
 ---
 
@@ -206,7 +206,7 @@ print("Lab 05 Passed! Causal attention verified with zero future leakage.")
 
 ## Key Engineering Takeaways
 - Know the **Scaled Dot-Product Attention** equation $\text{softmax}(QK^\top / \sqrt{d_k} + M)V$ cold — especially why $\frac{1}{\sqrt{d_k}}$ prevents softmax gradient saturation and how causal masking prevents future token leakage.
-- Contrast **Encoder (`BERT` — embeddings/reranking)** vs. **Decoder (`GPT`/`Llama` — generation)** vs. **Encoder-Decoder (`Whisper`/`T5`)**.
+- Contrast **Encoder (`ModernBERT`/`Qwen3-Embedding` — embeddings/reranking)** vs. **Decoder (`Gemini 3`/`GPT-5`/`Llama 4` — generation)** vs. **Encoder-Decoder (`Whisper`)**.
 - Explain **ResNet skip connections** via the `+1` identity gradient term, **`CLIP`** via symmetric InfoNCE contrastive alignment, and **Audio AI** via Log-Mel Spectrograms vs. native neural audio codecs.
 
 > **Next in the Journey:** Now that you know how the **Decoder-Only Transformer** predicts tokens under the hood, how do we transform a raw internet-autocomplete LLM into an accurate, cited, fast enterprise system using **Context Engineering, `Qdrant` Hybrid RAG, `LoRA`/`DPO`, and `vLLM`**? Let's flow into **[Module 06: Generative AI, Fine-Tuning, `Qdrant` & Production RAG](./06_llms_finetuning_and_rag.md)**.

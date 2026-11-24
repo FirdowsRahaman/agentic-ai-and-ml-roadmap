@@ -36,7 +36,7 @@ flowchart LR
 #### 1.1 Discriminative vs. Generative AI & Quick GPU Memory Math
 - **In Plain English:** A **Discriminative model** acts like a referee sorting existing items into buckets (*"Is this email spam?"*); a **Generative model** acts like an author writing new content one token (word piece) at a time (*autoregressive generation*).
 - **Modern 2026 Model Ecosystem:**
-  - *Frontier API Models:* **Google Gemini 3 / 3.1 Pro & Flash** (and `Gemini 2.5`), **OpenAI GPT-5 / GPT-5.4** (unified dynamic test-time reasoning), **Anthropic Claude 4.5 / 4.6 Opus & Sonnet**.
+  - *Frontier API Models:* **Google Gemini 3 / 3.1 Pro & Flash**, **OpenAI GPT-5 / GPT-5.4** (unified dynamic test-time reasoning), **Anthropic Claude 4.5 / 4.6 Opus & Sonnet**.
   - *Open-Weight Models (Self-Hostable):* **Meta Llama 4** (multimodal MoE), **Alibaba Qwen 3 / 3.5**, **DeepSeek-V3 / R1**, **Google Gemma 3 / Mistral**.
 - **Rule-of-Thumb GPU Memory (`VRAM`) Math:**
   - Full `FP16`/`BF16` precision = **2 GB per 1B parameters** | Compressed `4-bit` (`INT4` / `AWQ` / `GGUF`) = **0.5 GB per 1B parameters** (+ ~20% breathing room for active chat memory).
@@ -197,14 +197,14 @@ results = client.query_points(
 Pulling `Top-50` candidates from `Qdrant` gets high recall, but handing all 50 chunks straight to the LLM wastes tokens and dilutes attention. Let's snap a **Cross-Encoder Reranker** and **`RAGAS` quality gates** onto `Qdrant` to complete the retrieval pipeline:
 
 #### 6.1 Hybrid Retrieval, Cross-Encoder Reranking & The `RAGAS` Triad
-Dense embeddings capture semantic gist but blur exact part numbers, error codes (`ERR_409_AUTH`), and product SKUs. Combine `Qdrant` Hybrid `RRF` (`Top 50`) with a **Cross-Encoder Reranker (`BGE-Reranker` / `Cohere Rerank` -> `Top 5`)** and evaluate continuously using the **`RAGAS` Triad**:
+Dense embeddings (`Qwen3-Embedding`, `BGE-M3` with Matryoshka dimension compression) capture semantic gist but blur exact part numbers, error codes (`ERR_409_AUTH`), and product SKUs. Combine `Qdrant` Hybrid `RRF` (`Top 50`) with a **Cross-Encoder Reranker (`Qwen3-Reranker` / `ModernBERT` / `Cohere Rerank 4` -> `Top 5`)** and evaluate continuously using the **`RAGAS` Triad**:
 
 ```mermaid
 flowchart TD
     Q["User Query + ACL Token"] --> QT["1. Query Rewrite / Multi-Query"]
     QT --> QD["2. Qdrant Hybrid Prefetch (BM25 Sparse + Dense HNSW + ACL Filter)"]
     QD --> RRF["3. Server-Side Reciprocal Rank Fusion (Top 50)"]
-    RRF --> CE["4. Cross-Encoder Reranker (BGE / Cohere -> Top 5)"]
+    RRF --> CE["4. Cross-Encoder Reranker (Qwen3-Reranker / ModernBERT / Cohere 4 -> Top 5)"]
     CE --> GEN["5. Grounded LLM Generation + Verified Citations"]
     GEN --> EVAL["6. RAGAS Triad: Context Precision, Faithfulness, Answer Relevance"]
 

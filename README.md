@@ -170,7 +170,7 @@ Don't try to cram 13 modules in a weekend. Pick the track aligned with your targ
 | Project | Architecture Highlights | Blueprint & Starter |
 |---|---|---|
 | **1. Private Air-Gapped RAG & SQL Copilot** | Ollama 4-bit, `Qdrant` Hybrid `RRF`, in-process analytical SQL, router | [Blueprint](./projects/README.md#local-project-1-private-air-gapped-desktop-rag--multi-tool-agent) • [Starter](./projects/starter-local-rag-agent/README.md) |
-| **2. Real-Time Edge CV Multi-Object Tracker** | Threaded OpenCV, `YOLOv11` `ONNX Runtime`, `ByteTrack`, zone dwell times | [Blueprint](./projects/README.md#local-project-2-real-time-edge-computer-vision--multi-object-tracking-pipeline) |
+| **2. Real-Time Edge CV Multi-Object Tracker** | Threaded OpenCV, `YOLO26` `ONNX Runtime`, `ByteTrack`, zone dwell times | [Blueprint](./projects/README.md#local-project-2-real-time-edge-computer-vision--multi-object-tracking-pipeline) |
 | **3. Autograd Engine & Mini-Transformer** | Reverse-mode autodiff DAG + causal multi-head self-attention in pure NumPy | [Blueprint](./projects/README.md#local-project-3-autograd-engine--character-level-transformer-from-scratch) • [Lab](./notebooks/03_mini_transformer_attention.ipynb) |
 | **4. Full-Lifecycle Local MLOps Service** | Leak-free pipeline, `FastAPI`, `PSI` drift monitor, non-root `Docker`, `pytest` | [Blueprint](./projects/README.md#local-project-4-full-lifecycle-local-mlops-pipeline-with-mlflow-optuna--docker) • [Starter](./projects/starter-local-mlops/README.md) |
 
@@ -178,7 +178,7 @@ Don't try to cram 13 modules in a weekend. Pick the track aligned with your targ
 | Target Ecosystem | Architecture Highlights | Blueprint |
 |---|---|---|
 | **5. AWS Serverless IDP Pipeline** | EventBridge, Textract table OCR, Comprehend PII masking, Bedrock JSON | [View AWS Blueprint →](./projects/README.md#project-5-aws-enterprise-serverless-intelligent-document-processing-idp-pipeline) |
-| **6. GCP Video Semantic Search** | Vertex Multimodal Embeddings, BigQuery `HNSW`, Gemini 2.5 temporal grounding | [View GCP Blueprint →](./projects/README.md#project-6-gcp-enterprise-multimodal-video-intelligence--semantic-search-engine) |
+| **6. GCP Video Semantic Search** | Vertex Multimodal Embeddings, BigQuery `HNSW`, Gemini 3 Flash temporal grounding | [View GCP Blueprint →](./projects/README.md#project-6-gcp-enterprise-multimodal-video-intelligence--semantic-search-engine) |
 | **7. Google ADK + MCP Ops Copilot** | Hierarchical `google-adk` subagents, `FastMCP` server, `HITL` checkpoints | [View ADK Blueprint →](./projects/README.md#project-7-google-ecosystem-autonomous-operations-copilot-with-google-adk--mcp) |
 | **8. Meta / Amazon Two-Stage RecSys** | PyTorch Two-Tower + `FAISS HNSW` (`<10ms`) + `LightGBM LambdaMART` (`NDCG@10`) | [View RecSys Blueprint →](./projects/README.md#project-8-meta--amazon-two-stage-e-commerce-recommendation--ranking-engine) |
 | **9. Stripe / FinTech Fraud + `Feast`** | Point-in-time `Feast` store, cost-sensitive `XGBoost`, `PSI >= 0.25` CI/CD | [View Fraud Blueprint →](./projects/README.md#project-9-fintech--stripe-real-time-fraud-prevention-with-feast--drift-cicd) |

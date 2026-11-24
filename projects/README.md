@@ -19,7 +19,7 @@ This curated collection is divided into two tracks — plus **2 runnable starter
 ---
 
 ## Local Project 1: Private Air-Gapped Desktop RAG & Multi-Tool Agent
-> **Key Skills:** Ollama, Llama 3.2 / Qwen 3, Qdrant (Embedded Hybrid Search), DuckDB (SQL), LangGraph  
+> **Key Skills:** Ollama, Qwen 3.5 / Gemma 3 / Llama 4, Qdrant (Embedded Hybrid Search), DuckDB (SQL), LangGraph  
 > **Hardware:** Any 8GB–16GB RAM laptop or Apple Silicon / RTX GPU (\$0 API Cost)  
 > **Runnable Starter Code:** **[Open `starter-local-rag-agent/` →](./starter-local-rag-agent/README.md)**
 
@@ -47,7 +47,7 @@ flowchart TD
     class RAG,SQL tool;
 ```
 
-1. **Local Model Runtime:** Run **Ollama** serving 4-bit quantized open-weight models (`qwen2.5:7b` or `llama3.2:3b`) under 4.5 GB RAM.
+1. **Local Model Runtime:** Run **Ollama** serving 4-bit quantized open-weight models (`qwen3:8b` or `gemma3:4b`) under 5 GB RAM.
 2. **Embedded Hybrid Vector Database (`Qdrant`):** Use **`QdrantClient(path="./qdrant_local")`** to store both dense semantic embeddings and sparse `BM25` vectors on local disk with payload metadata filters and server-side **Reciprocal Rank Fusion (`RRF`)**.
 3. **Embedded OLAP SQL Engine:** Query local CSV/Parquet files in milliseconds via in-process **DuckDB** with read-only SQL guardrails.
 4. **Orchestration:** Route unstructured policy questions to Hybrid RAG and quantitative questions to DuckDB SQL.
@@ -59,7 +59,7 @@ flowchart TD
 ---
 
 ## Local Project 2: Real-Time Edge Computer Vision & Multi-Object Tracking Pipeline
-> **Key Skills:** YOLOv11, ONNX Runtime, OpenCV, ByteTrack / DeepSORT, FastAPI, Multi-threading  
+> **Key Skills:** YOLO26 (NMS-Free), ONNX Runtime, OpenCV, ByteTrack, FastAPI, Multi-threading  
 > **Hardware:** Any laptop with a webcam or RTSP video file (\$0 Cloud Cost)
 
 ### The Problem
@@ -69,7 +69,7 @@ Retail stores and warehouses need live footfall counting, queue dwell-time analy
 ```mermaid
 flowchart LR
     CAM["Webcam / RTSP Video"] --> CAP["Threaded OpenCV Frame Queue"]
-    CAP --> YOLO["YOLOv11-Nano (ONNX Runtime)"]
+    CAP --> YOLO["YOLO26-Nano (NMS-Free ONNX Runtime)"]
     YOLO --> TRACK["ByteTrack Kalman ID Tracker"]
     TRACK --> ZONE["Polygon Zone & Dwell Engine"]
     ZONE --> DASH["FastAPI Metrics + Live HUD"]
@@ -84,7 +84,7 @@ flowchart LR
 ```
 
 1. **Decoupled Frame Ingestion:** Producer-consumer threads prevent RTSP buffer lag during inference spikes.
-2. **ONNX Edge Acceleration:** Export `YOLOv11n` to **ONNX Runtime** (`INT8`/`FP16`) for 35–50+ FPS on consumer hardware.
+2. **ONNX Edge Acceleration:** Export `YOLO26n` (native NMS-free architecture) to **ONNX Runtime** (`INT8`/`FP16`) for 45–60+ FPS on consumer hardware.
 3. **Multi-Object Tracking (`ByteTrack`):** Persist unique object IDs across occlusions using Kalman filter motion priors + IoU association.
 
 ---
@@ -143,14 +143,14 @@ flowchart LR
 
 ## Project 6 (GCP Enterprise): Multimodal Video Intelligence & Semantic Search Engine
 > **Target Roles:** Multimodal ML Engineer, Computer Vision Engineer (GCP)  
-> **Key Cloud Stack:** Vertex AI Multimodal Embeddings, Gemini 2.5 Flash, BigQuery Vector Search (`HNSW`), Cloud Storage, Cloud Run
+> **Key Cloud Stack:** Vertex AI Multimodal Embeddings, Gemini 3 Flash, BigQuery Vector Search (`HNSW`), Cloud Storage, Cloud Run
 
 ```mermaid
 flowchart LR
     GCS[("GCS Video Feeds")] --> EMB["1 FPS Keyframes + Vertex Multimodal Embeddings"]
     EMB --> BQ[("BigQuery Vector Search HNSW")]
     Q["Natural Language Query"] --> BQ
-    BQ -->|"Top Candidate Clips"| GEM["Gemini 2.5 Flash Temporal Grounding"]
+    BQ -->|"Top Candidate Clips"| GEM["Gemini 3 Flash Temporal Grounding"]
     GEM --> OUT["Exact Second Timestamps + Bounding Boxes"]
 
     classDef g fill:#E0F2FE,stroke:#0284C7,stroke-width:1.5px,color:#0369A1;
@@ -162,19 +162,19 @@ flowchart LR
     class BQ,OUT d;
 ```
 
-- **Key Talking Points:** Joint video-audio-text 1408-dim vector alignment, zero-ETL petabyte ANN search directly inside BigQuery, and second-level temporal verification with Gemini 2.5 Flash.
+- **Key Talking Points:** Joint video-audio-text 1408-dim vector alignment, zero-ETL petabyte ANN search directly inside BigQuery, and second-level temporal verification with Gemini 3 Flash.
 
 ---
 
 ## Project 7 (Google Ecosystem): Autonomous Operations Copilot with Google ADK & MCP
 > **Target Roles:** AI Agent Engineer, Full-Stack AI Engineer  
-> **Key Cloud Stack:** Google ADK (`google-adk`), Gemini 2.5 Pro/Flash, FastMCP (`Streamable HTTP`), Cloud Run
+> **Key Cloud Stack:** Google ADK (`google-adk`), Gemini 3.1 Pro / Gemini 3 Flash, FastMCP (`Streamable HTTP`), Cloud Run
 
 ```mermaid
 flowchart TD
-    REQ["Customer Request"] --> SUP["Google ADK Root Supervisor (Gemini 2.5 Pro)"]
-    SUP --> ORD["Order Tracking Subagent (Flash)"]
-    SUP --> REF["Refund Policy Subagent (Flash)"]
+    REQ["Customer Request"] --> SUP["Google ADK Root Supervisor (Gemini 3.1 Pro)"]
+    SUP --> ORD["Order Tracking Subagent (Gemini 3 Flash)"]
+    SUP --> REF["Refund Policy Subagent (Gemini 3 Flash)"]
     ORD & REF <-->|"JSON-RPC 2.0"| MCP["FastMCP Tool Server"]
     REF --> HITL{"Refund > $100?"}
     HITL -->|"Yes"| APR["HITL Checkpoint Approval"]
@@ -226,7 +226,7 @@ flowchart TD
 | Track | Project | Core Stack | Cloud Spend | Primary Differentiator |
 |---|---|---|---|---|
 | **Local** | **1. Air-Gapped RAG & SQL Copilot** ([Starter](./starter-local-rag-agent/README.md)) | Ollama, Qdrant Hybrid, DuckDB | **\$0** | Offline privacy + Qdrant RRF + DuckDB SQL routing |
-| **Local** | **2. Edge CV Multi-Object Tracker** | YOLOv11, ONNX, ByteTrack, OpenCV | **\$0** | Threaded 45+ FPS edge tracking & dwell analytics |
+| **Local** | **2. Edge CV Multi-Object Tracker** | YOLO26, ONNX, ByteTrack, OpenCV | **\$0** | NMS-free 45+ FPS edge tracking & dwell analytics |
 | **Local** | **3. Autograd & Mini-Transformer** | Pure Python, NumPy | **\$0** | First-principles mastery of backprop & causal attention |
 | **Local** | **4. Full-Lifecycle Local MLOps** ([Starter](./starter-local-mlops/README.md)) | Scikit-Learn, FastAPI, Docker, PSI | **\$0** | End-to-end API, non-root Docker, PSI drift & Pytest |
 | **Cloud** | **5. Serverless AWS IDP Pipeline** | Bedrock, Textract, Comprehend | Pay-per-use | Layout table OCR + pre-LLM HIPAA/GDPR PII redaction |

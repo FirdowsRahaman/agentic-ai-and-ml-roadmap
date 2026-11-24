@@ -53,7 +53,7 @@ flowchart LR
 2. **Ingestion & ACL Indexing:** Parse tables with `Docling`, chunk by section headers (`512` tokens + contextual header prefix), and index dense + sparse vectors in **`Qdrant`** (using **Binary/Scalar Quantization** to cut RAM 4x–32x and payload-indexed `allowed_groups` arrays).
 3. **Retrieval & Reranking Funnel:**
    - **Filterable HNSW (`Qdrant` Payload Index):** Enforce user ACL filters *during* graph traversal (avoiding post-filtering zero-result bugs and naive pre-filtering graph disconnection; never filter permissions purely in the LLM prompt!).
-   - Native `Qdrant` Hybrid `BM25 + Dense HNSW` -> `Fusion.RRF` (`Top 40`) -> Cross-Encoder Reranker (`BGE-Reranker`, `Top 5`).
+   - Native `Qdrant` Hybrid `BM25 + Dense HNSW` -> `Fusion.RRF` (`Top 40`) -> Cross-Encoder Reranker (`Qwen3-Reranker` / `ModernBERT` / `Cohere Rerank 4`, `Top 5`).
 4. **Agentic Routing & Safety:** Deterministic intent router sends pure Q&A straight to grounded generation, and action requests (`issue_refund`) to a `LangGraph`/`ADK` workflow with **`HITL` checkpoint interrupts** for mutations `> $100` and strict `Pydantic` schemas.
 5. **Evaluation & FinOps:** Gate CI/CD on **`RAGAS` Triad** (*Faithfulness $\ge 0.92$, Context Precision $\ge 0.85$*) over a 200-question golden set; enforce Redis semantic cache + `max_session_usd = $0.20` circuit breaker.
 

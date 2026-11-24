@@ -44,7 +44,7 @@ Real projects never begin with a clean Kaggle CSV:
 ## Stage 4 — Trace-Driven Error Analysis (Eval-Driven Development)
 Inspect 50–100 failed baseline spans in `Arize Phoenix` / `LangSmith` (`OpenTelemetry`) and categorize failures quantitatively:
 - *Missing SKU / Acronym?* -> Upgrade retrieval to **`Qdrant` Hybrid (`BM25` Sparse + Dense `HNSW` + `Fusion.RRF`)** + Contextual Retrieval headers.
-- *Right doc at Rank 18, ignored by LLM?* -> Add **`BGE` / `Cohere` Cross-Encoder Reranker (`Top 40 -> Top 5`)** and optimize **Context Engineering** prefix ordering.
+- *Right doc at Rank 18, ignored by LLM?* -> Add **`Qwen3-Reranker` / `ModernBERT` / `Cohere Rerank 4` (`Top 40 -> Top 5`)** and optimize **Context Engineering** prefix ordering.
 - *Consistent tone/DSL formatting gap or high frontier API spend?* -> Distill your frontier teacher's verified traces into an 8B **`QLoRA`** student served on **`vLLM`**.
 - *Multi-step dynamic tool recovery required?* -> Introduce a bounded **`LangGraph` / `Google ADK`** loop (`max_steps = 6`) connected via **`MCP`** (tools) and **`A2A`** (peer agents) with durable **`HITL` checkpoints** on state mutations ([Modules 07–09](../curriculum/04-agentic-ai/09_multi_agent_and_mcp.md)).
 

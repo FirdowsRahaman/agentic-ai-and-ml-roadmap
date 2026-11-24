@@ -10,7 +10,7 @@ Recruiters and hiring managers scan a fresher resume in **8–12 seconds**. Avoi
 
 ```text
 [Weak Bullet]:  Built a PDF RAG chatbot using LangChain and OpenAI.
-[Hired Bullet]: Built an air-gapped Hybrid RAG agent (Qdrant Dense+Sparse RRF + BGE Reranker + Ollama 4-bit)
+[Hired Bullet]: Built an air-gapped Hybrid RAG agent (Qdrant Dense+Sparse RRF + Qwen3-Reranker + Ollama Qwen 3.5 4-bit)
                 over 2,500 policy PDFs, improving RAGAS Faithfulness from 0.68 to 0.93 at $0 API cost.
 ```
 
@@ -71,7 +71,7 @@ Recruiters and hiring managers scan a fresher resume in **8–12 seconds**. Avoi
 | **Structured Outputs** | Grammar-constrained token decoding guaranteeing LLM responses conform 100% to a strict JSON / `Pydantic` schema. |
 | **`Qdrant` (Filterable HNSW)** | Rust vector database combining payload-indexed HNSW subgraph filtering, native Dense+Sparse RRF, and 32x Binary Quantization. |
 | **Hybrid Search + `RRF`** | Fusing lexical `BM25` keyword hits with dense semantic `HNSW` vectors via Reciprocal Rank Fusion. |
-| **Cross-Encoder Reranker** | Joint query+chunk transformer (`BGE`/`Cohere`) scoring top retrieved candidates with full cross-attention before LLM generation. |
+| **Cross-Encoder Reranker** | Joint query+chunk transformer (`Qwen3-Reranker`/`ModernBERT`/`Cohere Rerank 4`) scoring top retrieved candidates with full cross-attention before LLM generation. |
 | **`RAGAS` Triad** | RAG evaluation framework isolating **Context Precision/Recall**, **Faithfulness** (groundedness), and **Answer Relevance**. |
 | **`LoRA` / `QLoRA`** | Parameter-Efficient Fine-Tuning freezing base weights (optionally 4-bit `NF4` quantized) while training tiny low-rank adapter matrices $BA$. |
 | **`DPO` & `GRPO`** | Post-training alignment (`DPO` on preference pairs) and verifiable reasoning RL (`GRPO` group relative rewards without a critic model). |
