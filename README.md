@@ -51,7 +51,7 @@ flowchart TD
 
 *Build a strong foundation in programming, data processing, mathematics, and statistical reasoning.*
 
-**Module 01 — Python, SQL & Modern Data Stack**
+**[Module 01](./curriculum/01-foundations/01_python_sql_and_data_stack.md) — Python, SQL & Modern Data Stack** 
 
 - Difficulty: Foundational
 - Study time: 6–8 hours
@@ -59,29 +59,29 @@ flowchart TD
 - Topics: Vectorized operations, memory views, CTEs, SQL window functions, analytical joins, and asynchronous I/O.
 - Practical lab: [Interactive NumPy, Pandas & SQL Lab](./notebooks/01_numpy_pandas_sql_lab.ipynb)
 
-[Open Module 01 →](./curriculum/01-foundations/01_python_sql_and_data_stack.md)
 
-**Module 02 — Mathematics & Statistics for AI/ML**
+
+**[Module 02](./curriculum/01-foundations/02_math_and_statistics.md) — Mathematics & Statistics for AI/ML**
 
 - Difficulty: Foundational
 - Study time: 5–7 hours
 - Prerequisites: Module 01
 - Topics: Matrix decompositions, gradient descent intuition, probability distributions, Bayes' theorem, and hypothesis testing.
 
-[Open Module 02 →](./curriculum/01-foundations/02_math_and_statistics.md)
+
 
 ### Phase 2: Core Machine Learning & Deep Learning
 
 *Move from data processing to predictive modeling, neural architectures, and optimization.*
 
-**Module 03 — Classical Machine Learning & Recommendation Systems**
+**[Module 03(./curriculum/02-core-ml-and-dl/03_classical_ml_and_recsys.md) — Classical Machine Learning & Recommendation Systems**
 
 - Difficulty: Intermediate
 - Study time: 8–10 hours
 - Prerequisites: Modules 01 and 02
 - Topics: Leak-free pipelines, gradient-boosted trees (XGBoost/LightGBM), SHAP explainability, and two-stage recommendation systems.
 
-[Open Module 03 →](./curriculum/02-core-ml-and-dl/03_classical_ml_and_recsys.md)
+
 
 **Module 04 — Deep Learning, PyTorch & Reinforcement Learning**
 
