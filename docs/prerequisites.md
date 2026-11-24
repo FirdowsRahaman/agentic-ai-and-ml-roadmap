@@ -34,7 +34,45 @@ If you need a refresher before diving into Module 01, we recommend these focused
 
 ---
 
-## 3. Prerequisite Mapping by Tier
+## 3. Prerequisite Dependency Graph
+
+The following conceptual dependency map illustrates how foundational engineering and mathematical primitives build toward production-grade systems:
+
+<div align="center">
+  <img src="../assets/diagrams/prerequisite_dependency_graph.svg" alt="Prerequisite Dependency Graph" width="850" />
+</div>
+
+<br/>
+
+```mermaid
+flowchart TD
+    A["Python + Mathematics + Git"]
+    B1["Classical ML"]
+    B2["Data Engineering"]
+    C["Deep Learning + Evaluation"]
+    D["Transformers + Generative AI"]
+    E1["RAG Systems"]
+    E2["Agentic Systems"]
+    F["Production AI Engineering"]
+
+    A --> B1 & B2
+    B1 & B2 --> C
+    C --> D
+    D --> E1 & E2
+    E1 & E2 --> F
+
+    classDef base fill:#0B1325,stroke:#1E3A5F,stroke-width:1.5px,color:#FFFFFF,font-weight:600;
+    classDef branch fill:#070A0F,stroke:#1E293B,stroke-width:1px,color:#F1F5F9,font-size:15px,font-weight:600;
+    classDef prod fill:#082618,stroke:#1B4D32,stroke-width:1.5px,color:#FFFFFF,font-weight:600;
+
+    class A,C,D base;
+    class B1,B2,E1,E2 branch;
+    class F prod;
+```
+
+---
+
+## 4. Prerequisite Mapping by Tier
 
 - **Tier 1 (Foundations):** Requires only high-school math and basic Python scripting.
 - **Tier 2 (Classical ML):** Builds upon Tier 1 NumPy broadcasting and hypothesis testing.

@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 640" width="100%" height="100%">
+  <defs>
+    <!-- Background Gradient -->
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#070a0f"/>
+      <stop offset="100%" stop-color="#040609"/>
+    </linearGradient>
+
+    <!-- Node Gradient (Foundations & Core) -->
+    <linearGradient id="nodeGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0b1325"/>
+      <stop offset="100%" stop-color="#080e1c"/>
+    </linearGradient>
+
+    <!-- Production Node Gradient -->
+    <linearGradient id="prodGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#082618"/>
+      <stop offset="100%" stop-color="#051a10"/>
+    </linearGradient>
+
+    <!-- Arrow Marker -->
+    <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 5 5 L 0 8.5 z" fill="#718096" />
+    </marker>
+  </defs>
+
+  <style>
+    .card-border { fill: url(#bgGradient); stroke: #1e293b; stroke-width: 1.5; rx: 16; }
+    .node-box { fill: url(#nodeGradient); stroke: #1e3a5f; stroke-width: 1.5; rx: 10; }
+    .prod-box { fill: url(#prodGradient); stroke: #1b4d32; stroke-width: 1.5; rx: 10; }
+    .label-primary { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; font-size: 19px; font-weight: 600; fill: #ffffff; text-anchor: middle; dominant-baseline: middle; letter-spacing: 0.2px; }
+    .label-secondary { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; font-size: 18px; font-weight: 600; fill: #f1f5f9; text-anchor: middle; dominant-baseline: middle; }
+    .arrow-line { stroke: #94a3b8; stroke-width: 1.8; fill: none; }
+    .down-arrow-sym { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 20px; fill: #94a3b8; text-anchor: middle; dominant-baseline: middle; }
+  </style>
+
+  <!-- Container Box -->
+  <rect x="16" y="16" width="992" height="608" class="card-border"/>
+
+  <!-- Level 1: Python + Mathematics + Git -->
+  <rect x="48" y="44" width="928" height="64" class="node-box"/>
+  <text x="512" y="76" class="label-primary">Python + Mathematics + Git</text>
+
+  <!-- Arrow Level 1 -> Level 2 -->
+  <text x="512" y="132" class="down-arrow-sym">↓</text>
+
+  <!-- Level 2: Classical ML & Data Engineering -->
+  <text x="270" y="174" class="label-secondary">Classical ML</text>
+  <text x="754" y="174" class="label-secondary">Data Engineering</text>
+
+  <!-- Arrow Level 2 -> Level 3 -->
+  <text x="512" y="222" class="down-arrow-sym">↓</text>
+
+  <!-- Level 3: Deep Learning + Evaluation -->
+  <rect x="48" y="244" width="928" height="64" class="node-box"/>
+  <text x="512" y="276" class="label-primary">Deep Learning + Evaluation</text>
+
+  <!-- Arrow Level 3 -> Level 4 -->
+  <text x="512" y="332" class="down-arrow-sym">↓</text>
+
+  <!-- Level 4: Transformers + Generative AI -->
+  <rect x="48" y="354" width="928" height="64" class="node-box"/>
+  <text x="512" y="386" class="label-primary">Transformers + Generative AI</text>
+
+  <!-- Arrow Level 4 -> Level 5 -->
+  <text x="512" y="442" class="down-arrow-sym">↓</text>
+
+  <!-- Level 5: RAG Systems & Agentic Systems -->
+  <text x="270" y="484" class="label-secondary">RAG Systems</text>
+  <text x="754" y="484" class="label-secondary">Agentic Systems</text>
+
+  <!-- Arrow Level 5 -> Level 6 -->
+  <text x="512" y="532" class="down-arrow-sym">↓</text>
+
+  <!-- Level 6: Production AI Engineering -->
+  <rect x="48" y="552" width="928" height="64" class="prod-box"/>
+  <text x="512" y="584" class="label-primary">Production AI Engineering</text>
+</svg>

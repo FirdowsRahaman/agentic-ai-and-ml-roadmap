@@ -8,36 +8,39 @@
 
 The curriculum is structured into **six progressive engineering tiers**. Each tier builds directly upon the mathematical and software primitives developed in previous tiers:
 
+<div align="center">
+  <img src="./assets/diagrams/prerequisite_dependency_graph.svg" alt="Prerequisite Dependency Graph" width="850" />
+</div>
+
+<br/>
+
 ```mermaid
 flowchart TD
-    T1["1. Foundations<br/>(Python, SQL, Math, Linear Algebra, Stats)"]
-    T2["2. Classical Machine Learning<br/>(Preprocessing, Ensembles, RecSys, Imbalance)"]
-    T3["3. Deep Learning & Neural Systems<br/>(PyTorch, Backprop, Attention, Optimization)"]
-    T4["4. Generative AI & Foundation Models<br/>(Transformers, LoRA, Qdrant Hybrid RAG, vLLM)"]
-    T5["5. Autonomous Agents & MCP<br/>(ReAct Loops, LangGraph, Multi-Agent, Tool Calling)"]
-    T6["6. Production AI & MLOps<br/>(FastAPI Serving, PSI Drift, HITL Safety, Cloud FinOps)"]
+    A["Python + Mathematics + Git"]
+    B1["Classical ML"]
+    B2["Data Engineering"]
+    C["Deep Learning + Evaluation"]
+    D["Transformers + Generative AI"]
+    E1["RAG Systems"]
+    E2["Agentic Systems"]
+    F["Production AI Engineering"]
 
-    T1 --> T2
-    T2 --> T3
-    T3 --> T4
-    T4 --> T5
-    T5 --> T6
-    T4 -.->|"Production RAG Pipeline"| T6
+    A --> B1 & B2
+    B1 & B2 --> C
+    C --> D
+    D --> E1 & E2
+    E1 & E2 --> F
 
-    classDef f fill:#E0F2FE,stroke:#0284C7,stroke-width:2px,color:#0369A1;
-    classDef ml fill:#EDE9FE,stroke:#7C3AED,stroke-width:2px,color:#4C1D95;
-    classDef dl fill:#FEF3C7,stroke:#D97706,stroke-width:2px,color:#92400E;
-    classDef gen fill:#FCE7F3,stroke:#DB2777,stroke-width:2px,color:#9D174D;
-    classDef ag fill:#DCFCE7,stroke:#16A34A,stroke-width:2px,color:#15803D;
-    classDef prod fill:#FEE2E2,stroke:#EF4444,stroke-width:2px,color:#991B1B;
+    classDef base fill:#0B1325,stroke:#1E3A5F,stroke-width:1.5px,color:#FFFFFF,font-weight:600;
+    classDef branch fill:#070A0F,stroke:#1E293B,stroke-width:1px,color:#F1F5F9,font-size:15px,font-weight:600;
+    classDef prod fill:#082618,stroke:#1B4D32,stroke-width:1.5px,color:#FFFFFF,font-weight:600;
 
-    class T1 f;
-    class T2 ml;
-    class T3 dl;
-    class T4 gen;
-    class T5 ag;
-    class T6 prod;
+    class A,C,D base;
+    class B1,B2,E1,E2 branch;
+    class F prod;
 ```
+
+> **Note on Non-Linear Progression:** This is a conceptual dependency map, not a rigid requirement that every learner follow a single linear sequence. For example, backend engineers might advance rapidly through Generative AI into Agentic Systems, while data scientists may focus deeply on Classical ML and Deep Learning optimization.
 
 ---
 
