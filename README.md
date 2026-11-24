@@ -1,247 +1,130 @@
-# Agentic AI & Machine Learning Roadmap
+<div align="center">
 
-**An engineering-first roadmap for building, evaluating, deploying, and operating production-grade AI systems.**
+# Agentic AI & ML Engineering Roadmap
 
-A structured learning path covering classical machine learning, deep learning, generative AI, large language models, autonomous agents, and production MLOps.
+**From Mathematical & Algorithmic Foundations to Production-Grade Agentic Systems**
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
-[![CI Verified](https://img.shields.io/badge/Tests%20%26%20Links-Passing-16A34A.svg)](./.github/workflows/ci-verify.yml)
-[![Contributions Welcome](https://img.shields.io/badge/Contributions-Welcome-7C3AED.svg)](./CONTRIBUTING.md)
-[![13 Modules](https://img.shields.io/badge/Curriculum-13%20Modules-0284C7.svg)](#2-learning-roadmap)
-[![10 Projects](https://img.shields.io/badge/Projects-10%20Blueprints%20%2B%202%20Starters-D97706.svg)](#4-hands-on-projects)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Python: 3.11+](https://img.shields.io/badge/Python-3.11%20%7C%203.12%20%7C%203.13-3776AB.svg?logo=python&logoColor=white)](https://www.python.org/)
+[![Validation: Passing](https://img.shields.io/badge/CI%2FCD-Passing-brightgreen.svg)](scripts/validate_links.py)
+[![Docs: MkDocs](https://img.shields.io/badge/Docs-MkDocs%20Material-526CFE.svg?logo=materialformkdocs&logoColor=white)](docs/index.md)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
----
+<br/>
 
-## 1. Start Here
+<img src="assets/banner.webp" alt="Agentic AI and ML Engineering Roadmap Hero Banner" width="100%" />
 
-Choose a starting point based on your current experience. Follow the curriculum sequentially for a complete learning journey, or explore a specialization that matches your engineering goals.
+<br/>
 
-| Experience Level | Recommended Starting Point | Learning Focus |
-|---|---|---|
-| **Beginner** | [Phase 1: Foundations](#phase-1-foundations) · [Module 01](./curriculum/01-foundations/01_python_sql_and_data_stack.md) | Python, SQL, data structures, mathematics, and statistics. |
-| **Intermediate** | [Phase 2: Core ML & DL](#phase-2-core-machine-learning--deep-learning) · [Module 03](./curriculum/02-machine-learning/03_classical_ml_and_recsys.md) | Machine learning, feature engineering, model evaluation, and deep learning. |
-| **Advanced** | [Phase 4: Autonomous Agents](#phase-4-autonomous-agents--systems) · [Module 07](./curriculum/05-agentic-ai/07_ai_agents_fundamentals.md) | Agent architectures, tool orchestration, multi-agent systems, MCP, and evaluation. |
+**A disciplined, production-first engineering curriculum designed to build reliable, high-performance Machine Learning and Agentic AI systems.**
 
-Already experienced in a specific area? Explore [Choose Your Specialization](#3-choose-your-specialization) for a focused learning path.
+[Explore Roadmap](./ROADMAP.md) • [Getting Started](./docs/getting-started.md) • [Learning Paths](./docs/learning-paths.md) • [Portfolio Projects](./projects/README.md) • [Interview Kits](./interview-kits/README.md)
+
+</div>
 
 ---
 
-## 2. Learning Roadmap
+## 🧭 Who This Roadmap Is For
 
-The curriculum is organized into five progressive phases, moving from foundational engineering concepts to production-ready autonomous AI systems.
+- **Software & Backend Engineers** seeking to transition into AI/ML Engineering without getting lost in shallow API wrapper hype.
+- **Data Scientists & Classical ML Engineers** advancing to Generative AI, RAG systems, and Autonomous Agent orchestration.
+- **AI Engineers & Architects** designing enterprise multi-agent platforms, Model Context Protocol (MCP) tool servers, and production MLOps pipelines.
+
+---
+
+## 🎯 What You Will Build & Master
+
+- **Algorithmic Mastery:** Implement Autograd, Backpropagation, Scaled Dot-Product Attention, and Numerically Stable Softmax from scratch in pure NumPy.
+- **Enterprise Retrieval (RAG):** Design hybrid vector search using dense cosine embeddings and sparse BM25 fused via Reciprocal Rank Fusion (RRF) in Qdrant.
+- **Autonomous Systems:** Construct stateful cyclical multi-agent workflows using LangGraph and Google Agent Development Kit (ADK) with durable human-in-the-loop (HITL) checkpoints.
+- **Distributed Tool Protocols:** Build decoupled, secure tool backends using the open Model Context Protocol (MCP) JSON-RPC 2.0 standard.
+- **Production AI Engineering:** Eliminate pickle security vulnerabilities with safe `.npz` serialization, serve low-latency FastAPI endpoints, and monitor data drift with automated Population Stability Index (PSI) calculations.
+
+---
+
+## 🗺️ High-Level Learning Roadmap
+
+The curriculum is structured into 6 progressive tiers. Each module contains measurable learning objectives, production code, failure modes, and hands-on exercises:
 
 ```mermaid
 flowchart TD
-    A["01 · Foundations<br/>Python, SQL, Mathematics"] 
-    B["02 · Core ML & Deep Learning<br/>Modeling, Training, Optimization"]
-    C["03 · Generative AI & LLMs<br/>Transformers, Fine-Tuning, RAG"]
-    D["04 · Agentic AI<br/>Agents, Tools, MCP, Safety"]
-    E["05 · Production Engineering<br/>MLOps, Deployment, Monitoring"]
+    T1["1. Engineering Foundations<br/>(Core: Python 3.12, Vectorized NumPy, Modern SQL, Linear Algebra & Probability)"]
+    T2["2. Classical Machine Learning<br/>(Core: Leak-Free Preprocessing, Ensembles, Imbalance, Two-Tower RecSys)"]
+    T3["3. Deep Learning & Neural Systems<br/>(Intermediate: PyTorch Loops, Autograd Backprop, Normalization & Optimization)"]
+    T4["4. Generative AI & Foundation Models<br/>(Intermediate: Transformers, LoRA/DPO, Qdrant Hybrid RAG & vLLM PagedAttention)"]
+    T5["5. Autonomous Agents & MCP Protocols<br/>(Advanced: ReAct Loops, Cyclical LangGraph, FastMCP Servers & Safety Guardrails)"]
+    T6["6. Production AI Engineering & MLOps<br/>(Advanced: FastAPI Serving, PSI Drift, HITL Governance & Cloud FinOps)"]
 
-    A --> B --> C --> D --> E
+    T1 --> T2 --> T3 --> T4 --> T5 --> T6
 
-    style A fill:#F8FAFC,stroke:#94A3B8,color:#0F172A
-    style B fill:#F8FAFC,stroke:#94A3B8,color:#0F172A
-    style C fill:#EEF2FF,stroke:#6366F1,color:#312E81
-    style D fill:#EEF2FF,stroke:#6366F1,color:#312E81
-    style E fill:#F8FAFC,stroke:#94A3B8,color:#0F172A
+    classDef c fill:#E0F2FE,stroke:#0284C7,stroke-width:1.5px,color:#0369A1;
+    classDef i fill:#EDE9FE,stroke:#7C3AED,stroke-width:1.5px,color:#4C1D95;
+    classDef a fill:#FEF3C7,stroke:#D97706,stroke-width:1.5px,color:#92400E;
+
+    class T1,T2 c;
+    class T3,T4 i;
+    class T5,T6 a;
 ```
 
-### Phase 1: Foundations
-
-*Build a strong foundation in programming, data processing, mathematics, and statistical reasoning.*
-
-**[Module 01](./curriculum/01-foundations/01_python_sql_and_data_stack.md) — Python, SQL & Modern Data Stack**
-
-- Difficulty: Foundational
-- Study time: 6–8 hours
-- Prerequisites: Basic programming
-- Topics: Vectorized operations, memory views, CTEs, SQL window functions, analytical joins, and asynchronous I/O.
-- Practical lab: [Interactive NumPy, Pandas & SQL Lab](./notebooks/foundations/01_numpy_pandas_sql_lab.ipynb)
-
-**[Module 02](./curriculum/01-foundations/02_math_and_statistics.md) — Mathematics & Statistics for AI/ML**
-
-- Difficulty: Foundational
-- Study time: 5–7 hours
-- Prerequisites: Module 01
-- Topics: Matrix decompositions, gradient descent intuition, probability distributions, Bayes' theorem, and hypothesis testing.
-
-### Phase 2: Core Machine Learning & Deep Learning
-
-*Move from data processing to predictive modeling, neural architectures, and optimization.*
-
-**[Module 03](./curriculum/02-machine-learning/03_classical_ml_and_recsys.md) — Classical Machine Learning & Recommendation Systems**
-
-- Difficulty: Intermediate
-- Study time: 8–10 hours
-- Prerequisites: Modules 01 and 02
-- Topics: Leak-free pipelines, gradient-boosted trees (XGBoost/LightGBM), SHAP explainability, and two-stage recommendation systems.
-
-**[Module 04](./curriculum/03-deep-learning/04_deep_learning_and_rl.md) — Deep Learning, PyTorch & Reinforcement Learning**
-
-- Difficulty: Intermediate
-- Study time: 7–9 hours
-- Prerequisites: Modules 02 and 03
-- Topics: Tensor operations, autograd mechanics, normalization layers, AdamW, and policy optimization.
-
-### Phase 3: Generative AI, LLMs & Retrieval
-
-*Understand modern Transformer architectures, multimodal learning, fine-tuning, and production retrieval systems.*
-
-**[Module 05](./curriculum/04-generative-ai/05_nlp_cv_and_multimodal.md) — NLP, Computer Vision & Multimodal AI**
-
-- Difficulty: Intermediate
-- Study time: 9–11 hours
-- Prerequisites: Module 04
-- Topics: Tokenization algorithms, multi-head scaled dot-product attention, Vision Transformers (ViT), and multimodal contrastive learning (CLIP).
-- Practical lab: [Mini-Transformer Attention Lab](./notebooks/deep-learning/03_mini_transformer_attention.ipynb)
-
-**[Module 06](./curriculum/04-generative-ai/06_llms_finetuning_and_rag.md) — Generative AI, Fine-Tuning & Production RAG**
-
-- Difficulty: Advanced
-- Study time: 10–12 hours
-- Prerequisites: Module 05
-- Topics: Parameter-efficient fine-tuning (LoRA/QLoRA), alignment (DPO), hybrid vector search, reciprocal rank fusion (RRF), and cross-encoder reranking.
-
-### Phase 4: Autonomous Agents & Systems
-
-*Build stateful autonomous agents with tool integration, memory, orchestration, and safety controls.*
-
-**[Module 07](./curriculum/05-agentic-ai/07_ai_agents_fundamentals.md) — AI Agent Fundamentals & Reasoning Loops**
-
-- Difficulty: Intermediate
-- Study time: 6–8 hours
-- Prerequisites: Module 06
-- Topics: Deterministic workflows vs. autonomous agents, ReAct loops, execution sandboxing, and circuit breakers.
-
-**[Module 08](./curriculum/05-agentic-ai/08_tools_langgraph_and_adk.md) — Function Calling, LangGraph & Google ADK**
-
-- Difficulty: Advanced
-- Study time: 6–8 hours
-- Prerequisites: Module 07
-- Topics: Schema enforcement, state machines, cyclic execution graphs, human-in-the-loop checkpoints, and framework patterns.
-
-**[Module 09](./curriculum/05-agentic-ai/09_multi_agent_and_mcp.md) — Multi-Agent Systems & Model Context Protocol (MCP)**
-
-- Difficulty: Advanced
-- Study time: 6–7 hours
-- Prerequisites: Module 08
-- Topics: Supervisor, parallel and swarm architectures, context isolation, MCP clients and servers, and agent communication.
-
-**[Module 10](./curriculum/05-agentic-ai/10_agent_evals_and_safety.md) — Agent Evaluation, Safety & Governance**
-
-- Difficulty: Advanced
-- Study time: 7–9 hours
-- Prerequisites: Module 09
-- Topics: Evaluation-driven development, LLM-as-a-judge debiasing, prompt injection defense, regulatory risk frameworks, and token budgets.
-
-### Phase 5: Production MLOps & Engineering Practice
-
-*Learn to deploy, monitor, troubleshoot, and optimize AI systems under real-world production constraints.*
-
-**[Module 11](./curriculum/06-production-ai/11_mlops_cloud_and_finops.md) — Production MLOps, Drift & Cloud FinOps**
-
-- Difficulty: Advanced
-- Study time: 8–10 hours
-- Prerequisites: Modules 03 and 10
-- Topics: FastAPI serving lifecycles, point-in-time feature stores, population stability index (PSI), drift monitoring, and container security.
-
-**[Module 12](./curriculum/06-production-ai/12_system_troubleshooting_scenarios.md) — Real-World Troubleshooting Scenarios**
-
-- Difficulty: Advanced
-- Study time: 6–8 hours
-- Prerequisites: Modules 01–11
-- Topics: Train-serve skew, out-of-memory recovery, catastrophic forgetting, and latency bottleneck diagnosis.
-
-**[Module 13](./curriculum/06-production-ai/13_algorithms_from_scratch.md) — Hands-On ML Algorithms from Scratch**
-
-- Difficulty: Intermediate
-- Study time: 8–10 hours
-- Prerequisites: Modules 01–06
-- Topics: Numerical stability, logistic regression, k-means clustering, BM25 indexing, and vector cosine search implemented in Python/NumPy.
-- Practical lab: [Algorithms from Scratch Notebook](./notebooks/machine-learning/02_ml_from_scratch_challenges.ipynb)
+> 📖 **[View the Complete Module-by-Module Sequence in ROADMAP.md →](./ROADMAP.md)**
 
 ---
 
-## 3. Choose Your Specialization
+## ⚡ Quick Navigation
 
-Use these learning paths to focus on the engineering skills and projects most relevant to your target role.
-
-| Engineering Track | Focus Areas | Recommended Modules | Portfolio Projects |
-|---|---|---|---|
-| **Machine Learning Engineer** | Classical ML, feature engineering, ranking, tabular optimization | 01, 02, 03, 04, 11, 13 | [Local MLOps Service](./projects/intermediate/starter-local-mlops/README.md) · [Two-Stage RecSys](./projects/README.md#project-8-meta--amazon-two-stage-e-commerce-recommendation--ranking-engine) |
-| **Generative AI Engineer** | Multimodal AI, LLM fine-tuning, hybrid RAG, inference serving | 01, 02, 05, 06, 11 | [Hybrid RAG Agent](./projects/intermediate/starter-local-rag-agent/README.md) · [vLLM Serving](./projects/README.md#project-10-ai-infrastructure-high-throughput-llm-serving-with-vllm--semantic-caching) |
-| **Agentic AI Engineer** | Agent architectures, orchestration, MCP, safety and evaluation | 01, 02, 06, 07, 08, 09, 10 | [Google ADK + MCP Copilot](./projects/README.md#project-7-google-ecosystem-autonomous-operations-copilot-with-google-adk--mcp) |
-| **AI Architect / MLOps Engineer** | System architecture, deployment, feature stores, monitoring, cloud FinOps | 01, 02, 03, 10, 11, 12 | [Serverless IDP Pipeline](./projects/README.md#project-5-aws-enterprise-serverless-intelligent-document-processing-idp-pipeline) · [Fraud Prevention + Feast](./projects/README.md#project-9-fintech--stripe-real-time-fraud-prevention-with-feast--drift-cicd) |
-
----
-
-## 4. Hands-On Projects
-
-Apply the concepts through practical engineering projects designed around architecture, implementation, testing, performance, and production constraints.
-
-### Starter Projects
-
-| Project | Difficulty | Technologies | Engineering Outcome |
-|---|---|---|---|
-| [Air-Gapped Hybrid RAG & SQL Agent](./projects/intermediate/starter-local-rag-agent/README.md) | Intermediate | Ollama, Qdrant, DuckDB, LangGraph | Offline copilot with document citations and read-only SQL guardrails. |
-| [Full-Lifecycle Local MLOps Service](./projects/intermediate/starter-local-mlops/README.md) | Intermediate | Scikit-learn, FastAPI, PSI, Docker, Pytest | Production-style ML service with schema validation, drift detection, and CI testing. |
-
-### Advanced Project Blueprints
-
-| Project | Difficulty | Technologies | Engineering Outcome |
-|---|---|---|---|
-| [Real-Time Edge Computer Vision Tracking](./projects/README.md#local-project-2-real-time-edge-computer-vision--multi-object-tracking-pipeline) | Intermediate | YOLO, ONNX Runtime, OpenCV, ByteTrack | Local multi-object tracking with dwell-time analytics and sub-30ms target processing. |
-| [Autograd Engine & Mini-Transformer](./projects/README.md#local-project-3-autograd-engine--character-level-transformer-from-scratch) | Advanced | Python, NumPy | Reverse-mode autodiff and multi-head causal self-attention implemented from scratch. |
-| [AWS Serverless Document Intelligence](./projects/README.md#project-5-aws-enterprise-serverless-intelligent-document-processing-idp-pipeline) | Advanced | EventBridge, Textract, Bedrock, DynamoDB | Document extraction with PII masking, schema adherence, and asynchronous processing. |
-| [GCP Video Multimodal Search](./projects/README.md#project-6-gcp-enterprise-multimodal-video-intelligence--semantic-search-engine) | Advanced | Vertex AI, BigQuery Vector Index, Gemini Flash | Natural-language video search with temporal timestamp retrieval. |
-| [Google ADK + MCP Operations Copilot](./projects/README.md#project-7-google-ecosystem-autonomous-operations-copilot-with-google-adk--mcp) | Advanced | Google ADK, FastMCP, Docker | Multi-agent operations copilot with controlled MCP tool execution and human oversight. |
-| [Two-Stage Recommendation & Ranking](./projects/README.md#project-8-meta--amazon-two-stage-e-commerce-recommendation--ranking-engine) | Advanced | PyTorch Two-Tower, FAISS HNSW, LightGBM | Candidate generation and ranking evaluated using NDCG@10. |
-| [Real-Time Fraud Prevention with Feast](./projects/README.md#project-9-fintech--stripe-real-time-fraud-prevention-with-feast--drift-cicd) | Advanced | Feast, XGBoost, Streamlit, CI/CD | Transaction risk evaluation with point-in-time correct historical joins. |
-| [High-Throughput LLM Serving](./projects/README.md#project-10-ai-infrastructure-high-throughput-llm-serving-with-vllm--semantic-caching) | Advanced | vLLM, PagedAttention, Redis, OpenTelemetry | Optimized inference with semantic caching and latency instrumentation. |
-
-For complete architecture diagrams, implementation details, and engineering decisions, explore:
-
-- [Complete Project Catalog](./projects/README.md)
-- [End-to-End Lifecycle Playbook](./projects/end_to_end_lifecycle_playbook.md)
+| Resource | Purpose | Direct Link |
+|---|---|---|
+| **Curriculum Roadmap** | Detailed breakdown of all 13 modules across 6 tiers | [ROADMAP.md](./ROADMAP.md) |
+| **Learning Paths** | Personalized tracks (Foundations, GenAI, Agents, MLOps) | [docs/learning-paths.md](./docs/learning-paths.md) |
+| **Prerequisites Guide** | Self-assessment checklist and math/programming refresher | [docs/prerequisites.md](./docs/prerequisites.md) |
+| **Portfolio Projects** | 10 real-world project blueprints (4 local, 6 enterprise cloud) | [projects/README.md](./projects/README.md) |
+| **Runnable Starters** | Fully working, local $0 API cost codebases with pytest suites | [projects/intermediate/](./projects/intermediate/README.md) |
+| **Interactive Labs** | Jupyter Notebooks for vectorized math, ML, and transformers | [notebooks/foundations/](./notebooks/foundations/01_numpy_pandas_sql_lab.ipynb) |
+| **Interview Preparation** | System design, technical screenings, and resume CAR guide | [interview-kits/README.md](./interview-kits/README.md) |
+| **Curated Resources** | Textbooks, courses, landmark research papers, and open-source tools | [resources/recommended_resources.md](./resources/recommended_resources.md) |
+| **Technical Glossary** | Production terminology (RRF, PSI, HITL, MCP, PagedAttention) | [docs/glossary.md](./docs/glossary.md) |
 
 ---
 
-## 5. Interview Preparation
+## 🛠️ Project Highlights ($0 API Cost Starters)
 
-Prepare for technical interviews through focused engineering questions, system design frameworks, coding exercises, and practical troubleshooting scenarios.
+You can clone and run complete production-grade systems immediately on your laptop without registering credit cards or generating paid API tokens:
 
-| Resource | What It Covers |
-|---|---|
-| [ML & GenAI System Design Framework](./interview-kits/agentic-ai/ml_system_design_framework.md) | Seven-step interview framework, capacity planning, QPS, VRAM, networking, and end-to-end architecture design. |
-| [Classical ML, RecSys & MLOps Q&A](./interview-kits/machine-learning/classical_ml_questions.md) | Tree ensembles, model calibration, PR-AUC vs. ROC-AUC, recommendation systems, and concept drift. |
-| [GenAI, LLMs, RAG & Agents Q&A](./interview-kits/generative-ai/genai_and_agents_questions.md) | Attention, LoRA, DPO, RAG failure modes, TTFT/TPOT, and MCP. |
-| [SQL, Coding & PyTorch Screening](./interview-kits/machine-learning/sql_and_coding_screenings.md) | SQL window queries, memory leak diagnosis, tensor debugging, and cache algorithms. |
-| [Resume Playbook & Engineering Flashcards](./interview-kits/resume_and_flashcards.md) | CAR-based project descriptions, take-home assessment rubrics, and 36 core review flashcards. |
+- **[Starter 1: Air-Gapped Desktop Hybrid RAG & SQL Router Agent](./projects/intermediate/starter-local-rag-agent/README.md)**  
+  *Stack:* Python 3.12+, Pure NumPy, SQLite in-memory, BM25 + Dense Cosine Vector Fusion  
+  Combines local lexical and semantic document search with read-only SQL execution in an isolated offline environment.
 
----
-
-## 6. Learning Resources
-
-Explore additional material to deepen your understanding of AI engineering and stay connected with the evolving ecosystem.
-
-- [Curated Engineering Resources](./resources/recommended_resources.md) — Textbooks, foundational research papers, technical lectures, and open-source repositories.
-- [Industry Trends & Recommended Skills](./resources/recommended_resources.md#1-industry-trends-and-recommended-skills) — Production machine learning and agent engineering skills.
+- **[Starter 2: Full-Lifecycle Production MLOps & PSI Drift Engine](./projects/intermediate/starter-local-mlops/README.md)**  
+  *Stack:* FastAPI, Uvicorn, Scikit-Learn, NumPy, Docker, Pytest  
+  Implements zero-pickle `.npz` model persistence, leak-free training, REST prediction endpoints, automated Population Stability Index (PSI) drift monitoring, and non-root container deployment.
 
 ---
 
-## 7. Contributing
+## 🚀 How to Get Started in 3 Steps
 
-Contributions are welcome. You can help improve the curriculum, add practical examples, enhance starter projects, fix documentation, and suggest new engineering challenges.
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/FirdowsRahaman/agentic-ai-and-ml-roadmap.git
+   cd agentic-ai-and-ml-roadmap
+   ```
 
-Before submitting changes, review the [Contribution Guidelines](./CONTRIBUTING.md).
+2. **Select your learning path:**
+   Review the [Learning Paths Guide](./docs/learning-paths.md) to pick the track suited to your goals (e.g. Applied ML, Generative AI, or Agent Systems).
+
+3. **Verify the environment and run your first lab:**
+   ```bash
+   python scripts/validate_structure.py
+   python scripts/validate_links.py
+   ```
 
 ---
 
-## 8. License
+## 🤝 Contributing
 
-This project is licensed under the [MIT License](./LICENSE).
+We welcome contributions from engineers, researchers, and educators! Please read our [Contribution Guidelines](./CONTRIBUTING.md) for details on code style, link validation, notebook requirements, and the pull request process.
 
 ---
 
-**Build strong foundations. Understand the systems. Engineer AI for production.**
+## 📄 License
+
+This project is open-source under the [MIT License](./LICENSE).
