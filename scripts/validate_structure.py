@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import os
+import subprocess
 import sys
 
 REQUIRED_ROOT_FILES = [
@@ -57,11 +58,6 @@ REQUIRED_RESOURCE_FILES = [
     "resources/tools.md",
 ]
 
-FORBIDDEN_PATTERNS = [
-    ".pytest_cache",
-    "__pycache__",
-]
-
 
 def main() -> int:
     repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -93,16 +89,13 @@ def main() -> int:
         if not os.path.isfile(res):
             errors.append(f"Missing resource file: {res}")
 
-    # 5. Check for forbidden cache artifacts
-    for root, dirs, files in os.walk("."):
-        if ".git" in root:
-            continue
-        for d in dirs:
-            if d in FORBIDDEN_PATTERNS:
-                errors.append(f"Forbidden cache directory found: {os.path.join(root, d)}")
-        for f in files:
-            if f.endswith(".pyc") or f == ".DS_Store":
-                errors.append(f"Forbidden artifact file found: {os.path.join(root, f)}")
+    # 5. Check that no forbidden cache or bytecode files are tracked by Git
+    res = subprocess.run(["git", "ls-files"], capture_output=True, text=True)
+    if res.returncode == 0:
+        tracked_files = res.stdout.splitlines()
+        for tf in tracked_files:
+            if tf.endswith(".pyc") or ".pytest_cache" in tf or "__pycache__" in tf or tf.endswith(".DS_Store"):
+                errors.append(f"Forbidden artifact tracked by Git: {tf}")
 
     if errors:
         print(f"Structure validation FAILED with {len(errors)} error(s):")
@@ -110,7 +103,7 @@ def main() -> int:
             print(f"  ❌ {err}")
         return 1
 
-    print("Structure validation PASSED! All directories and standard conventions verified.")
+    print("Structure validation PASSED! All directories, files, and Git conventions verified.")
     return 0
 
 
