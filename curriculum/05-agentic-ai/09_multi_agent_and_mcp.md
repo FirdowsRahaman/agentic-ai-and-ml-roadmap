@@ -1,17 +1,18 @@
 # Module 09: Multi-Agent Systems & Model Context Protocol (MCP)
 
-> **Difficulty:** Advanced | **Estimated Study Time:** 6-7 Hours | **Prerequisites:** [Module 08](./08_tools_langgraph_and_adk.md)
-> **Focus:** Multi-agent topologies (supervisor, parallel), subagent context isolation, and Model Context Protocol (MCP)
+> **Difficulty:** Advanced | **Estimated Study Time:** 6-8 Hours | **Prerequisites:** [Module 08: Function Calling & LangGraph](./08_tools_langgraph_and_adk.md)  
+> **Focus:** Multi-agent architectures (supervisor, hierarchical, peer-to-peer), subagent context isolation, Model Context Protocol (MCP) JSON-RPC 2.0, FastMCP servers, and tool sandboxing
 
 [← Previous: Module 08: Tools, LangGraph & ADK](./08_tools_langgraph_and_adk.md) | [Roadmap Index](../../README.md) | [Next: Module 10: Agent Evaluation, Safety & Governance →](./10_agent_evals_and_safety.md)
 
 ---
 
-## Mental Model: Specialist Teams, USB-C Cables (`MCP`) & Phone Lines (`A2A`)
+## 1. Overview
 
-In [Module 08](./08_tools_langgraph_and_adk.md), you built a durable single agent. As an agent grows beyond 15-20 tools, though, accuracy drops sharply: just like handing one overwhelmed intern the keys to Legal, Finance, and IT all at once:
-- **Why Multi-Agent?** Splitting one bloated generalist into **focused Subagents** gives each specialist a clean context window and just 2-3 tools.
-- **`MCP` vs. `A2A`:** **`MCP`** is the **universal USB-C cable** plugging an agent into its *own* databases and tools; **`A2A`** is the **inter-office phone line** letting your Finance Agent ask another team's Supply-Chain Agent for help without peeking inside its private database.
+In [Module 08](./08_tools_langgraph_and_adk.md), you constructed a durable single-agent state machine. However, as an agent scales beyond 15–20 tools, its routing accuracy degrades severely: foundation models struggle to discriminate among dozens of overlapping JSON schemas in a single prompt. **Multi-Agent Systems** resolve this by decomposing bloated generalists into focused specialist subagents:
+- **Subagent Context Isolation:** Each worker agent operates in a clean, isolated context window with only 2–3 dedicated tools.
+- **Model Context Protocol (MCP):** Acts as the **universal USB-C standard** connecting agents to external databases, tools, and environments via standardized JSON-RPC 2.0 messages.
+- **Agent-to-Agent (A2A):** Acts as the **communication bus** allowing independent specialized agents to collaborate and negotiate without exposing internal raw execution state.
 
 ```mermaid
 flowchart TD
@@ -35,171 +36,226 @@ flowchart TD
 
 ---
 
-## Tier 1: Core Foundations (Multi-Agent Topologies & Subagent Delegation)
+## 2. Learning Objectives
 
-### 1. Why & When to Use Multi-Agent Systems
-
-#### 1.1 Tool-Count Degradation, Context Isolation & Multi-Agent Trade-Offs
-1. **Tool Selection Confusion:** Tool-routing accuracy drops sharply once an LLM must discriminate among 20+ overlapping JSON schemas.
-2. **Context Pollution:** Raw logs from step 1 pollute reasoning at step 6. Subagents run in **isolated context windows** and return only a distilled 200-token artifact to the supervisor!
-3. **Model Heterogeneity:** Pair a frontier reasoning model (`Gemini 3.1 Pro` / `Claude 4.6 Sonnet` / `GPT-5`) as the **Supervisor** with fast, low-cost workers (`Gemini 3 Flash` / local `Qwen 3.5 8B`) for high-volume extraction.
-> **Tradeoff Warning:** Multi-agent handoffs multiply token usage and latency, only split into multiple agents when tool count (`>10-15`), security privilege boundaries, or context isolation genuinely require it.
-
-#### 1.2 Sequential, Hierarchical Supervisor, Parallel Map-Reduce & Critic Topologies
-When splitting *is* justified, almost every multi-agent system in production follows one of four clean coordination patterns:
-
-| Architecture | Control Flow | Production SDKs | Best Fit |
-|---|---|---|---|
-| **1. Sequential Handoff** | `Researcher -> Writer -> Verifier` | `LangGraph`, `Google ADK`, `PydanticAI` | Deterministic ETL, report, or code-gen pipelines |
-| **2. Hierarchical Supervisor** | Central coordinator delegates to workers & synthesizes | `Google ADK`, `LangGraph Supervisor` | Enterprise support copilots, multi-domain analytics |
-| **3. Parallel Fan-Out / Map-Reduce** | Spawns $K$ concurrent workers on shards, merges results | `LangGraph Send()`, `ADK ParallelAgent` | Auditing 20 files or 5 security angles simultaneously |
-| **4. Generator-Critic Loop** | Coder <-> Test/Security Verifier iterate up to `max_steps` | `LangGraph`, `OpenAI Agents SDK` | Code synthesis, SQL/math verification |
-
-```python
-from google.adk.agents.llm_agent import Agent
-
-# Specialized Worker Subagents with isolated instructions & minimal toolsets
-sql_analyst = Agent(
-    model="gemini-3-flash-preview",
-    name="sql_analyst",
-    description="Executes read-only analytical SQL queries on sales tables.",
-    instruction="Return concise metric tables with exact query filters used.",
-)
-
-policy_auditor = Agent(
-    model="gemini-3-flash-preview",
-    name="policy_auditor",
-    description="Checks compliance rules and refund eligibility.",
-    instruction="Cite exact policy section numbers for every decision.",
-)
-
-# Hierarchical Supervisor delegating to subagents
-supervisor = Agent(
-    model="gemini-3.1-pro",
-    name="ops_supervisor",
-    description="Coordinates analytics and compliance specialists.",
-    instruction="Delegate data lookups to 'sql_analyst' and policy checks to 'policy_auditor'.",
-    subagents=[sql_analyst, policy_auditor],
-)
-```
+By the end of this module, you will be able to:
+- **Analyze multi-agent topologies** (Supervisor, Hierarchical, Peer-to-Peer, Consensus), selecting optimal coordination patterns for complex engineering tasks.
+- **Implement context isolation** between subagents, preventing intermediate tool observations from overflowing the root supervisor context.
+- **Apply the Model Context Protocol (MCP) specification**, implementing standardized JSON-RPC 2.0 requests (`tools/list`, `tools/call`, `resources/read`).
+- **Build and deploy production MCP tool servers** using Python `FastMCP` over stdio and Streamable HTTP transports.
+- **Enforce least-privilege security controls** across tool servers, isolating file system access and database privileges.
 
 ---
 
-## Tier 2: Production Architecture & Scale (Model Context Protocol & MCP Security)
+## 3. Prerequisites
 
-Organizing subagents inside one codebase is half the battle; **Tier 2** solves how those agents plug into **external databases, SaaS tools, and other teams' agents** using two open industry standards (**`MCP`** and **`A2A`**), without opening giant security holes.
+- **Function Calling & LangGraph:** Strict JSON schemas and cyclical state machines from [Module 08](./08_tools_langgraph_and_adk.md).
+- **Asynchronous Python & Networking:** HTTP verbs, JSON serialization, and `asyncio` from [Module 01](../01-foundations/01_python_sql_and_data_stack.md).
 
-### 2. Model Context Protocol (`MCP`) Architecture & Transports
+---
 
-#### 2.1 `MCP` Primitives (`Tools`, `Resources`, `Prompts`) & Transports (`stdio` / `Streamable HTTP`)
-Open-sourced by Anthropic and adopted across IDEs, cloud platforms, and agent SDKs, **MCP** uses **JSON-RPC 2.0** between an **MCP Host/Client** and an **MCP Server**, exposing three standardized primitives:
-1. **`Tools` (Model-Controlled):** Executable functions (`query_postgres`, `create_jira_issue`) invoked by the LLM.
-2. **`Resources` (Application-Controlled):** Read-only structured context (`postgres://schema/users`, documentation files) attached like REST `GET` endpoints.
-3. **`Prompts` (User-Controlled):** Reusable workflow templates/slash commands parameterized by the server.
+## 4. Core Concepts
 
-**Standard Transports:**
-- **`stdio` (Standard Input/Output):** Local subprocess communication on the user's machine: zero network overhead, ideal for IDE/desktop tools.
-- **`Streamable HTTP`:** Modern remote production transport (superseding legacy dual-endpoint HTTP+SSE) supporting stateless load-balanced servers, OAuth 2.1 authorization headers, and optional streaming responses over a single HTTP endpoint.
-
-```python
-from mcp.server.fastmcp import FastMCP
-
-mcp = FastMCP("Orders Analytics MCP")
-
-@mcp.resource("schema://orders")
-def get_orders_schema() -> str:
-    """Exposes read-only table schema context to MCP clients."""
-    return "orders(order_id TEXT PK, user_id TEXT, amount_usd NUMERIC, status TEXT)"
-
-@mcp.tool()
-def fetch_order_summary(order_id: str) -> dict[str, str | float]:
-    """Fetches validated summary for a specific order_id (read-only)."""
-    mock_rows = {"ORD-101": {"order_id": "ORD-101", "amount_usd": 89.99, "status": "Delivered"}}
-    return mock_rows.get(order_id, {"error": "Order not found"})
-
-# Local CLI mode: mcp.run(transport="stdio")
-# Remote microservice mode: mcp.run(transport="streamable-http")
-```
-
-#### 2.2 Securing `MCP` Ecosystems Against Tool Poisoning & Schema Rug-Pulls
-Plugging third-party `MCP` servers into your agent is convenient, but just like plugging an untrusted USB stick into your laptop, it introduces new attack surfaces you must lock down:
-1. **Tool Description Poisoning:** A malicious MCP server hides covert prompt-injection instructions inside its tool `description` metadata (invisible to the human user, read directly by the LLM), tricking the agent into exfiltrating `~/.ssh` keys or environment variables via another legitimate MCP server!
-2. **Dynamic Tool Rug-Pulls:** An unpinned remote MCP server passes security review on Day 1, then silently mutates its tool definitions on Day 5.
-3. **Production Defenses:** Pin and cryptographic-hash MCP tool schemas, scope OAuth 2.1 tokens per server with least privilege, isolate local `stdio` servers in containers, and require explicit `HITL` consent whenever cross-server data flows to external network endpoints.
-
-### 3. `A2A` (Agent-to-Agent Protocol) vs. `MCP`
-
-`MCP` connects an agent *downward* to its own tools and databases. What when two full autonomous agents owned by **different departments or vendors** need to collaborate as peers?
-
-#### 3.1 Complementary Protocols: Vertical Tooling (`MCP`) vs. Horizontal Federation (`A2A`)
-In modern enterprise architectures, agents built on different stacks (e.g., a `LangGraph` Billing Agent in Finance and a `Google ADK` Inventory Agent in Supply Chain) must collaborate without sharing internal prompts, memory, or database credentials. The **[Agent2Agent (`A2A`) Protocol](https://github.com/a2aproject/A2A)** (introduced by Google and governed by the Linux Foundation) pairs directly with `MCP`:
+### 4.1 Multi-Agent Topologies
+1. **Supervisor Pattern (Hub-and-Spoke):** A central coordinator analyzes the user request, delegates sub-tasks to specialized worker agents, and synthesizes final results.
+2. **Sequential Pipeline (Chain):** Output of Agent A becomes the structured input for Agent B (e.g. Researcher $\to$ Drafter $\to$ Fact-Checker).
+3. **Hierarchical Multi-Tier:** Supervisors manage team leads, who in turn coordinate leaf worker agents.
+4. **Peer-to-Peer Collaborative (A2A):** Autonomous agents communicate directly over message buses using standard protocols without a central bottleneck.
 
 <p align="center">
-  <img src="../../assets/animations/agent_mcp_a2a_motion.svg" width="100%" alt="Animated architecture comparing Vertical MCP Tool calls and Horizontal A2A Agent-to-Agent collaboration" />
+  <img src="../../assets/animations/agent_mcp_a2a_motion.svg" width="100%" alt="Motion visualization comparing Model Context Protocol tool connections with Agent-to-Agent message collaboration" />
 </p>
 
-| Dimension | `MCP` (Model Context Protocol) | `A2A` (Agent-to-Agent Protocol) |
-|---|---|---|
-| **Integration Axis** | **Vertical (`Agent ↔ Tools, DBs & Resources`)** | **Horizontal (`Client Agent ↔ Remote Peer Agent`)** |
-| **Abstraction Model** | White-box deterministic function/schema invocation | **Opaque ("Black-Box") peer agent**: hides internal prompts, weights & private tools |
-| **Discovery & Transport** | Server capability handshake over `stdio` or `Streamable HTTP` | Publishes JSON **Agent Card** at `/.well-known/agent-card.json`; communicates via HTTPS + JSON-RPC 2.0 + `SSE` task streams |
+### 4.2 Subagent Context Isolation
+When a generalist agent executes 10 tool calls, its context fills with intermediate JSON returns, SQL schemas, and stack traces, driving up latency and cost while causing the model to forget original instructions. Subagents receive isolated prompt instructions and return only a synthesized summary to the supervisor:
 
-```json
-// Example /.well-known/agent-card.json for A2A Peer Discovery
-{
-  "name": "supply_chain_inventory_agent",
-  "url": "https://inventory-agent.internal.example/a2a",
-  "version": "1.0.0",
-  "capabilities": { "streaming": true, "pushNotifications": false },
-  "authentication": { "schemes": ["Bearer"] },
-  "skills": [
-    {
-      "id": "check_warehouse_stock",
-      "name": "Warehouse Stock & Restock ETA",
-      "description": "Verifies SKU stock levels and restock schedules across regional warehouses."
-    }
-  ]
+```python
+# Specialized Worker Subagent with isolated instructions & minimal toolsets
+researcher_agent = {
+    "system_prompt": "You are a specialized search agent. Retrieve factual citations only. Return concise bullet summaries.",
+    "tools": ["web_search", "document_lookup"],
 }
 ```
 
 ---
 
-## Mini Hands-On Lab (15-Minute Exercise)
+## 5. Technical Deep Dive
 
-Implement a lightweight **Supervisor Intent Router & Context Isolator** demonstrating how raw worker logs stay isolated from the supervisor's clean context window:
+### 5.1 Model Context Protocol (MCP) Specification
+MCP (introduced by Anthropic in late 2024 and standardized across the AI industry) establishes a clean client-host-server separation using JSON-RPC 2.0. Rather than hardcoding custom API wrappers for every database and SaaS provider, tool providers build standard MCP servers.
+
+#### Core JSON-RPC 2.0 Messages:
+- `initialize`: Client and server exchange protocol versions and capabilities.
+- `tools/list`: Server returns available tools and their JSON Schema parameters.
+- `tools/call`: Client requests tool execution with validated arguments.
+- `resources/read`: Client reads static documents, files, or application logs.
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": "req-001",
+  "method": "tools/call",
+  "params": {
+    "name": "query_database",
+    "arguments": {
+      "sql": "SELECT order_id, status FROM orders WHERE user_id = 'u_42'"
+    }
+  }
+}
+```
+
+### 5.2 Building an MCP Server with FastMCP
+```python
+from mcp.server.fastmcp import FastMCP
+
+# Initialize FastMCP Server
+mcp = FastMCP("EnterpriseAnalytics")
+
+@mcp.tool()
+def get_order_status(order_id: str) -> dict:
+    """Retrieves real-time fulfillment status and tracking numbers for an order."""
+    # Production database or API lookup
+    return {"order_id": order_id, "status": "SHIPPED", "carrier": "FedEx"}
+
+@mcp.resource("config://sla")
+def get_sla_policy() -> str:
+    """Returns company refund and SLA compliance policies."""
+    return "Refunds allowed within 30 days of confirmed delivery."
+
+if __name__ == "__main__":
+    # Runs over stdio transport by default
+    mcp.run()
+```
+
+### 5.3 MCP Security: Tool Scoping & Sandboxing
+Connecting models to tools introduces prompt injection and data exfiltration risks:
+1. **Transport Isolation:** Stdio transport runs tools in isolated subprocesses or Docker containers.
+2. **Read-Only Enforcers:** Database tools must strictly reject destructive queries (`DROP`, `DELETE`, `UPDATE`, `ALTER`).
+3. **Path Traversal Guards:** File tools must strictly validate that requested paths remain within a designated root directory (`path.resolve().is_relative_to(ROOT_DIR)`).
+
+---
+
+## 6. Hands-on Implementation
+
+Implement a minimal JSON-RPC 2.0 dispatcher simulating an MCP tool execution server:
 
 ```python
-def sql_worker(task: str) -> dict[str, str]:
-    raw_internal_trace = "SELECT ... [5,000 rows scanned] ... intermediate debug logs ..."
-    distilled_summary = "Q3 Revenue = $1.42M (+12% QoQ)."
-    # Worker keeps raw_internal_trace private, returning ONLY distilled summary!
-    _ = raw_internal_trace
-    return {"worker": "sql_worker", "summary": distilled_summary}
+import json
 
-def security_worker(task: str) -> dict[str, str]:
-    return {"worker": "security_worker", "summary": "0 PII leaks detected in Q3 export."}
+class MockMCPServer:
+    def __init__(self):
+        self.tools = {}
 
-def run_supervisor(user_request: str) -> str:
-    supervisor_context: list[str] = [f"User: {user_request}"]
-    for worker_fn in (sql_worker, security_worker):
-        artifact = worker_fn(user_request)
-        supervisor_context.append(f"[{artifact['worker']}]: {artifact['summary']}")
-    return " | ".join(supervisor_context[1:])
+    def register_tool(self, name: str, func):
+        self.tools[name] = func
 
-final_report = run_supervisor("Prepare Q3 executive compliance report")
-assert "5,000 rows scanned" not in final_report
-assert "$1.42M" in final_report and "0 PII leaks" in final_report
-print("Lab 09 Passed! Distilled Supervisor Output:", final_report)
+    def handle_message(self, request_json: str) -> str:
+        req = json.loads(request_json)
+        req_id = req.get("id")
+        method = req.get("method")
+
+        if method == "tools/list":
+            return json.dumps({
+                "jsonrpc": "2.0",
+                "id": req_id,
+                "result": {"tools": list(self.tools.keys())}
+            })
+
+        if method == "tools/call":
+            params = req.get("params", {})
+            name = params.get("name")
+            args = params.get("arguments", {})
+            if name in self.tools:
+                try:
+                    res = self.tools[name](**args)
+                    return json.dumps({"jsonrpc": "2.0", "id": req_id, "result": res})
+                except Exception as err:
+                    return json.dumps({"jsonrpc": "2.0", "id": req_id, "error": {"message": str(err)}})
+            return json.dumps({"jsonrpc": "2.0", "id": req_id, "error": {"message": "Tool not found"}})
+
+        return json.dumps({"jsonrpc": "2.0", "id": req_id, "error": {"message": "Method not supported"}})
+
+server = MockMCPServer()
+server.register_tool("add", lambda a, b: a + b)
+
+# Verify tools/call
+req = json.dumps({"jsonrpc": "2.0", "id": 1, "method": "tools/call", "params": {"name": "add", "arguments": {"a": 10, "b": 25}}})
+resp = json.loads(server.handle_message(req))
+assert resp["result"] == 35
+print("Lab 09 Passed! JSON-RPC 2.0 MCP dispatcher verified.")
 ```
 
 ---
 
-## Key Engineering Takeaways
-- Use **Multi-Agent Subagents** primarily for **context isolation**, **tool-count reduction (`<10` tools/agent)**, and **privilege separation**, not for simple tasks solvable by a 2-step workflow.
-- Know the **3 MCP Primitives (`Tools`, `Resources`, `Prompts`)** and **2 Transports (`stdio` for local, `Streamable HTTP` with OAuth 2.1 for remote production)**.
-- Call out **MCP Tool Poisoning** (prompt injection hidden inside tool schemas) when auditing third-party tool integrations.
+## 7. Practical Exercises
 
-> **Next in the Journey:** You can now wire multi-agent teams across `MCP` tools and `A2A` peer networks! Before letting those agents touch real customer accounts or company budgets, how do we **test them automatically in CI/CD, trace every span, block prompt injections, satisfy AI regulations, and cap token bills**? Let's lock down safety and quality in **[Module 10: Agent Evaluation, Safety, Governance & Token FinOps](./10_agent_evals_and_safety.md)**.
+### Exercise 1: Hierarchical Multi-Agent Orchestration
+1. Implement a Supervisor agent using LangGraph that routes incoming queries to either a `MathSpecialist` or a `TextSpecialist`.
+2. Ensure each specialist operates in its own sub-graph state without sharing raw prompt traces.
+
+### Exercise 2: Secure File Reading MCP Server
+Using `FastMCP` or standard Python:
+1. Write an MCP tool `read_log_file(filename: str)` that reads files only from `./safe_logs/`.
+2. Implement strict path normalization and verify that path traversal attempts (e.g. `../../etc/passwd`) raise a security error.
+
+---
+
+## 8. Mini Project
+
+### Autonomous E-Commerce Copilot with FastMCP & Google ADK
+Build a multi-agent operations suite:
+- **Supervisor Agent:** Analyzes customer requests and delegates tasks.
+- **Order Tracking Subagent:** Uses an MCP tool server to inspect shipment databases.
+- **Refund Policy Subagent:** Evaluates refund eligibility and triggers human approval gates if refund $> \$100$.
+- **Companion Blueprint:** Inspect the full architecture in [Project 7: Google ADK & MCP Copilot](../../projects/advanced/README.md).
+
+---
+
+## 9. Advanced Topics
+
+- **Streamable HTTP Transports (SSE):** Streaming MCP tool calls and intermediate progress updates over HTTP Server-Sent Events for remote cloud deployments.
+- **Dynamic MCP Discovery:** Configuring client agents to query an enterprise MCP registry and load server tools on-the-fly based on permissions.
+- **Consensus & Multi-Agent Debates:** Having multiple distinct foundation models critique each other's reasoning to reduce hallucinations in critical legal and medical evaluations.
+
+---
+
+## 10. Common Mistakes & Gotchas
+
+1. **Monolithic Agent Bloat:** Forcing 30 tools into one single agent, causing model reasoning degradation.
+2. **Ignoring JSON-RPC Error Formats:** Returning raw HTTP error codes instead of structured `{"jsonrpc": "2.0", "error": {...}}` responses, breaking client parsing.
+3. **Sharing Mutable State Across Subagents:** Allowing subagents to mutate the supervisor's global state concurrently, causing race conditions.
+
+---
+
+## 11. Interview Questions & System Design
+
+### Q1: What problem does the Model Context Protocol (MCP) solve for enterprise AI?
+Before MCP, every developer wrote bespoke integration code to connect LLMs to databases, GitHub, or internal APIs. Each framework (LangChain, LlamaIndex, Semantic Kernel) had proprietary tool wrappers. MCP establishes an open, vendor-neutral standard using JSON-RPC 2.0. Any MCP-compliant tool server can immediately connect to any MCP client (Claude Desktop, Cursor, Antigravity, or custom agents) without modifying client code.
+
+### Q2: How do you prevent context window pollution in multi-agent workflows?
+Context pollution is prevented through strict **context isolation**:
+1. Leaf worker agents receive only the specific instructions and data needed for their subtask.
+2. Worker agents perform iterative tool calls in their own private context.
+3. Upon task completion, workers return only a concise, structured final response to the supervisor agent.
+4. The supervisor incorporates the summary into the primary context, keeping memory compact and costs low.
+
+---
+
+## 12. Recommended Resources
+
+- **Specification:** [Model Context Protocol (MCP) Official Documentation](https://modelcontextprotocol.io/).
+- **Repository:** [Model Context Protocol Python SDK](https://github.com/modelcontextprotocol/python-sdk).
+- **Architecture Guide:** [Anthropic: Multi-Agent Systems & Tool Orchestration](https://www.anthropic.com/research/building-effective-agents).
+
+---
+
+## 13. Completion Checklist
+
+- [ ] Diagram the difference between Supervisor, Sequential, and Peer-to-Peer multi-agent topologies.
+- [ ] Implement subagent context isolation preventing tool intermediate traces from leaking into the parent.
+- [ ] Describe the structure of MCP JSON-RPC 2.0 messages (`initialize`, `tools/list`, `tools/call`).
+- [ ] Build and verify a minimal FastMCP tool server with input validation.
+- [ ] Enforce path traversal and read-only database security guards on tool executions.
 
 ---
 

@@ -1,15 +1,15 @@
 # Module 02: Mathematics & Statistics for AI/ML Engineers
 
-> **Difficulty:** Foundational | **Estimated Study Time:** 5-7 Hours | **Prerequisites:** [Module 01](./01_python_sql_and_data_stack.md)
-> **Focus:** Geometric & probabilistic intuition, matrix decompositions, Bayes' Theorem, and CLT
+> **Difficulty:** Core | **Estimated Study Time:** 6-8 Hours | **Prerequisites:** [Module 01: Python & SQL](./01_python_sql_and_data_stack.md)  
+> **Focus:** Geometric vector intuition, matrix decompositions, Bayes' Theorem, Central Limit Theorem, and A/B hypothesis testing
 
 [← Previous: Module 01: Python, SQL & Data Stack](./01_python_sql_and_data_stack.md) | [Roadmap Index](../../README.md) | [Next: Module 03: Classical ML & RecSys →](../02-machine-learning/03_classical_ml_and_recsys.md)
 
 ---
 
-## Mental Model: How Math Powers Modern AI
+## 1. Overview
 
-In [Module 01](./01_python_sql_and_data_stack.md), you turned messy SQL logs and CSVs into clean `NumPy` grids of numbers. Now, how does a machine turn those number grids into **meaning, predictions, and confident business decisions**? You never need to solve page-long integrals by hand, instead, every math concept here maps directly to one real engineering job:
+In [Module 01](./01_python_sql_and_data_stack.md), you turned messy database logs and CSVs into clean `NumPy` grids of numbers. Now, how does a machine turn those numbers into **semantic meaning, predictions, and calibrated business decisions**? Machine learning engineers rarely solve multi-page symbolic calculus by hand; instead, every mathematical concept maps directly to a concrete engineering primitive:
 
 ```mermaid
 flowchart LR
@@ -27,37 +27,43 @@ flowchart LR
 
 ---
 
-## Tier 1: Core Foundations
+## 2. Learning Objectives
 
-### 1. Linear Algebra Intuition
+By the end of this module, you will be able to:
+- **Track tensor shapes rigorously** across linear layers and multi-head attention matrix multiplications (`(B, T, D) @ (B, D, T) -> (B, T, T)`).
+- **Evaluate vector similarity** using Dot Product vs. L2-normalized Cosine Similarity, identifying when document length biases semantic retrieval.
+- **Compute latency and error distributions** using median (p50), p95, and p99 percentiles to detect tail degradation hidden by arithmetic means.
+- **Formulate Bayesian posteriors** for extreme class imbalance ($< 0.1\%$ base rates) to avoid false-positive alarm traps in fraud detection and content moderation.
+- **Design and interpret online A/B hypothesis tests** using the Central Limit Theorem (CLT), two-proportion Z-tests, and two-tailed p-values.
 
-#### 1.1 What Is a Tensor? (Numbers, Lists, Tables & Cubes)
-- **In Plain English:** Don't let the word **"Tensor"** intimidate you: it is just the umbrella name for containers of numbers with different dimensions (`0D` single number, `1D` row, `2D` Excel-style table, `3D+` stack of tables):
+---
 
-| Object | Rank | Typical Shape | Everyday Picture & AI Example |
+## 3. Prerequisites
+
+- **Python & NumPy Basics:** Array creation, indexing, and element-wise operations from [Module 01](./01_python_sql_and_data_stack.md).
+- **Basic Algebra:** Exponentials, logarithms ($\ln x$), and geometric vectors.
+
+---
+
+## 4. Core Concepts
+
+### 4.1 What Is a Tensor? (Rank & Dimensions)
+A tensor is simply a generalized container for numbers with a designated rank (number of dimensions):
+
+| Object | Rank | Typical Shape | Engineering Example |
 |---|---|---|---|
-| **Scalar** | 0D | `()` | A single number on a thermometer (`loss = 0.24`) |
-| **Vector** | 1D | `(D,)` | One row of stats for 1 house (`[sqft, rooms, age]`) or 1 word's embedding (`(768,)`) |
-| **Matrix** | 2D | `(N, D)` | An Excel spreadsheet: `N` rows (houses) × `D` columns (features) |
-| **3D Tensor** | 3D | `(B, T, D)` | A stack of `B` sentences, each `T` words long, each word having `D` numbers |
-| **4D Tensor** | 4D | `(B, C, H, W)` | A batch of `B` color photos (`3` RGB channels × `Height` × `Width`) |
+| **Scalar** | 0D | `()` | Loss metric or learning rate (`loss = 0.24`) |
+| **Vector** | 1D | `(D,)` | Single sample feature row or word embedding (`(768,)`) |
+| **Matrix** | 2D | `(N, D)` | Feature matrix: $N$ samples $\times$ $D$ input features |
+| **3D Tensor** | 3D | `(B, T, D)` | Batched sequences: $B$ batches $\times$ $T$ tokens $\times$ $D$ embedding dimensions |
+| **4D Tensor** | 4D | `(B, C, H, W)` | Batched images: $B$ images $\times$ $C$ color channels $\times$ Height $\times$ Width |
 
-> **Matrix Multiplication Shape Rule:** Inner dimensions **must match**, and outer dimensions form the output:
+> **Matrix Multiplication Shape Rule:** Inner dimensions **must match**, and outer dimensions form the result:
 > $$(N \times D) \cdot (D \times H) \longrightarrow (N \times H)$$
-> In batched Transformers: `(B, T, D) @ (B, D, T) -> (B, T, T)` (the `T x T` self-attention score matrix!).
 
-#### 1.2 Dot Product vs. Cosine Similarity
-Once data lives inside 1D vectors (like two user profiles or two text embeddings), how do we measure whether two rows mean the same thing?
-- **In Plain English:** Imagine two arrows pointing in space. **Dot Product** measures both *whether they point the same way* AND *how long they are*. **Cosine Similarity** ignores arrow length completely and only checks *whether they point in the same direction* (`1.0` = identical topic, `0.0` = unrelated, `-1.0` = opposite).
-- **Rule of Thumb:** Use **Cosine Similarity** when comparing short vs. long text embeddings so a 10-page document doesn't overpower a 1-sentence query just by having larger numbers.
-
-<details>
-<summary><b>Deep Dive: Exact Vector Equations</b></summary>
-
-- **Dot Product:** $\mathbf{a} \cdot \mathbf{b} = \sum_i a_i b_i = \|\mathbf{a}\|\|\mathbf{b}\|\cos\theta$ (used inside neural linear layers `X @ W + b` and raw attention scores `Q @ K.T`).
-- **Cosine Similarity:** $\cos(\theta) = \frac{\mathbf{a} \cdot \mathbf{b}}{\|\mathbf{a}\|_2 \|\mathbf{b}\|_2} \in [-1, 1]$. Note: if vectors are already L2-normalized ($\|\mathbf{a}\|_2 = \|\mathbf{b}\|_2 = 1$), Dot Product and Cosine Similarity are identical!
-
-</details>
+### 4.2 Dot Product vs. Cosine Similarity
+- **Dot Product:** $\mathbf{a} \cdot \mathbf{b} = \sum_i a_i b_i = \|\mathbf{a}\|_2 \|\mathbf{b}\|_2 \cos\theta$. Measures both alignment and magnitude. Used in neural dense layers (`X @ W + b`) and unnormalized attention scores (`Q @ K.T`).
+- **Cosine Similarity:** $\cos\theta = \frac{\mathbf{a} \cdot \mathbf{b}}{\|\mathbf{a}\|_2 \|\mathbf{b}\|_2} \in [-1, 1]$. Ignores vector magnitude and checks purely directional alignment. Ideal for document and query embeddings of varying text lengths.
 
 ```python
 import numpy as np
@@ -67,118 +73,67 @@ def cosine_similarity(a: np.ndarray, b: np.ndarray) -> float:
     return float(np.dot(a, b) / max(denom, 1e-12))
 
 short_doc = np.array([0.8, 0.4])
-long_duplicate_doc = short_doc * 10.0  # 10x longer document with same topic proportions
+long_duplicate_doc = short_doc * 10.0  # 10x longer document with same topic distribution
 
-print(f"Dot Product:       {np.dot(short_doc, long_duplicate_doc):.2f}")       # 8.00 (inflated by length)
+print(f"Dot Product:       {np.dot(short_doc, long_duplicate_doc):.2f}")       # 8.00 (inflated by magnitude)
 print(f"Cosine Similarity: {cosine_similarity(short_doc, long_duplicate_doc):.3f}")  # 1.000 (identical meaning!)
 ```
 
-### 2. Averages, Outliers & Real-World Speed Metrics
+---
 
-Comparing two rows with Cosine Similarity is step one; next, we need to summarize **entire columns** of thousands of rows, without letting a single extreme number trick us.
+## 5. Technical Deep Dive
 
-#### 2.1 Mean vs. Median vs. Percentiles (`p50`, `p95`, `p99`)
-- **New Terms in Plain English:**
-  - **Outlier:** One extreme, unusual value far away from everyone else.
-  - **Impute:** Filling in missing blank cells in a dataset.
-  - **SLA (Service Level Agreement):** Your app's promised speed limit (e.g., *"99% of users get a reply in under 300ms"*).
-- **Story 1: Mean vs. Median ("A Billionaire Walks Into a Café"):**
-  Imagine 9 students in a café each earning `\$30,000/year`. Both the **Mean** (average) and **Median** (the middle person when lined up from lowest to highest) are `\$30,000`. Now a billionaire (`\$1B/year`) walks in:
-  - The **Mean** jumps to **`~\$100 Million`**, making it look like everyone in the café owns a private jet!
-  - The **Median (`p50`)** stays **`\$30,000`**.
-  - *Rule of Thumb:* Always use **Median** (never Mean) when filling missing cells (**imputing**) for skewed money/count columns like salary, rent, or order spend.
-- **Story 2: Percentiles (`p50`, `p95`, `p99`: "The Coffee Shop Line"):**
-  Suppose 100 people order coffee: 95 get their cup in **1 min**, 4 wait **2 mins**, and 1 person's espresso machine jams so they wait **45 mins**.
-  - **`p50` (50th percentile / Median):** `1 min`: what a typical user experiences.
-  - **`p95` (95th percentile):** `2 mins`: 95 out of 100 users waited `2 mins` or less.
-  - **`p99` (99th percentile, "Tail Latency"):** `45 mins`, the worst 1% experience. If your AI app has 1,000,000 daily requests, a slow `p99` means **10,000 frustrated users every single day**, even while your "average" speed looks great!
+### 5.1 Tail Latency & Outlier Robustness: Mean, Median & P99
+In production systems, distributions are rarely symmetrical bell curves. Latency and spend follow heavy-tailed log-normal or Pareto distributions. Relying solely on the arithmetic mean conceals severe outages:
 
 <p align="center">
-  <img src="../../assets/animations/mean_median_p99_motion.svg" width="100%" alt="Animated comparison of Mean vs Median under an extreme outlier and p50/p95/p99 tail latency" />
+  <img src="../../assets/animations/mean_median_p99_motion.svg" width="100%" alt="Motion comparison of mean, median, and p99 metrics under heavy-tailed latency spikes" />
 </p>
 
 ```python
-import numpy as np
+# 990 fast requests (5ms) + 10 frozen DB timeouts (5000ms)
+latencies = np.concatenate([np.random.normal(5.0, 1.0, 990), [5000.0] * 10])
 
-latencies_ms = np.array([40, 45, 48, 50, 52, 55, 58, 60, 62, 3500])  # 1 tail spike
-print(f"Mean latency:   {np.mean(latencies_ms):.1f} ms")              # 397.0 ms (misleading)
-print(f"Median (p50):   {np.median(latencies_ms):.1f} ms")            # 53.5 ms
-print(f"p99 latency:    {np.percentile(latencies_ms, 99):.1f} ms")    # 3190.6 ms (catches tail risk)
+print(f"Mean Latency:    {np.mean(latencies):.1f} ms")        # ~55 ms (severely distorted!)
+print(f"Median (p50):    {np.median(latencies):.1f} ms")      # ~5.0 ms (typical user experience)
+print(f"P95 Latency:     {np.percentile(latencies, 95):.1f} ms")  # ~6.6 ms
+print(f"P99 Latency:     {np.percentile(latencies, 99):.1f} ms")  # ~5000.0 ms (production SLA breach!)
 ```
 
-#### 2.2 Spread (`Variance` & `Std Dev`) & The Bell Curve (`Normal / Gaussian Distribution`)
-Knowing the center of a column (`Mean` or `Median`) still hides half the picture: we also need to know how tightly or wildly the numbers spread around that center:
-- **In Plain English:** Two classes can both have an average exam score of `75`. If Class A scored `[74, 75, 76]` and Class B scored `[30, 75, 100]`, how do we measure that Class B is wildly spread out?
-  - **Variance ($\sigma^2$):** Average of squared distances from the mean (squaring stops `-10` and `+10` from canceling out, but turns `"cm"` into awkward `"square cm"`).
-  - **Standard Deviation ($\sigma = \sqrt{\sigma^2}$):** Takes the square root so the spread is back in **normal everyday units** (`cm`, `dollars`, `ms`).
-  - **Normal ("Gaussian") Bell Curve:** Symmetric curve where most values cluster near the middle: **68%** fall within `±1` std dev, **95%** within `±2`, and **99.7%** within `±3`.
-
-```python
-import numpy as np
-
-rng = np.random.default_rng(seed=42)
-# Note: NumPy uses loc (mean) and scale (std dev)
-heights_cm = rng.normal(loc=170.0, scale=10.0, size=10_000)
-
-within_2_std = np.mean(np.abs(heights_cm - 170.0) <= 20.0)
-print(f"Mean: {heights_cm.mean():.1f} cm | Std: {heights_cm.std():.1f} cm")
-print(f"Fraction within 2 std devs: {within_2_std:.3f}")  # ~0.954 (95%)
-```
-
-#### 2.3 Linear Correlation vs. Confounders & Non-Linear Dependence
-Once you understand one column's center and spread, the natural next question is: *do two columns move together?* Pearson correlation ($r \in [-1, 1]$) measures **straight-line** co-movement, which creates two classic traps:
-1. **Confounders (Correlation ≠ Causation):** Ice cream sales and drowning incidents correlate positively ($r > 0.8$) because **summer heat** drives both: banning ice cream will not reduce drownings.
-2. **Non-linear blindness:** If $y = x^2$ on $x \in [-3, 3]$, $y$ is 100% determined by $x$, yet Pearson correlation is **$0.0$**! Use Spearman rank correlation or mutual information for curved relationships.
-
----
-
-## Tier 2: Production Architecture & Scale (Probability & Hypothesis Testing)
-
-Summarizing past data in Tier 1 is descriptive; **Tier 2** shifts to **making decisions under uncertainty**, judging whether a model's rare fraud alarm is trustworthy (`Bayes' Theorem`) and proving whether a new model truly beat the old one in live traffic (`A/B Testing`).
-
-### 3. Conditional Probability, Base Rates & Bayes' Theorem
-
-#### 3.1 Bayes' Theorem & The Rare-Event False-Positive Trap
-- **In Plain English:** Bayes' Theorem updates your belief after seeing new evidence, balancing **how accurate a detector is** against **how rare the event was to begin with**. If an event is ultra-rare (`1 in 1,000`), even a "99% accurate" alarm will mostly ring on false positives!
-
-<details>
-<summary><b>Deep Dive: Formal Bayes' Equation</b></summary>
+### 5.2 Bayes' Theorem & The Base-Rate Fallacy in Rare Events
+When classifying rare events (fraud, rare defects, toxicity), a classifier with $99\%$ accuracy can still yield an overwhelming majority of false alarms due to the **base-rate fallacy**:
 
 $$P(A \mid B) = \frac{P(B \mid A) \cdot P(A)}{P(B)}$$
 
-- $P(A)$: **Prior** (how common $A$ is before testing).
-- $P(B \mid A)$: **Likelihood / Sensitivity** (probability the alarm triggers when $A$ is truly present).
-- $P(A \mid B)$: **Posterior** (true probability of $A$ given the alarm went off).
-
-</details>
-
-**Concrete Example:** A disease affects **0.1%** of people ($P(D) = 0.001$). A test catches **99%** of sick people and falsely flags only **1%** of healthy people. If a random person tests positive, what is the chance they actually have the disease?
+Where:
+- $P(A)$ is the **Prior** (base rate of the rare event).
+- $P(B \mid A)$ is the **Likelihood / Sensitivity** (true positive rate).
+- $P(B)$ is the **Total Evidence** probability of the alarm firing:
+  $$P(B) = P(B \mid A)P(A) + P(B \mid \neg A)P(\neg A)$$
 
 ```python
-p_disease = 0.001
-p_pos_given_disease = 0.99
-p_pos_given_healthy = 0.01
+# 0.1% of transactions are fraudulent
+p_fraud = 0.001
+p_alarm_given_fraud = 0.99       # 99% Sensitivity
+p_alarm_given_legit = 0.01       # 1% False Positive Rate
 
-p_pos_total = (p_pos_given_disease * p_disease) + (p_pos_given_healthy * (1 - p_disease))
-posterior = (p_pos_given_disease * p_disease) / p_pos_total
-print(f"Actual probability of having the disease: {posterior:.1%}")  # Only 9.0%!
+p_alarm_total = (p_alarm_given_fraud * p_fraud) + (p_alarm_given_legit * (1 - p_fraud))
+posterior = (p_alarm_given_fraud * p_fraud) / p_alarm_total
+print(f"True Probability of Fraud given an Alarm: {posterior:.1%}")  # Only 9.0%!
 ```
-> **Why it matters in ML:** Even a "99% accurate" fraud or content-moderation classifier will generate **91% false alarms** when deployed on a `0.1%` base-rate stream unless you tune precision thresholds!
+> **ML Engineering Takeaway:** In extreme imbalance ($0.1\%$), $91\%$ of all triggered alarms are false positives unless decision thresholds are calibrated against business cost matrices.
 
-### 4. Central Limit Theorem (CLT), p-values & Confidence Intervals
+### 5.3 Central Limit Theorem (CLT) & Hypothesis Testing
+Even when the underlying data is heavily skewed, the sample mean $\bar{X}$ of $N$ independent, identically distributed observations converges to a normal distribution:
+$$\bar{X} \sim \mathcal{N}\left(\mu, \frac{\sigma^2}{N}\right)$$
 
-Bayes' Theorem helps us evaluate a single model's predictions: now how do we prove that **Model B** actually outperforms **Model A** when we test both on real users?
-
-#### 4.1 Why `A/B` Tests Work (`Central Limit Theorem`, `p-values` & Business Impact)
-- **In Plain English:** User spending is super lopsided (most users spend `\$0`, a few spend `\$500`), not a neat bell curve at all! Yet if you take the *average* spend of 10,000 random users repeatedly, the **Central Limit Theorem (`CLT`)** proves those *averages* magically form a clean **Normal Bell Curve**, letting us calculate error bars (**Confidence Intervals**) and **`p-values`** when testing Model B against Model A!
-- **What a `p-value` Really Means:** *"If Model B is actually NO better than Model A, how likely is it that pure luck produced a gap this big?"* When `p < 0.05` (less than a 1-in-20 fluke), we call the win **statistically significant**.
-- **Statistical vs. Practical Significance:** With 50 million users, a tiny `+0.01%` click boost can score `p = 0.0001` (not a fluke!), yet earn `\$500` while costing `\$20,000` in extra GPUs: always check **real dollar ROI**, not just `p < 0.05`!
+This allows us to construct confidence intervals and compute two-tailed $p$-values to verify whether a challenger ML model significantly outperforms a baseline champion in production A/B tests.
 
 ---
 
-## Mini Hands-On Lab (15-Minute Exercise)
+## 6. Hands-on Implementation
 
-Write a two-proportion Z-test function to decide whether a Challenger ML model beat the Champion model's conversion rate at $\alpha = 0.05$:
+Write a two-proportion Z-test function that evaluates whether a challenger model's conversion rate lift is statistically significant at $\alpha = 0.05$:
 
 ```python
 import math
@@ -207,13 +162,74 @@ print("Lab 02 Passed!", res)
 
 ---
 
-## Key Engineering Takeaways
-- Track **tensor shapes** explicitly: `(N, D) @ (D, H) -> (N, H)`.
-- Use **Cosine Similarity** when document length shouldn't bias semantic similarity, and report **`p50`/`p95`/`p99` percentiles** alongside means.
-- Apply **Bayes' Theorem** whenever base rates are rare (`< 1%` fraud/disease): high accuracy does not imply high precision.
-- Distinguish **statistical significance ($p < 0.05$)** from **practical business effect size** in A/B experiments.
+## 7. Practical Exercises
 
-> **Next in the Journey:** With clean data pipelines (`Module 01`) and geometric/statistical intuition (`Module 02`) in place, we are ready to train our first real predictive models! Let's step into **[Module 03: Classical Machine Learning, Ensembles & Recommendation Systems](../02-machine-learning/03_classical_ml_and_recsys.md)**.
+### Exercise 1: Pairwise Cosine Matrix via Matrix Multiplication
+Given two normalized embedding matrices $A \in \mathbb{R}^{M \times D}$ and $B \in \mathbb{R}^{N \times D}$:
+1. Prove mathematically that the matrix product $S = A B^T \in \mathbb{R}^{M \times N}$ represents all pairwise cosine similarities.
+2. Implement this in NumPy and verify that row-wise diagonal values equal $1.0$ when $A = B$.
+
+### Exercise 2: Sample Size Calculation for A/B Experiments
+Using the CLT standard error formula:
+1. Write a function `required_sample_size(base_rate, minimum_detectable_effect, alpha=0.05, beta=0.20)` that computes the minimum number of users per variant needed to detect a $5\%$ conversion lift with $80\%$ statistical power.
+
+---
+
+## 8. Mini Project
+
+### Production Vector Distance Engine & Drift Detector
+Construct an offline similarity scoring module:
+- **Input:** 5,000 synthetic 128-dimensional query vectors and 20,000 document vectors.
+- **Tasks:**
+  1. L2-normalize all vectors in-place using NumPy broadcasting.
+  2. Implement top-k nearest neighbor retrieval via matrix multiplication $Q D^T$ and `np.argpartition`.
+  3. Simulate temporal concept drift by perturbing document distributions and measure the Kolmogorov-Smirnov statistic ($KS$-test) between baseline and drifted embedding norms.
+
+---
+
+## 9. Advanced Topics
+
+- **Singular Value Decomposition (SVD):** Factoring any matrix $X = U \Sigma V^T$ to perform low-rank approximations, dimensionality reduction, and latent semantic analysis.
+- **Eigenvalues & Covariance Matrices:** How Principal Component Analysis (PCA) identifies axes of maximal variance by diagonalizing the feature covariance matrix.
+- **Kullback-Leibler (KL) Divergence:** Measuring information loss when approximating true data distribution $P$ with model distribution $Q$:
+  $$D_{\text{KL}}(P \parallel Q) = \sum_x P(x) \ln\left(\frac{P(x)}{Q(x)}\right)$$
+
+---
+
+## 10. Common Mistakes & Gotchas
+
+1. **Confusing Statistical Significance with Business Impact:** With $N = 10,000,000$, a conversion increase of $+0.001\%$ can yield $p = 0.0001$, but generate $\$100$ in revenue while costing $\$10,000$ in additional inference infrastructure. Always compute effect size and ROI.
+2. **Ignoring L2 Normalization in Vector Search:** Running dot product search on raw, unnormalized embeddings results in longer documents always dominating the top ranks regardless of semantic relevance.
+3. **Optimizing Accuracy on Imbalanced Data:** A model predicting "Legitimate" on a $0.1\%$ fraud dataset achieves $99.9\%$ accuracy while detecting zero fraud. Use PR-AUC and cost-weighted loss instead.
+
+---
+
+## 11. Interview Questions & System Design
+
+### Q1: Why do we divide query-key dot products by $\sqrt{d_k}$ in Transformer attention?
+As embedding dimension $d_k$ grows large, the variance of the dot product $\sum_{i=1}^{d_k} q_i k_i$ scales proportionally to $d_k$ (assuming zero mean and unit variance inputs). Large magnitude logits push the softmax function into regions with near-zero gradients (vanishing gradients). Scaling by $\frac{1}{\sqrt{d_k}}$ preserves unit variance and maintains stable gradient flow during backpropagation.
+
+### Q2: What is the difference between ROC-AUC and PR-AUC in highly imbalanced domains?
+ROC-AUC plots True Positive Rate vs. False Positive Rate ($FPR = \frac{FP}{FP + TN}$). When negative samples dominate ($TN \gg FP$), huge increases in false positives produce negligible changes in $FPR$, presenting an artificially optimistic evaluation. Precision-Recall AUC (PR-AUC) evaluates $\frac{TP}{TP + FP}$ against $\frac{TP}{TP + FN}$, ignoring $TN$ and accurately exposing false alarm surges.
+
+---
+
+## 12. Recommended Resources
+
+- **Free Textbook:** [Mathematics for Machine Learning](https://mml-book.github.io/) by Deisenroth, Faisal, and Ong.
+- **Visual Series:** [3Blue1Brown: Essence of Linear Algebra](https://www.3blue1brown.com/topics/linear-algebra).
+- **Statistical Reference:** [StatQuest: Hypothesis Testing and p-values](https://statquest.org/).
+
+---
+
+## 13. Completion Checklist
+
+- [ ] Verify tensor shapes across matrix multiplications using the inner/outer dimension rule.
+- [ ] Differentiate when to apply Dot Product vs. L2-normalized Cosine Similarity in retrieval systems.
+- [ ] Calculate p50, p95, and p99 percentiles from a raw latency log in NumPy.
+- [ ] Apply Bayes' Theorem to derive true positive probabilities under extreme class imbalance.
+- [ ] Implement a two-proportion Z-test and evaluate $p$-values against significance thresholds ($\alpha = 0.05$).
+- [ ] Complete practical exercises on pairwise matrix similarity and minimum sample size calculation.
 
 ---
 

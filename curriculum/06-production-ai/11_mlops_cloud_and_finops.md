@@ -1,15 +1,15 @@
 # Module 11: Production MLOps, AI Engineering, Drift & Cloud FinOps
 
-> **Difficulty:** Advanced | **Estimated Study Time:** 8-10 Hours | **Prerequisites:** [Module 03](../02-machine-learning/03_classical_ml_and_recsys.md), [Module 10](../05-agentic-ai/10_agent_evals_and_safety.md) | **Starter Repo:** [Local MLOps Starter Template](../../projects/intermediate/starter-local-mlops/)
-> **Focus:** FastAPI serving lifespans, feature stores (Feast), population stability index (PSI) drift, and spot GPU FinOps
+> **Difficulty:** Advanced | **Estimated Study Time:** 8-10 Hours | **Prerequisites:** [Module 03: Classical ML](../02-machine-learning/03_classical_ml_and_recsys.md), [Module 10: Agent Evals & Safety](../05-agentic-ai/10_agent_evals_and_safety.md) | **Starter Repo:** [Local MLOps Starter Template](../../projects/intermediate/starter-local-mlops/README.md)  
+> **Focus:** Safe serialization (zero-pickle, ONNX, SafeTensors), FastAPI async lifespans, non-root Docker containers, Feast feature stores, Population Stability Index (PSI) drift, and Cloud GPU FinOps
 
 [← Previous: Module 10: Agent Evaluation & Safety](../05-agentic-ai/10_agent_evals_and_safety.md) | [Roadmap Index](../../README.md) | [Next: Module 12: Practical Troubleshooting Scenarios →](./12_system_troubleshooting_scenarios.md)
 
 ---
 
-## Mental Model: ML Modeling Code Is Only ~5%-10% of a Production System
+## 1. Overview
 
-Across [Modules 01-10](../05-agentic-ai/10_agent_evals_and_safety.md), you learned how to train, align, ground, and evaluate AI models. Now comes the reality check that separates portfolio demos from real engineering: as Google researchers famously documented in *[Hidden Technical Debt in Machine Learning Systems](https://papers.nips.cc/paper_files/paper/2015/hash/86df7dcfd896fcaf2674f757a2463eba-Abstract.html)* (Sculley et al., NeurIPS 2015), core ML training code makes up **only ~5%-10%** of a live production system. A `0.94 AUC` model or smart agent delivers zero business value until surrounded by safe packaging, `FastAPI` endpoints, `Docker`, feature stores, drift monitors, and cloud GPU FinOps:
+As documented in Google's landmark paper *[Hidden Technical Debt in Machine Learning Systems](https://papers.nips.cc/paper_files/paper/2015/hash/86df7dcfd896fcaf2674f757a2463eba-Abstract.html)* (Sculley et al., NeurIPS 2015), core modeling code comprises **only ~5%–10%** of a production AI system. A model with high offline accuracy delivers zero business value until surrounded by production infrastructure: safe serialization, type-safe REST APIs, containerized environments, feature stores, automated drift detection, and cloud GPU cost controls:
 
 ```mermaid
 flowchart LR
@@ -21,7 +21,7 @@ flowchart LR
 
     classDef stage fill:#E0F2FE,stroke:#0284C7,stroke-width:1.5px,color:#0369A1;
     classDef prod fill:#EDE9FE,stroke:#7C3AED,stroke-width:2px,color:#4C1D95;
-    classDef guard fill:#DCFCE7,stroke:#16A34A,stroke-width:2px,color:#15803D;
+    classDef guard fill:#DCFCE7,stroke:#16A34A,stroke-width:1.5px,color:#15803D;
 
     class DATA,TRAIN stage;
     class PKG,DEP prod;
@@ -30,209 +30,216 @@ flowchart LR
 
 ---
 
-## Tier 1: Core Foundations (Serialization, `FastAPI`, `Docker`, `MLflow` & `DVC`)
+## 2. Learning Objectives
 
-### 1. Safe Model Serialization & Serving via `FastAPI`
+By the end of this module, you will be able to:
+- **Eliminate Remote Code Execution (RCE) vulnerabilities** in model storage, replacing Python `pickle` with SafeTensors, ONNX, and `.npz` formats.
+- **Build high-throughput FastAPI inference services** utilizing async lifespan context managers to load models once into memory.
+- **Author production Dockerfiles** implementing multi-stage builds, non-root security users, and healthcheck probes.
+- **Implement the Feast Feature Store architecture**, eliminating training-serving feature skew via point-in-time correct joins.
+- **Calculate Population Stability Index (PSI)** to detect production data drift and trigger automated canary retraining pipelines.
+- **Optimize Cloud GPU FinOps**, balancing Spot/Preemptible instances, dynamic batching, and semantic prompt caching.
 
-> **Two Core Terms (`Serialization` & `FastAPI`):**
-> - **Serialization:** Saving a trained model from your computer's live RAM onto disk as a file so another server can load it tomorrow without retraining.
-> - **`FastAPI`:** Python's standard web framework for wrapping a trained model behind a live URL (`POST /predict`) so mobile apps, websites, or teammates can send JSON inputs and get predictions back in milliseconds.
+---
 
-#### 1.1 Safe Model Serialization (`safetensors`, `ONNX`) & Startup-Loaded `FastAPI` Services
-- **Security Trap (`pickle` / `torch.load` default):** `pickle` executes arbitrary Python bytecode during deserialization: loading an untrusted `.pkl` file can compromise your production server!
-- **`safetensors` (Hugging Face / PyTorch standard):** Zero-copy, memory-mapped tensor format that stores **pure weights + JSON header** with **zero arbitrary code execution** and 2x-4x faster GPU loading.
-- **`ONNX` (Open Neural Network Exchange):** Framework-agnostic computation graph enabling graph fusion and quantized CPU/GPU inference via **ONNX Runtime** (`2x-5x` speedup over eager PyTorch).
-- **`joblib`:** Efficient NumPy buffer compression for trusted internal `scikit-learn` pipelines.
+## 3. Prerequisites
+
+- **Machine Learning & Evaluation:** Leak-free pipelines and metrics from [Module 03](../02-machine-learning/03_classical_ml_and_recsys.md).
+- **FastAPI & Async Python:** Concurrency and Pydantic validation from [Module 01](../01-foundations/01_python_sql_and_data_stack.md).
+
+---
+
+## 4. Core Concepts
+
+### 4.1 Safe Model Serialization vs. Insecure Pickle
+Python's standard `pickle.load` deserializes arbitrary byte streams, allowing attackers to embed arbitrary shell execution payloads. Production standards require zero-pickle formats:
+- **NumPy `.npz` (with `allow_pickle=False`):** Structured numerical arrays for linear models, weights, and embeddings.
+- **SafeTensors (HuggingFace):** Pure tensor bytes with a JSON header; zero execution vulnerability, fast memory mapping.
+- **ONNX (Open Neural Network Exchange):** Graph format executable on optimized C++ runtimes across CPUs and GPUs.
+
+### 4.2 FastAPI Lifespans for Inference Serving
+Loading multi-gigabyte models inside an endpoint handler forces reloading on every HTTP request, exhausting RAM and causing seconds of latency. FastAPI's **lifespan context manager** loads weights into GPU/CPU memory once on application startup:
 
 ```python
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
-from pydantic import BaseModel, Field
-import joblib
+import numpy as np
 
-models: dict = {}
+ml_models = {}
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Load model ONCE at startup (never inside the request handler!)
-    models["churn"] = joblib.load("artifacts/churn_pipeline.joblib")
+    # Load model once on startup
+    data = np.load("artifacts/model.npz", allow_pickle=False)
+    ml_models["weights"] = data["weights"]
+    ml_models["bias"] = float(data["bias"][0])
     yield
-    models.clear()
+    # Clean up resources on shutdown
+    ml_models.clear()
 
-app = FastAPI(title="Churn Inference Service", lifespan=lifespan)
-
-class ChurnFeatures(BaseModel):
-    tenure_months: int = Field(ge=0)
-    monthly_spend: float = Field(ge=0.0)
-
-@app.get("/health")
-def health_check() -> dict[str, str]:
-    return {"status": "healthy"}
-
-@app.post("/predict")
-def predict_churn(payload: ChurnFeatures) -> dict[str, float | bool]:
-    X = [[payload.tenure_months, payload.monthly_spend]]
-    prob = float(models["churn"].predict_proba(X)[0, 1])
-    return {"churn_probability": round(prob, 4), "high_risk": prob >= 0.5}
+app = FastAPI(lifespan=lifespan)
 ```
 
-### 2. Containerization (`Docker`) & Experiment/Data Versioning (`MLflow` + `DVC`)
-
-Your `FastAPI` endpoint runs smoothly on your laptop: now how do you make sure it runs identically on a Linux cloud server, and track *which exact dataset* trained *which model version*?
-
-> **Three Everyday MLOps Tools in Plain English:**
-> - **`Docker` (Sealed Shipping Container):** Solves *"It worked on my laptop, why did it crash on the server?"* by packing your code + exact Python version + system libraries into one portable **Image** (blueprint) that runs identically anywhere as a **Container** (live process).
-> - **`DVC` ("Git for Giant Datasets"):** `Git` chokes if you commit a 50 GB dataset; `DVC` keeps heavy files in S3/cloud storage while saving a tiny 5-line ID card (`.dvc`) inside Git so you always know *which exact dataset* trained *which model*.
-> - **`MLflow` (Automated Lab Notebook):** Automatically records every training run's settings (`learning_rate`), test scores (`PR-AUC`), and saved model file so you never lose track of which experiment won.
-
-#### 2.1 Layered Container Caching & Non-Root `Docker` Hardening
-- **Image:** Immutable layered filesystem blueprint. **Container:** Isolated running process instantiated from an image.
-- **Production Dockerfile Best Practices:** Pin a slim base image (`python:3.12-slim`), copy `requirements.txt`/`pyproject.toml` *before* source code to maximize Docker layer caching, drop root privileges (`USER appuser`), and expose a `/health` probe.
+### 4.3 Multi-Stage Non-Root Docker Architecture
+Running containers as `root` creates severe container breakout vulnerabilities. Production Dockerfiles use multi-stage builds and unprivileged user accounts:
 
 ```dockerfile
-FROM python:3.12-slim
+FROM python:3.12-slim AS builder
 WORKDIR /app
-
-# 1. Cache dependencies separately from fast-changing application code
+RUN apt-get update && apt-get install -y --no-install-recommends gcc && rm -rf /var/lib/apt/lists/*
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir --user -r requirements.txt
 
-# 2. Run as non-root user for container security
-RUN useradd --create-home appuser
-COPY --chown=appuser:appuser src/ ./src/
+FROM python:3.12-slim AS runner
+WORKDIR /app
+RUN useradd -m -u 1000 appuser
+COPY --from=builder /root/.local /home/appuser/.local
+COPY src/ /app/src/
+COPY artifacts/ /app/artifacts/
+ENV PATH=/home/appuser/.local/bin:$PATH
 USER appuser
-
 EXPOSE 8000
+HEALTHCHECK --interval=30s --timeout=3s CMD curl -f http://localhost:8000/health || exit 1
 CMD ["uvicorn", "src.app:app", "--host", "0.0.0.0", "--port", "8000"]
 ```
 
-#### 2.2 Synchronizing Code, Datasets & Artifacts with `Git`, `DVC` & `MLflow`
-Before building that `Docker` image in CI/CD, these three versioning tools keep your code, data, and trained weights locked in sync:
-- **`Git`:** Versions source code, configs, and small `.dvc` pointer files.
-- **`DVC` (Data Version Control):** Stores 50 GB Parquet/image datasets in S3/GCS content-addressed storage while committing tiny SHA-256 pointer files into Git.
-- **`MLflow`:** Logs hyperparameters, validation metrics (`PR-AUC`, `p99` latency), Git commit SHA, and versioned model artifacts in a central **Model Registry** (`Staging -> Champion`).
-
 ---
 
-## Tier 2: Production Architecture & Scale (Serving Architectures, `Feast`, `PSI` Drift, Rollouts & Infra FinOps)
+## 5. Technical Deep Dive
 
-Shipping Version 1 in a container is **Day 1**; **Tier 2** covers **Day 2 and beyond**: scaling GPU vs. CPU pods, keeping live features identical to training features (`Feast`), streaming real-time agent tokens (`SSE`), catching data drift (`PSI`), and slashing cloud GPU bills.
+### 5.1 Training-Serving Skew & Feast Feature Store
+- **Training-Serving Skew:** When feature calculations used during offline model training differ from real-time feature calculations computed during live inference.
+- **Feast Solution:** Manages dual feature stores:
+  1. **Offline Store (Parquet/Snowflake/BigQuery):** Performs **Point-in-Time correct joins** (`get_historical_features`), ensuring features for a training label reflect the exact state at timestamp $T$.
+  2. **Online Store (Redis):** Key-value store providing sub-10ms feature retrieval by entity ID during live inference (`get_online_features`).
 
-### 3. Classical ML Serving vs. LLM Serving, and Feature Stores (`Feast`)
+### 5.2 Population Stability Index (PSI) Drift Calculation
+PSI measures shift between baseline reference training features $E$ (Expected) and live production inference features $A$ (Actual):
 
-#### 3.1 Stateless CPU Model Serving vs. Stateful GPU `KV Cache` Serving
-First, notice how differently Kubernetes must autoscale a classical `XGBoost` microservice versus an LLM `vLLM` server:
-
-| Dimension | Classical ML (`XGBoost` / `LightGBM`) | LLM Serving (`vLLM` / `TensorRT-LLM`) |
-|---|---|---|
-| **Compute & State** | Stateless CPU pods (`<500 MB` RAM), `5ms` inference | Stateful `KV Cache` on high-VRAM GPUs (`24-80 GB`), streaming `SSE` tokens |
-| **Batching** | Simple request or micro-batching | **Continuous iteration-level batching** + `PagedAttention` |
-| **Autoscaling Signal** | CPU utilization / RPS | **KV Cache VRAM % utilization** + waiting queue depth (CPU % stays near 0 on GPU pods!) |
-
-#### 3.2 Eliminating Training-Serving Skew with Feature Stores (`Feast`)
-On the classical ML side, how do you guarantee the live `FastAPI` server feeds `XGBoost` the exact same feature math used during training?
-- **In Plain English:** Imagine a Data Scientist calculates `"user_30d_spend"` in Pandas (including tax, UTC time) to train a model, and a Backend Engineer rewrites `"user_30d_spend"` in Go (excluding tax, local time) for the live app. That tiny mismatch (**Training-Serving Skew**) silently ruins live predictions! A **Feature Store (`Feast`)** computes the feature **once** and serves it to both:
-  1. **Offline Store (`BigQuery` / `Snowflake` / `Parquet`):** Historical tables with **point-in-time joins** for training.
-  2. **Online Store (`Redis` / `DynamoDB`):** Latest precomputed values in `<5ms` for live API requests.
-
-#### 3.3 Real-Time `SSE` Token/Tool Streaming (`FastAPI`) & User Feedback Data Flywheels
-On the GenAI & Agent side, users won't stare at a frozen spinner for 12 seconds, so instead of returning one blocking JSON blob, production APIs stream live **Server-Sent Events (`SSE`)** and wire user feedback straight back into training:
-
-```python
-import json
-from collections.abc import AsyncIterator
-from fastapi import FastAPI
-from fastapi.responses import StreamingResponse
-
-stream_app = FastAPI()
-
-async def agent_event_stream(session_id: str, prompt: str) -> AsyncIterator[str]:
-    # 1. Emit live tool-status frame for UI progress indicator
-    yield f"event: status\ndata: {json.dumps({'step': 'qdrant_hybrid_search'})}\n\n"
-    # 2. Stream incremental answer tokens as they decode
-    for tok in ("Refund ", "approved ", "under ", "Policy ", "[POL-101]."):
-        yield f"event: token\ndata: {json.dumps({'text': tok})}\n\n"
-    # 3. Emit trace_id so frontend thumbs-up/down binds to the exact OpenTelemetry span!
-    yield f"event: done\ndata: {json.dumps({'trace_id': f'tr_{session_id}'})}\n\n"
-
-@stream_app.get("/chat/stream")
-async def chat_stream(session_id: str, q: str) -> StreamingResponse:
-    return StreamingResponse(agent_event_stream(session_id, q), media_type="text/event-stream")
-```
-- **Closing the Data Flywheel:** Binding frontend thumbs-up/down, copy events, and human-edited replies to `trace_id` automatically populates (a) **hard-negative regression tests** for your `EDD` Golden Set (`Module 10`) and (b) `(prompt, human_edited_chosen, model_rejected)` preference pairs for **`DPO` fine-tuning** (`Module 06`).
-
-### 4. Statistical Drift (`PSI`), Safe Deployments & Cloud GPU FinOps
-
-Even a perfectly deployed model decays quietly as the outside world changes, so we close the production loop with **automated drift alarms**, **safe staged rollouts**, and **Spot GPU cost controls**:
-
-#### 4.1 Detecting Data Drift (`PSI`) vs. Concept Drift
-- **In Plain English:**
-  - **Data / Covariate Drift ($P(X)$ changes):** *The customers walking into your store changed*: e.g., your loan model was trained on `\$50k` average salaries, and suddenly `\$120k` applicants flood in. Measured with **`PSI`** (`< 0.10` safe, `>= 0.25` retrain!).
-  - **Concept Drift ($P(Y \mid X)$ changes):** *The same customers changed what their behavior means*: e.g., input salaries look identical (`PSI = 0.02`), yet a recession makes people default twice as often! Caught only by tracking real outcomes and accuracy over time.
+$$\text{PSI} = \sum_{i=1}^k (A_i - E_i) \times \ln\left(\frac{A_i}{E_i}\right)$$
 
 <p align="center">
-  <img src="../../assets/animations/psi_drift_canary_motion.svg" width="100%" alt="Animated PSI Data Drift bell-curve shift triggering automated Shadow and Canary retraining" />
+  <img src="../../assets/animations/psi_drift_canary_motion.svg" width="100%" alt="Motion visualization of Population Stability Index drift detection triggering automated canary model retraining" />
 </p>
 
-<details>
-<summary><b>Deep Dive: Population Stability Index (`PSI`) Equation & Thresholds</b></summary>
-
-$$\text{PSI} = \sum_{i=1}^{B} (p_{\text{prod}, i} - p_{\text{train}, i}) \cdot \ln\left(\frac{p_{\text{prod}, i}}{p_{\text{train}, i}}\right)$$
-
-Standard MLOps & credit-risk thresholds (*Siddiqi, Credit Risk Scorecards*): `PSI < 0.10` = Stable | `0.10 <= PSI < 0.25` = Moderate shift (investigate) | **`PSI >= 0.25` = Significant shift -> trigger automated CI/CD retraining**. Pair with the non-parametric **Kolmogorov-Smirnov (K-S)** test on continuous columns.
-
-</details>
-
-#### 4.2 Progressive Delivery: Shadow Traffic, Canary Rollouts & Online A/B Tests
-When `PSI >= 0.25` triggers a newly retrained **Challenger** model, never swap 100% of live user traffic onto it overnight: promote it safely through three progressive gates:
-1. **Shadow (Dark Traffic):** Mirror 100% of live requests to the Challenger model asynchronously; discard Challenger outputs from user responses while verifying latency, memory, and prediction distributions at **zero user risk**.
-2. **Canary Rollout:** Route `1% -> 10% -> 50% -> 100%` of live traffic with automated rollback if `5xx` error rates or `p99` latency breach guardrails.
-3. **Online A/B Test:** Randomize by `user_id` (`50/50`), measuring **Primary Business KPI** statistical lift ($p < 0.05$) alongside strict **Guardrail Metrics** (latency, unsubscribe rate).
-
-#### 4.3 Preemptible Spot GPU Checkpointing & Automated Cloud Cost Kill-Switches
-Running those retraining jobs and GPU clusters on full-price On-Demand cloud instances gets expensive fast: here is how production infra teams slash GPU bills safely:
-1. **Spot / Preemptible GPUs + Emergency Checkpointing:** Rent spare cloud GPU capacity at **up to 60%-91% discount** compared to On-Demand rates ([AWS EC2 Spot](https://aws.amazon.com/ec2/spot/); [Google Cloud Spot VMs](https://cloud.google.com/spot-vms)). Save checkpoints to S3/GCS every $N$ steps and trap the cloud `SIGTERM` preemption signal to flush optimizer + model state cleanly so replacement nodes resume automatically.
-2. **Automated Cloud Infrastructure Kill-Switches:**
-   - Cap Kubernetes autoscalers (`maxReplicas`), enforce idle-GPU auto-shutdown (`GPU utilization < 5%` for 30 mins), and wire **AWS Budgets -> SNS -> Lambda** (or **GCP Billing Budgets -> Pub/Sub -> Cloud Function**) to automatically scale non-prod GPU groups to zero when spend crosses threshold.
+#### Drift Decision Thresholds:
+- $\text{PSI} < 0.10$: **Stable:** No significant change in input distribution.
+- $0.10 \le \text{PSI} < 0.25$: **Moderate Drift:** Investigate feature trends.
+- $\text{PSI} \ge 0.25$: **Severe Drift:** Trigger automated alert and model retraining pipeline.
 
 ---
 
-## Mini Hands-On Lab (15-Minute Exercise)
+## 6. Hands-on Implementation
 
-Implement **Population Stability Index (`PSI`)** in NumPy to detect production covariate shift:
+Implement the Population Stability Index calculation in pure NumPy:
 
 ```python
 import numpy as np
 
-def compute_psi(expected: np.ndarray, actual: np.ndarray, bins: int = 10) -> float:
-    breakpoints = np.percentile(expected, np.linspace(0, 100, bins + 1))
-    breakpoints[0], breakpoints[-1] = -np.inf, np.inf
+def compute_psi(expected: np.ndarray, actual: np.ndarray, num_buckets: int = 10) -> float:
+    # Form quantile breakpoints from reference distribution
+    percentiles = np.linspace(0, 100, num_buckets + 1)
+    breakpoints = np.percentile(expected, percentiles)
+    breakpoints[0] = -np.inf
+    breakpoints[-1] = np.inf
 
-    exp_pct = np.histogram(expected, bins=breakpoints)[0] / len(expected)
-    act_pct = np.histogram(actual, bins=breakpoints)[0] / len(actual)
+    e_counts = np.histogram(expected, bins=breakpoints)[0]
+    a_counts = np.histogram(actual, bins=breakpoints)[0]
 
-    exp_pct = np.clip(exp_pct, 1e-6, None)
-    act_pct = np.clip(act_pct, 1e-6, None)
-    return float(np.sum((act_pct - exp_pct) * np.log(act_pct / exp_pct)))
+    # Normalize to proportions with epsilon smoothing to prevent div by zero
+    e_pct = np.maximum(e_counts / len(expected), 1e-4)
+    a_pct = np.maximum(a_counts / len(actual), 1e-4)
 
+    psi_val = float(np.sum((a_pct - e_pct) * np.log(a_pct / e_pct)))
+    return round(psi_val, 4)
+
+# Synthetic baseline spend distribution
 rng = np.random.default_rng(42)
-train_dist = rng.normal(loc=50.0, scale=10.0, size=5000)
-stable_prod = rng.normal(loc=50.5, scale=10.0, size=5000)
-drifted_prod = rng.normal(loc=65.0, scale=14.0, size=5000)
+baseline = rng.normal(loc=50.0, scale=10.0, size=10_000)
 
-assert compute_psi(train_dist, stable_prod) < 0.10
-assert compute_psi(train_dist, drifted_prod) >= 0.25
-print(f"Lab 11 Passed! Stable PSI={compute_psi(train_dist, stable_prod):.3f}, Drifted PSI={compute_psi(train_dist, drifted_prod):.3f}")
+# Undrifted identical production stream
+undrifted = rng.normal(loc=50.0, scale=10.0, size=2_000)
+assert compute_psi(baseline, undrifted) < 0.10
+
+# Severely shifted spend distribution (inflation spike)
+drifted = rng.normal(loc=85.0, scale=15.0, size=2_000)
+assert compute_psi(baseline, drifted) >= 0.25
+print("Lab 11 Passed! Undrifted PSI:", compute_psi(baseline, undrifted), "| Drifted PSI:", compute_psi(baseline, drifted))
 ```
 
 ---
 
-## Key Engineering Takeaways
-- Load models **once inside `FastAPI` `lifespan`** (never per request), prefer **`safetensors` / `ONNX`** over unsafe `pickle`, and run Docker containers as a non-root user.
-- Autoscale LLM GPU pods on **KV Cache VRAM utilization & queue depth**, not CPU %.
-- Prevent Training-Serving Skew with **`Feast`**, detect covariate shift with **`PSI >= 0.25`**, roll out via **Shadow -> Canary -> A/B**, and train on **Spot GPUs with preemption checkpointing**.
+## 7. Practical Exercises
 
-> **Next in the Journey:** Your models and agents are now live in production! What happens at 2:00 AM when shadow AUC mysteriously drops to `0.54`, a `24 GB` GPU throws `CUDA out of memory`, or a RAG bot invents fake policy numbers? Let's sharpen your real-world incident instincts in **[Module 12: Real-World ML & GenAI System Troubleshooting Scenarios](./12_system_troubleshooting_scenarios.md)**.
+### Exercise 1: Multi-Feature PSI Monitor
+1. Extend `compute_psi` to evaluate a multi-column feature matrix $X \in \mathbb{R}^{N \times D}$.
+2. Output a structured dictionary identifying the specific feature columns that exceeded the $0.25$ drift threshold.
+
+### Exercise 2: Graceful Fallback Inference Endpoint
+1. Implement a FastAPI endpoint that checks model inference latency.
+2. If primary GPU inference times out after $250\text{ ms}$, automatically route the request to a lightweight cached CPU heuristic model and log an alert.
+
+---
+
+## 8. Mini Project
+
+### Full-Lifecycle Local MLOps Service
+Inspect, run, and test the production starter kit:
+- **Location:** [`projects/intermediate/starter-local-mlops/`](../../projects/intermediate/starter-local-mlops/README.md)
+- **Features:** Leak-free `.npz` model training, FastAPI inference API, automated PSI endpoint, and Pytest validation.
+- **Verification Commands:**
+  ```bash
+  python projects/intermediate/starter-local-mlops/src/train.py
+  PYTHONPATH=projects/intermediate/starter-local-mlops pytest projects/intermediate/starter-local-mlops/tests
+  ```
+
+---
+
+## 9. Advanced Topics
+
+- **Shadow vs. Canary vs. Blue-Green Deployments:** Routing live production traffic to a shadow model (analyzing predictions without returning them to users) before advancing to 5% canary rollouts.
+- **Spot GPU FinOps:** Utilizing cloud spot instances with checkpoint-resumable training to achieve 60%–80% cost savings compared to on-demand GPUs.
+- **Model Quantization on Edge (ONNX INT8):** Quantizing floating-point weights to 8-bit integers using ONNX Runtime for edge mobile and embedded devices.
+
+---
+
+## 10. Common Mistakes & Gotchas
+
+1. **Deserializing Models with Insecure Pickle:** Loading `pickle.load()` on untrusted files creates full Remote Code Execution (RCE) vulnerabilities. Always use SafeTensors, `.npz`, or ONNX.
+2. **Reloading Models on Every Request:** Creating model objects inside route handlers instead of using FastAPI lifespan handlers causes extreme latency and OOM errors.
+3. **Training Without Tracking:** Training 50 model iterations without logging parameters, datasets, and git commit hashes to MLflow.
+
+---
+
+## 11. Interview Questions & System Design
+
+### Q1: How do you design an automated model retraining pipeline in production?
+1. **Continuous Monitoring:** The inference service logs input features asynchronously to an event stream.
+2. **Drift Detection:** A scheduled cron job calculates Population Stability Index (PSI) hourly.
+3. **Trigger Gate:** When $\text{PSI} \ge 0.25$ on key features, an automated pipeline triggers retraining on the latest data window.
+4. **Validation Gate:** The newly trained model is evaluated against the current champion model on a held-out benchmark.
+5. **Canary Rollout:** If validation PR-AUC improves, the challenger receives a 5% canary rollout with automated rollback on error spikes.
+
+### Q2: What causes Training-Serving Skew and how is it eliminated?
+Training-serving skew occurs when feature definitions differ between offline training (e.g. SQL batch queries) and real-time inference (e.g. Python API logic), or when look-ahead bias leaks future data into historical training features. It is eliminated using an operational Feature Store (such as Feast), which enforces identical feature transformation logic and provides point-in-time correct joins for training datasets.
+
+---
+
+## 12. Recommended Resources
+
+- **Landmark Paper:** [Hidden Technical Debt in Machine Learning Systems](https://papers.nips.cc/paper_files/paper/2015/hash/86df7dcfd896fcaf2674f757a2463eba-Abstract.html) (Sculley et al., NeurIPS 2015).
+- **Book:** [Designing Machine Learning Systems](https://www.oreilly.com/library/view/designing-machine-learning/9781098107956/) by Chip Huyen.
+- **Documentation:** [Feast Feature Store Architecture](https://docs.feast.dev/).
+
+---
+
+## 13. Completion Checklist
+
+- [ ] Explain why Python `pickle` is banned in secure production ML deployments.
+- [ ] Implement a FastAPI service loading model weights once via the lifespan context manager.
+- [ ] Author a production multi-stage Dockerfile running as an unprivileged non-root user.
+- [ ] Implement and verify the Population Stability Index (PSI) drift calculation in NumPy.
+- [ ] Successfully run the training and API test suite in [`projects/intermediate/starter-local-mlops/`](../../projects/intermediate/starter-local-mlops/README.md).
 
 ---
 

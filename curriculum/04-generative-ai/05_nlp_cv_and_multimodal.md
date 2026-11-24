@@ -1,15 +1,15 @@
 # Module 05: NLP, Transformers, Computer Vision & Multimodal AI
 
-> **Difficulty:** Intermediate | **Estimated Study Time:** 9-11 Hours | **Prerequisites:** [Module 04](../03-deep-learning/04_deep_learning_and_rl.md) | **Lab:** [Mini-Transformer Attention Notebook](../../notebooks/deep-learning/03_mini_transformer_attention.ipynb) | **[Open in Colab](https://colab.research.google.com/github/FirdowsRahaman/agentic-ai-and-ml-roadmap/blob/main/notebooks/deep-learning/03_mini_transformer_attention.ipynb)**
-> **Focus:** BPE tokenizers, scaled dot-product attention, Vision Transformers (ViT), and CLIP multimodal alignment
+> **Difficulty:** Intermediate | **Estimated Study Time:** 9-11 Hours | **Prerequisites:** [Module 04: Deep Learning & PyTorch](../03-deep-learning/04_deep_learning_and_rl.md) | **Lab:** [Mini-Transformer Attention Notebook](../../notebooks/deep-learning/03_mini_transformer_attention.ipynb) | **[Open in Colab](https://colab.research.google.com/github/FirdowsRahaman/agentic-ai-and-ml-roadmap/blob/main/notebooks/deep-learning/03_mini_transformer_attention.ipynb)**  
+> **Focus:** BPE tokenizers, scaled dot-product attention, Rotary Positional Embeddings (RoPE), Vision Transformers (ViT), and CLIP multimodal alignment
 
 [← Previous: Module 04: Deep Learning & RL](../03-deep-learning/04_deep_learning_and_rl.md) | [Roadmap Index](../../README.md) | [Next: Module 06: LLMs, Fine-Tuning & Advanced RAG →](./06_llms_finetuning_and_rag.md)
 
 ---
 
-## Mental Model: Convergence of Language, Vision & Audio
+## 1. Overview
 
-In [Module 04](../03-deep-learning/04_deep_learning_and_rl.md), you learned how `PyTorch` trains deep layers of tensors. Historically, text, images, and audio each required completely separate neural network families. Today, modern AI unifies **all three modalities** with one elegant trick: chop text into subwords, chop images into pixel squares, and chop sound into tiny spectrogram slices, then feed all of them as token vectors into the exact same **Transformer Self-Attention** engine!
+In [Module 04](../03-deep-learning/04_deep_learning_and_rl.md), you learned how PyTorch trains deep layers of tensors. Historically, natural language, computer vision, and speech audio required completely disparate neural architectures (RNNs, CNNs, and HMMs). Modern AI engineering unifies all three modalities under a single core computational paradigm: tokenize inputs into vectors, add positional encodings, and process them through the **Transformer Self-Attention** engine:
 
 ```mermaid
 flowchart LR
@@ -30,149 +30,97 @@ flowchart LR
 
 ---
 
-## Tier 1: Core Foundations (NLP Foundations, Transformers & CNNs)
+## 2. Learning Objectives
 
-### 1. Subword Tokenization, Lexical Baselines & Contextual Embeddings
+By the end of this module, you will be able to:
+- **Implement Scaled Dot-Product Attention** with causal masking in NumPy, explaining the mathematical role of $\frac{1}{\sqrt{d_k}}$ in preventing softmax gradient saturation.
+- **Compare subword tokenization strategies** (BPE, WordPiece, Tiktoken) against lexical representations (BM25, TF-IDF).
+- **Explain positional encoding mechanics**, contrasting absolute sinusoidal embeddings with modern relative schemes like Rotary Positional Embeddings (RoPE).
+- **Formulate Vision Transformer (ViT) architecture**, tracking how 2D images are patched, flattened, projected, and processed as sequence tokens.
+- **Explain contrastive multimodal alignment (CLIP)** via symmetric InfoNCE loss across joint image-text vector spaces.
+- **Trace audio representation pipelines** from raw waveforms to Log-Mel spectrograms and autoregressive neural audio codecs.
 
-> **Two Foundational Terms (`Token` vs. `Embedding`):** Computers cannot multiply raw letters. First, a **Tokenizer** chops text into common word-pieces called **Tokens** and looks up each piece's ID number (`"playing" -> ["play", "ing"] -> [1402, 289]`). Next, an **Embedding table** turns each ID into a list of ~768+ GPS coordinates (`[0.14, -0.62, ...]`) so words with similar meanings sit right next to each other in space!
+---
 
-#### 1.1 Subword Byte-Pair Encoding (`BPE`) vs. Lexical Weighting (`TF-IDF` / `BM25`)
-> **2026 Scope Note:** Legacy preprocessing pipelines (manual regex stemming, stopword stripping, `CountVectorizer` Bag-of-Words, and static 2013 `Word2Vec` CBOW/Skip-gram tables) are obsolete in modern AI engineering. Focus on **subword tokenizers (`BPE`)** for neural models and **`TF-IDF` / `BM25`** for sparse hybrid search.
+## 3. Prerequisites
 
-- **Byte-Pair Encoding (`BPE` / `Tiktoken`):** Modern LLMs preserve exact casing, punctuation, and syntax: iteratively merging frequent byte/character pairs into a fixed vocabulary (`~100k-200k` subword tokens) to represent arbitrary text, code, and multilingual scripts with **zero Out-Of-Vocabulary (`<UNK>`) failures**.
-- **Sparse Lexical Scoring (`TF-IDF` & `BM25`):** Multiplies local term frequency by inverse corpus rarity:
-  $$\text{TF-IDF}(t, d, D) = \text{TF}(t, d) \times \log\left(\frac{N}{|\{d \in D : t \in d\}|}\right)$$
-  While purely lexical (zero semantic overlap between `"car"` and `"automobile"`), **Okapi `BM25`** (which adds saturating term frequency and document-length normalization) remains indispensable as the sparse half of **Hybrid RAG** (`Module 06`).
-- **Contextual vs. Static Embeddings:** Unlike legacy static word tables that assigned one fixed vector to `"bank"` everywhere, modern Transformer encoders (`ModernBERT`, `Qwen3-Embedding`, `BGE-M3`) compute dynamic, context-sensitive token vectors via self-attention over the entire sequence.
+- **Deep Learning Mechanics:** Computational graphs, backpropagation, and PyTorch training loops from [Module 04](../03-deep-learning/04_deep_learning_and_rl.md).
+- **Linear Algebra:** Matrix products, eigenvalues, and cosine similarity from [Module 02](../01-foundations/02_math_and_statistics.md).
 
-### 2. Transformer Architecture & Self-Attention Mechanics
+---
 
-How does a Transformer actually turn `"bank"` in *"river bank"* vs. *"bank account"* into two totally different meaning vectors? By letting every token look around the sentence and pull context from relevant neighbors via **Self-Attention**:
+## 4. Core Concepts
 
-#### 2.1 Scaled Dot-Product Attention ($Q, K, V$), Causal Masking & `RoPE`
-- **In Plain English (The Library Analogy):** When reading *"The server crashed because **it** ran out of RAM"*, how does the word **`"it"`** figure out it refers to `"server"` and not `"RAM"`? Every token creates three vectors:
-  - **Query ($Q$):** A sticky note asking *"What am I looking for?"* (e.g., `"it"` looking for a singular noun subject).
-  - **Key ($K$):** The label on every word's spine announcing *"Here is what I am!"*
-  - **Value ($V$):** The actual meaning inside each word passed forward when its Key matches your Query.
-- **Causal Masking (No Peeking Ahead):** During training, an LLM reads the whole sentence at once for speed, so we grey out future words (`-inf`) to stop word #3 from cheating by peeking at word #4.
-- **`RoPE` (Word Order):** Since pure attention treats a sentence like an unordered bag, **Rotary Positional Embeddings (`RoPE`)** slightly rotate each word's Query/Key angle by its position (`1st, 2nd, 3rd...`) so the model feels exact word distance.
+### 4.1 Subword Byte-Pair Encoding (BPE) vs. Lexical BM25
+- **Byte-Pair Encoding (BPE):** Iteratively merges the most frequent pairs of bytes or characters into a fixed vocabulary (typically 50,000–256,000 tokens). Ensures zero out-of-vocabulary (`<UNK>`) errors across arbitrary text, source code, and multilingual corpora.
+- **Okapi BM25:** Lexical scoring function incorporating term saturation and document length penalization:
+  $$\text{BM25}(q, d) = \sum_{t \in q} \text{IDF}(t) \cdot \frac{f(t, d) \cdot (k_1 + 1)}{f(t, d) + k_1 \cdot \left(1 - b + b \cdot \frac{|d|}{\text{avgdl}}\right)}$$
+  Serves as the sparse retrieval pillar in modern Enterprise Hybrid RAG.
+
+### 4.2 Scaled Dot-Product Attention ($Q, K, V$)
+Each token creates three vector projections via learned weight matrices:
+- **Query ($Q = X W_Q$):** What this token is seeking.
+- **Key ($K = X W_K$):** What this token contains / offers.
+- **Value ($V = X W_V$):** The actual contextual information payload.
+
+$$\text{Attention}(Q, K, V) = \text{Softmax}\left(\frac{Q K^T}{\sqrt{d_k}} + M\right) V$$
 
 <p align="center">
-  <img src="../../assets/animations/self_attention_qkv_motion.svg" width="100%" alt="Animated Transformer Self-Attention showing Query, Key, Value matching and Causal Masking" />
+  <img src="../../assets/animations/self_attention_qkv_motion.svg" width="100%" alt="Motion visualization of Query Key Value vector projections and scaled attention matrix calculation" />
 </p>
 
-<details>
-<summary><b>Deep Dive: Attention Equation & Why We Divide by $\sqrt{d_k}$</b></summary>
+### 4.3 Positional Encodings: Sinusoidal vs. RoPE
+Because self-attention is permutation-invariant ($\text{Attention}(\pi(X)) = \pi(\text{Attention}(X))$), sequence order must be explicitly injected:
+- **Absolute Positional Encodings:** Adds fixed sinusoidal or learned vector coordinates directly to input token embeddings.
+- **Rotary Position Embedding (RoPE):** Multiplies query and key vectors by a 2D rotation matrix in the complex plane, capturing relative distance $\mathbf{q}_m^T \mathbf{k}_n = g(\mathbf{x}_m, \mathbf{x}_n, m - n)$ naturally.
 
-$$\text{Attention}(Q, K, V) = \text{softmax}\left(\frac{Q K^\top}{\sqrt{d_k}} + M\right) V$$
+---
 
-Why divide by $\sqrt{d_k}$? When head dimension $d_k$ is large (e.g., `64` or `128`), raw dot products $q \cdot k$ grow large in variance ($\propto d_k$), pushing `softmax` into extreme `0.9999 / 0.0001` saturation where gradients vanish to zero. Dividing by $\sqrt{d_k}$ keeps scores well-behaved with unit variance. **Multi-Head Attention (`MHA`)** runs $h$ independent $(Q,K,V)$ heads in parallel so one head tracks grammar while another tracks long-range facts.
+## 5. Technical Deep Dive
 
-</details>
-
-#### 2.2 Encoder-Only vs. Decoder-Only vs. Encoder-Decoder Topologies
-Depending on whether we leave that Causal Mask **off** (letting every token read both left and right) or **on** (generating strictly left-to-right), the exact same Self-Attention block gives us three distinct Transformer families:
-
-| Architecture | Attention Visibility | Representative 2026 Models | Primary Production Use Cases |
-|---|---|---|---|
-| **Encoder-Only** | Bidirectional (sees full text) | `ModernBERT`, `Qwen3-Embedding`, `BGE-M3` *(descended from `BERT`)* | Dense embeddings, Cross-Encoder reranking, NER, fast classification |
-| **Decoder-Only** | Causal / Autoregressive (left-to-right) | `Gemini 3/3.1`, `GPT-5`, `Claude 4.5/4.6`, `Llama 4`, `Qwen 3.5` | Generative chat, code generation, reasoning, autonomous agents |
-| **Encoder-Decoder** | Bidirectional input + Causal output | `Whisper-large-v3-turbo` (Audio->Text), `T5` family | Speech recognition (`Whisper`) & sequence-to-sequence tasks |
-
-### 3. Computer Vision: CNNs, ResNet & Transfer Learning
-
-Now let's switch from words to **images**. Before chopping images into Transformer patches, let's understand the classic spatial workhorse of computer vision, and why its skip-connection highway also lives inside every Transformer layer!
-
-#### 3.1 Spatial Convolutions (`CNNs`), Residual Skip Highways & Transfer Learning
-- **In Plain English (The Sliding Flashlight):** Connecting every pixel of a `1000×1000` color photo to 1,000 neurons creates **3 billion weights** in layer 1 alone! Instead, a **Convolutional Neural Network (`CNN`)** slides a tiny `3×3` "flashlight" (**kernel/filter**) across the image, reusing those exact 9 weights everywhere to spot edges in layer 1, textures in layer 2, and whole objects in deeper layers.
-
-<details>
-<summary><b>Deep Dive: Convolution Output Size Formula</b></summary>
-
-$$W_{\text{out}} = \left\lfloor \frac{W_{\text{in}} - K + 2P}{S} \right\rfloor + 1$$
-
-Where $K$ = kernel size (e.g., `3`), $P$ = zero-padding border (e.g., `1` keeps width unchanged when stride is `1`), and $S$ = stride step size.
-
-</details>
-
-**ResNet Skip Connections (He et al., 2015):** Learn a small correction $\mathcal{F}(x)$ added to the original input shortcut $x$:
-
-```mermaid
-flowchart LR
-    X["Input Tensor (x)"] --> W1["Conv 3x3 + BatchNorm + ReLU"]
-    W1 --> W2["Conv 3x3 + BatchNorm"]
-    W2 --> ADD(("Add: F(x) + x"))
-    X -->|"Identity Skip Highway (+1 Gradient)"| ADD
-    ADD --> ACT["ReLU Output"]
-
-    classDef inp fill:#E0F2FE,stroke:#0284C7,stroke-width:2px,color:#0369A1;
-    classDef conv fill:#EDE9FE,stroke:#7C3AED,stroke-width:1.5px,color:#4C1D95;
-    classDef sum fill:#DCFCE7,stroke:#16A34A,stroke-width:2px,color:#15803D;
-
-    class X inp;
-    class W1,W2 conv;
-    class ADD,ACT sum;
-```
-
-Because $\frac{\partial (x + \mathcal{F}(x))}{\partial x} = 1 + \frac{\partial \mathcal{F}}{\partial x}$, gradients flow backward unimpeded through the `+1` identity path even across 150+ layers.
+### 5.1 Vision Transformers (ViT) & Edge Object Detection
+- **ViT Mechanics:** An image $X \in \mathbb{R}^{H \times W \times C}$ is sliced into non-overlapping $P \times P$ pixel patches (e.g. $16 \times 16$), flattened into 1D vectors, linearly projected into embedding dimension $D$, prepended with a `[CLS]` token, and processed through standard Transformer encoder blocks.
+- **Edge Object Detection Architectures:**
+  - Modern NMS-free edge models (such as **YOLOv10** and **RT-DETR**) eliminate the traditional non-maximum suppression (NMS) post-processing bottleneck by employing dual label assignments and Hungarian bipartite matching during training.
+  - General edge vision flagships (such as Ultralytics **YOLO11**) provide sub-5ms latency on consumer CPU and edge ONNX runtimes.
 
 ```python
+# Production Transfer Learning: Freeze pretrained backbone, train lightweight head
 import torch
 import torch.nn as nn
-from torchvision import models
+from torchvision.models import vit_b_16, ViT_B_16_Weights
 
-# Production Transfer Learning: Freeze pretrained backbone, train lightweight head
-model = models.resnet50(weights=models.ResNet50_Weights.DEFAULT)
+weights = ViT_B_16_Weights.DEFAULT
+model = vit_b_16(weights=weights)
+
 for param in model.parameters():
-    param.requires_grad = False
+    param.requires_grad = False  # Freeze pretrained weights
 
-model.fc = nn.Sequential(
-    nn.Linear(model.fc.in_features, 256),
+# Replace standard 1000-class ImageNet head with custom classification head
+num_classes = 5
+model.heads = nn.Sequential(
+    nn.Linear(model.heads.head.in_features, 256),
     nn.ReLU(),
-    nn.Dropout(0.3),
-    nn.Linear(256, 2),
+    nn.Dropout(0.2),
+    nn.Linear(256, num_classes)
 )
-optimizer = torch.optim.AdamW(model.fc.parameters(), lr=1e-3)
 ```
 
----
+### 5.2 Multimodal Alignment via CLIP & Contrastive InfoNCE Loss
+CLIP (Contrastive Language-Image Pre-Training) jointly trains an Image Encoder and a Text Encoder using a symmetric InfoNCE loss over batches of $(I_k, T_k)$ pairs:
+$$\mathcal{L}_{\text{InfoNCE}} = -\frac{1}{2N} \sum_{i=1}^N \left[ \log \frac{e^{\text{sim}(I_i, T_i)/\tau}}{\sum_{j=1}^N e^{\text{sim}(I_i, T_j)/\tau}} + \log \frac{e^{\text{sim}(T_i, I_i)/\tau}}{\sum_{j=1}^N e^{\text{sim}(T_i, I_j)/\tau}} \right]$$
 
-## Tier 2: Production Architecture & Scale (Detection, ViT, CLIP & Audio AI)
+This projects images and text captions into a shared embedding space, enabling zero-shot classification and cross-modal search.
 
-In Tier 1, we handled text tokens and single-label photos separately. **Tier 2** brings everything together, locating multiple objects inside busy scenes (`IoU`/`mAP`), merging vision and language into one shared space (`ViT` & `CLIP`), and extending the exact same Transformer pipeline to live speech and audio (`Whisper`).
-
-### 4. Vision Hierarchy (`IoU`, `mAP`, `ViT`) & Multimodal Alignment (`CLIP`)
-
-#### 4.1 Detection/Segmentation Metrics (`IoU`, `mAP`), Vision Transformers (`ViT`) & `CLIP`
-- **Classification** (`ConvNeXt`, `ViT`) -> single image label; evaluated via Accuracy / Top-5.
-- **Object Detection** (`YOLO26`: native NMS-free edge flagship, `YOLO11`, `RT-DETR`) -> `[x, y, w, h, class, conf]` boxes; evaluated via **IoU** ($\frac{\text{Area}(B_p \cap B_{gt})}{\text{Area}(B_p \cup B_{gt})}$) and **mAP@0.5:0.95**.
-- **Semantic vs. Instance Segmentation** (`SegFormer`, `SAM 2`) -> pixel-level class mask (`mIoU`) vs. distinct per-object instance masks (`Mask AP`).
-- **`CNN` vs. `Vision Transformer (ViT)`:** CNNs have built-in "neighboring pixels belong together" intuition (win on smaller `<100k` image datasets); `ViT` chops an image into `16×16` square tiles like words in a sentence (wins at internet scale).
-- **`CLIP` / `SigLIP 2` (Connecting Images & Text in One Map):** Imagine a memory-matching game with 32 photos and 32 captions on a table. Contrastive vision-language models (`CLIP`, Google's `SigLIP 2`) train an Image Encoder and a Text Encoder together so Photo #1's vector lands right on top of Caption #1's vector while pushing all 31 wrong captions away, unlocking instant image search and zero-shot labeling without retraining!
-
-<details>
-<summary><b>Deep Dive: `IoU` Formula & `CLIP` Symmetric `InfoNCE` Loss</b></summary>
-
-- **Intersection over Union (`IoU`):** $\text{IoU} = \frac{\text{Area}(B_{\text{pred}} \cap B_{\text{gt}})}{\text{Area}(B_{\text{pred}} \cup B_{\text{gt}})}$. Predictions with $\text{IoU} \ge 0.5$ (or swept across `0.50:0.95` for `mAP`) count as True Positives.
-- **`InfoNCE` Contrastive Objective:** Computes the $N \times N$ cosine similarity matrix across a batch of $N$ `(image, text)` pairs and applies symmetric cross-entropy along rows and columns to maximize the $N$ diagonal matches against $N^2 - N$ negatives.
-
-</details>
-
-### 5. Audio & Speech AI (`Mel Spectrograms`, `Whisper` & Native Audio Models)
-
-Having connected text and images, only one major human sense remains: **sound**. Remarkably, we don't even need a brand-new architecture: we convert sound waves into a 2D visual heatmap and hand it straight to the Transformer:
-
-#### 5.1 Log-Mel Spectrograms, `Whisper` ASR & Native Neural Audio Codecs
-- **In Plain English (Turning Sound Into a Picture):** How do you feed sound into a Transformer? First, slice the sound wave into tiny 25-millisecond windows and plot a **Log-Mel Spectrogram**: a "sheet-music heatmap" where **left-to-right is time**, **bottom-to-top is pitch (bass to treble)**, and **brightness is loudness**! Once sound is a 2D picture, vision/sequence Transformers can read it directly:
-1. **Waveform to Log-Mel Spectrogram:** Raw 16 kHz audio converted via Short-Time Fourier Transform (STFT) into `80` or `128` human-ear pitch bands (`Mel` bins).
-2. **`Whisper` Architecture (OpenAI):** Passes the Log-Mel spectrogram through 2 `1D Conv` layers + a **Transformer Encoder**, then decodes timestamps, language IDs, and transcribed/translated text autoregressively via a **Transformer Decoder**.
-3. **Native Multimodal Audio Tokens:** Frontier voice models (`Gemini Live` / `gemini-3.1-flash-live`, OpenAI `gpt-realtime`) discretize audio directly into neural codec tokens (`SoundStream` / `EnCodec`), enabling low-latency speech-in, speech-out reasoning while preserving emotion, tone, and speaker prosody without a brittle `ASR -> Text LLM -> TTS` cascade.
+### 5.3 Audio Representations: Mel Spectrograms & Whisper
+1. **Waveform to Log-Mel Spectrogram:** Continuous 16 kHz audio is transformed via Short-Time Fourier Transform (STFT) into 80–128 human-ear frequency bands (Mel bins).
+2. **Whisper Architecture:** Feeds the Log-Mel spectrogram into 1D convolutional layers followed by a Transformer Encoder, and autoregressively generates transcribed text and timestamps via a Transformer Decoder.
 
 ---
 
-## Mini Hands-On Lab (15-Minute Exercise)
+## 6. Hands-on Implementation
 
-Implement **Causal Scaled Dot-Product Self-Attention** in pure NumPy and verify that changing future tokens (`t = 3`) has **zero** effect on earlier token outputs (`t = 0, 1`):
+Implement **Causal Scaled Dot-Product Self-Attention** in pure NumPy and verify that future token mutations have zero impact on past outputs:
 
 ```python
 import numpy as np
@@ -180,7 +128,7 @@ import numpy as np
 def causal_self_attention(Q: np.ndarray, K: np.ndarray, V: np.ndarray) -> np.ndarray:
     seq_len, d_k = Q.shape
     scores = (Q @ K.T) / np.sqrt(d_k)
-    # Upper-triangular mask (above main diagonal) set to -inf
+    # Upper-triangular mask (above main diagonal) set to -1e9
     causal_mask = np.triu(np.ones((seq_len, seq_len), dtype=bool), k=1)
     scores = np.where(causal_mask, -1e9, scores)
     shifted = scores - np.max(scores, axis=-1, keepdims=True)
@@ -193,7 +141,7 @@ K1 = rng.normal(size=(4, 8))
 V1 = rng.normal(size=(4, 8))
 out1 = causal_self_attention(Q1, K1, V1)
 
-# Mutate the last future token (index 3) completely:
+# Mutate the future token at index 3 completely
 Q2, K2, V2 = Q1.copy(), K1.copy(), V1.copy()
 K2[3] *= 999.0
 V2[3] *= -999.0
@@ -205,12 +153,72 @@ print("Lab 05 Passed! Causal attention verified with zero future leakage.")
 
 ---
 
-## Key Engineering Takeaways
-- Know the **Scaled Dot-Product Attention** equation $\text{softmax}(QK^\top / \sqrt{d_k} + M)V$ cold, especially why $\frac{1}{\sqrt{d_k}}$ prevents softmax gradient saturation and how causal masking prevents future token leakage.
-- Contrast **Encoder (`ModernBERT`/`Qwen3-Embedding`: embeddings/reranking)** vs. **Decoder (`Gemini 3`/`GPT-5`/`Llama 4`: generation)** vs. **Encoder-Decoder (`Whisper`)**.
-- Explain **ResNet skip connections** via the `+1` identity gradient term, **`CLIP`** via symmetric InfoNCE contrastive alignment, and **Audio AI** via Log-Mel Spectrograms vs. native neural audio codecs.
+## 7. Practical Exercises
 
-> **Next in the Journey:** Now that you know how the **Decoder-Only Transformer** predicts tokens under the hood, how do we transform a raw internet-autocomplete LLM into an accurate, cited, fast enterprise system using **Context Engineering, `Qdrant` Hybrid RAG, `LoRA`/`DPO`, and `vLLM`**? Let's flow into **[Module 06: Generative AI, Fine-Tuning, `Qdrant` & Production RAG](./06_llms_finetuning_and_rag.md)**.
+### Exercise 1: Multi-Head Projection Reshaping
+In multi-head attention with hidden dimension $D=768$ and $H=12$ heads ($d_k = 64$):
+1. Given an input tensor $X \in \mathbb{R}^{B \times T \times D}$, write the PyTorch tensor reshaping operations to split and transpose $Q, K, V$ into shape `(B, H, T, d_k)`.
+2. Compute the batched attention scores and transpose the output back to `(B, T, D)`.
+
+### Exercise 2: Implementing a Minimal Byte-Pair Encoding Merger
+1. Write a Python function `bpe_train(text, vocab_size=300)` that starts with character-level tokens and iteratively merges the most frequent adjacent bigram until the target vocabulary size is reached.
+
+---
+
+## 8. Mini Project
+
+### Cross-Modal Semantic Search Engine using Pretrained CLIP
+Build a local multimodal image-text search prototype:
+- **Requirements:**
+  1. Load a pretrained CLIP model (or sentence-transformers open-weights).
+  2. Embed a directory of 50 sample images into 512-dimensional vectors.
+  3. Accept arbitrary text queries (e.g. `"a photo of a golden retriever playing in snow"`), embed the query, and return top-3 matching images via cosine similarity.
+  4. Benchmark search latency on local CPU and assert average retrieval time is $< 25\text{ ms}$.
+
+---
+
+## 9. Advanced Topics
+
+- **KV Caching in Autoregressive Generation:** Storing past keys and values $K, V$ across decoding steps to avoid redundant $O(T^2)$ recomputation of prefix tokens.
+- **Grouped-Query Attention (GQA):** Sharing single key and value heads across multiple query heads to reduce KV cache memory by 4x–8x during high-concurrency LLM serving.
+- **Patch Merging in Swin Transformers:** Hierarchical vision representations that progressively merge neighboring patches, reducing spatial resolution and enabling linear computation scaling.
+
+---
+
+## 10. Common Mistakes & Gotchas
+
+1. **Omitting the $\frac{1}{\sqrt{d_k}}$ Scaling Factor:** As $d_k$ grows large, unscaled dot products grow in magnitude, driving softmax outputs into saturation where gradients vanish to zero.
+2. **Causal Masking in Bidirectional Encoders:** Applying causal upper-triangular masking in BERT or ViT degrades performance, as bidirectional contexts are intentionally required.
+3. **Resizing Non-Square Images without Aspect Ratio Padding:** Naively stretching non-square images to $224 \times 224$ distorts aspect ratios and degrades CNN/ViT spatial recognition.
+
+---
+
+## 11. Interview Questions & System Design
+
+### Q1: Why did Vision Transformers (ViT) require much larger pretraining datasets than ResNets?
+CNNs possess inductive biases: translation equivariance (a cat in the corner is still a cat) and local connectivity (adjacent pixels share semantic meaning). ViTs have no innate spatial inductive bias; self-attention allows any patch to attend to any other patch globally from layer 1. ViTs must learn spatial adjacency from scratch, requiring massive pretraining datasets (JFT-300M or ImageNet-21k) to outperform CNNs.
+
+### Q2: What is the computational complexity difference between full attention and RoPE?
+Full scaled dot-product attention has $O(T^2 \cdot d)$ computational complexity. Rotary Positional Embeddings (RoPE) add negligible overhead ($O(T \cdot d)$) because rotary transformations are applied element-wise as 2D complex multiplications directly to query and key vectors before the dot product, requiring zero additions to the quadratic attention matrix itself.
+
+---
+
+## 12. Recommended Resources
+
+- **Landmark Paper:** [Attention Is All You Need](https://arxiv.org/abs/1706.03762) (Vaswani et al., 2017).
+- **Vision Transformers Paper:** [An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale](https://arxiv.org/abs/2010.11929) (Dosovitskiy et al., 2020).
+- **CLIP Paper:** [Learning Transferable Visual Models From Natural Language Supervision](https://arxiv.org/abs/2103.00020) (Radford et al., 2021).
+
+---
+
+## 13. Completion Checklist
+
+- [ ] Write the mathematical definition of Scaled Dot-Product Attention from memory.
+- [ ] Implement and verify causal attention masking preventing future token leakage.
+- [ ] Explain how BPE avoids out-of-vocabulary (`<UNK>`) tokens across code and natural languages.
+- [ ] Detail the forward pass of a Vision Transformer from 2D image patches to `[CLS]` prediction.
+- [ ] Describe the contrastive InfoNCE objective used to align image and text encoders in CLIP.
+- [ ] Successfully complete and pass the [`03_mini_transformer_attention.ipynb`](../../notebooks/deep-learning/03_mini_transformer_attention.ipynb) lab.
 
 ---
 

@@ -1,15 +1,15 @@
 # Module 06: Generative AI, LLMs, Fine-Tuning (`LoRA`/`DPO`), `Qdrant` & Production RAG
 
-> **Difficulty:** Advanced | **Estimated Study Time:** 10-12 Hours | **Prerequisites:** [Module 05](./05_nlp_cv_and_multimodal.md)
-> **Focus:** LoRA/QLoRA fine-tuning, DPO alignment, hybrid vector search (Qdrant), RRF reranking, and vLLM serving
+> **Difficulty:** Advanced | **Estimated Study Time:** 10-12 Hours | **Prerequisites:** [Module 05: NLP & Transformers](./05_nlp_cv_and_multimodal.md)  
+> **Focus:** LoRA/QLoRA parameter math, Direct Preference Optimization (DPO), Qdrant hybrid vector search (BM25 + Dense Cosine), Reciprocal Rank Fusion (RRF), and vLLM PagedAttention serving
 
 [← Previous: Module 05: NLP, CV & Multimodal](./05_nlp_cv_and_multimodal.md) | [Roadmap Index](../../README.md) | [Next: Module 07: AI Agents Fundamentals →](../05-agentic-ai/07_ai_agents_fundamentals.md)
 
 ---
 
-## Mental Model: How Base Models Become Grounded Enterprise Systems
+## 1. Overview
 
-In [Module 05](./05_nlp_cv_and_multimodal.md), you built the causal self-attention engine inside every Decoder LLM. Yet a raw pre-trained LLM is merely a next-token internet autocomplete engine: it doesn't know your company's private policies, can break JSON syntax, and gobbles GPU memory. Turning it into a reliable enterprise product follows a clear 4-stage pipeline: **Post-Training Alignment (`SFT` + `DPO`/`GRPO`)**, **Context & Schema Engineering**, **Filterable Hybrid Vector Search (`Qdrant` + Reranking)**, and **Memory-Efficient Serving (`vLLM`)**.
+In [Module 05](./05_nlp_cv_and_multimodal.md), you explored the causal self-attention engine powering autoregressive decoders. However, a raw pre-trained foundation model is merely an ungrounded internet completion engine: it lacks proprietary enterprise knowledge, hallucinates facts, and generates unstructured text. Converting a foundation model into a production enterprise system requires four integrated capabilities: **Post-Training Alignment (SFT + DPO/GRPO)**, **Schema-Constrained Generation**, **Filterable Hybrid Vector Search (Qdrant + Reciprocal Rank Fusion)**, and **High-Throughput Serving (vLLM PagedAttention)**.
 
 ```mermaid
 flowchart LR
@@ -30,238 +30,206 @@ flowchart LR
 
 ---
 
-## Tier 1: Core Foundations (LLM Mechanics, Structured Outputs, Chunking & Vector Stores)
+## 2. Learning Objectives
 
-### 1. LLM Landscape, VRAM Sizing & Quantization
+By the end of this module, you will be able to:
+- **Calculate static and KV-cache GPU memory budgets** for model weights across FP16, INT8, and INT4 (AWQ/GPTQ) quantization regimes.
+- **Enforce guaranteed valid JSON output schemas** using Pydantic and regex context-free grammar (CFG) constraints at decoding time.
+- **Implement Parameter-Efficient Fine-Tuning (LoRA / QLoRA)**, computing trainable adapter parameter counts and forward rank-decomposition math ($\Delta W = \frac{\alpha}{r} B A$).
+- **Contrast RLHF with Direct Preference Optimization (DPO)**, deriving how implicit rewards bypass separate neural reward models.
+- **Construct an Enterprise Hybrid RAG Pipeline** fusing dense vector search with sparse BM25 via Reciprocal Rank Fusion (RRF) and payload filtering in Qdrant.
+- **Configure high-throughput inference serving** using vLLM PagedAttention, continuous batching, and prefix caching.
 
-#### 1.1 Discriminative vs. Generative AI & Quick GPU Memory Math
-- **In Plain English:** A **Discriminative model** acts like a referee sorting existing items into buckets (*"Is this email spam?"*); a **Generative model** acts like an author writing new content one token (word piece) at a time (*autoregressive generation*).
-- **Modern 2026 Model Ecosystem:**
-  - *Frontier API Models:* **Google Gemini 3 / 3.1 Pro & Flash**, **OpenAI GPT-5 / GPT-5.4** (unified dynamic test-time reasoning), **Anthropic Claude 4.5 / 4.6 Opus & Sonnet**.
-  - *Open-Weight Models (Self-Hostable):* **Meta Llama 4** (multimodal MoE), **Alibaba Qwen 3 / 3.5**, **DeepSeek-V3 / R1**, **Google Gemma 3 / Mistral**.
-- **Rule-of-Thumb GPU Memory (`VRAM`) Math:**
-  - Full `FP16`/`BF16` precision = **2 GB per 1B parameters** | Compressed `4-bit` (`INT4` / `AWQ` / `GGUF`) = **0.5 GB per 1B parameters** (+ ~20% breathing room for active chat memory).
-  - *Quick Example:* A **70B** model needs $70 \times 2 \times 1.2 \approx \mathbf{168\text{ GB VRAM}}$ in `BF16`, or just **$\sim 42\text{ GB VRAM}$** in `4-bit`!
+---
 
-<details>
-<summary><b>Deep Dive: Probabilistic Formulation ($P(y \mid x)$ vs. $P(x_t \mid x_{<t})$)</b></summary>
+## 3. Prerequisites
 
-Discriminative classifiers directly estimate decision boundaries $P(y \mid x)$, whereas autoregressive decoder LLMs factorize joint sequence likelihood via the chain rule $P(x_1, \dots, x_T) = \prod_{t=1}^{T} P(x_t \mid x_{<t})$, sampling or beam-searching tokens sequentially.
+- **Transformer Attention:** Multi-head attention and causal masking from [Module 05](./05_nlp_cv_and_multimodal.md).
+- **Deep Learning Training Loops:** PyTorch optimization, AdamW, and loss functions from [Module 04](../03-deep-learning/04_deep_learning_and_rl.md).
 
-</details>
+---
 
-### 2. Context Engineering, Structured Outputs & Hallucination Grounding
+## 4. Core Concepts
 
-Once you pick an API or open-weight model that fits your budget and VRAM, your first job is controlling *what goes into its context window* and *what shape comes out*:
+### 4.1 VRAM Sizing & Quantization Math
+To fit a model in GPU memory for inference:
+$$\text{Weight VRAM (GB)} = \text{Parameters (Billions)} \times \text{Bytes per Parameter}$$
+- **FP16 / BF16 (16-bit):** 2.0 Bytes / param (e.g. 7B model requires $\approx 14\text{ GB}$).
+- **INT8 (8-bit):** 1.0 Byte / param (e.g. 7B model requires $\approx 7\text{ GB}$).
+- **INT4 (4-bit AWQ / GGUF):** 0.5–0.6 Bytes / param (e.g. 7B model requires $\approx 4.5\text{ GB}$, running on commodity laptops).
 
-#### 2.1 Context Engineering (Replacing Legacy "Prompt Tweaking")
-Standalone single-turn "prompt engineering" has evolved into **Context Engineering**: architecting the exact information payload, token budget, and KV-cache layout fed into a model across multi-step execution:
-1. **Prefix-Cache-Friendly Ordering:** Place **100% static content first** (`System Policy -> Tool JSON Schemas -> Static Few-Shot Examples -> Domain Docs`) and **dynamic per-turn state last** (`Recent History -> User Query`). Even a 1-token timestamp change at the top invalidates the entire GPU `KV` prefix cache: costing **2×-10× higher latency and API spend** ([Anthropic Prompt Caching](https://docs.anthropic.com/en/docs/build-with-claude/prompt-caching); [Gemini Context Caching](https://ai.google.dev/gemini-api/docs/caching)).
-2. **Signal-to-Noise & Context Budgeting:** Even with `1M+` token windows, stuffing raw HTML or 50 unranked chunks degrades reasoning accuracy via *Lost-in-the-Middle* attention dilution ([Liu et al., TACL 2024](https://arxiv.org/abs/2307.03172)). Compress verbose tool observations, strip boilerplate fields, and inject only reranked `Top-5` evidence.
-
-#### 2.2 Constrained Decoding & Guaranteed JSON Schemas
-Careful context ordering controls the *input*; how do you guarantee the *output* won't crash your downstream Python code?
-- **In Plain English:** Asking an LLM *"Please reply in valid JSON"* in a prompt is just a polite request: it can still add extra chat text or miss a comma and crash your app. **Constrained Decoding (Structured Outputs)** acts like a smart keyboard that physically greys out any letter/token that would violate your `Pydantic` JSON schema, guaranteeing **100% valid JSON** every single call ([OpenAI Structured Outputs, 2024](https://openai.com/index/introducing-structured-outputs-in-the-api/); [Willard & Louf, 2023](https://arxiv.org/abs/2307.09702)):
+### 4.2 Guaranteed Structured Outputs via Pydantic & CFG
+Enterprise systems require valid machine-readable JSON. Relying on prompting alone (*"output only valid JSON"*) fails under production edge cases. Modern engines use **Context-Free Grammar (CFG) / Logit Masking**: during autoregressive generation, invalid transition tokens that violate the JSON schema receive a logit mask of $-\infty$:
 
 ```python
 from pydantic import BaseModel, Field
 
-class InvoiceExtraction(BaseModel):
-    vendor_name: str
-    invoice_total_usd: float = Field(ge=0.0)
-    line_items: list[str]
-    requires_manual_audit: bool
+class OrderExtraction(BaseModel):
+    order_id: str = Field(pattern=r"^ORD-\d{5}$")
+    items: list[str] = Field(min_length=1)
+    total_usd: float = Field(gt=0.0)
+    express_shipping: bool
 
-# Passed directly to Gemini response_schema / OpenAI response_format / vLLM guided_json
-json_schema = InvoiceExtraction.model_json_schema()
+# Schema passed directly to guided_json / response_schema
+json_schema = OrderExtraction.model_json_schema()
 ```
 
-#### 2.3 Why Hallucinations Happen: and What RAG Actually Guarantees
-Even 100% valid JSON can still contain **invented facts**! Why? Because LLMs optimize next-token likelihood rather than factual truth, smoothly extrapolating plausible-sounding fabrications when knowledge is missing or ambiguous.
-- **Engineering Reality:** **RAG grounds the model in retrieved context and drastically reduces hallucinations, but NEVER 100% eliminates them.** If retrieval pulls noisy chunks, if key facts sit buried in the middle of a long context window, or if system prompts lack strict abstention rules, the model can still misinterpret context or fabricate citations. Always pair RAG with explicit abstention prompts (*"If unsupported by context, state insufficient information"*) and automated faithfulness checks.
-
-### 3. Document Chunking & `RAG` vs. Fine-Tuning
-
-Since grounding factual answers depends on feeding the right private paragraphs into that context window, let's trace how **`RAG`** slices documents and when to use `RAG` vs. Fine-Tuning:
-
-> **What is `RAG` (Retrieval-Augmented Generation)?** Think of a closed-book exam vs. an **open-book exam**: instead of hoping an LLM memorized your company's 2026 refund PDF during training, `RAG` searches your private database for the 5 most relevant paragraphs first, pastes them into the prompt, and tells the LLM: *"Answer ONLY using these paragraphs and cite page numbers."*
-
-#### 3.1 Document Chunking Strategies (Slicing Long PDFs Cleanly)
-Poor chunking destroys retrieval quality before embeddings even run:
-1. **Fixed-Token with Overlap (e.g., `512` tokens, `64` overlap):** Simple baseline; risks slicing tables or clauses mid-sentence.
-2. **Recursive Character / Markdown-Header Splitting:** Splits hierarchically by headings (`#`, `##`), paragraphs (`\n\n`), then sentences.
-3. **Layout-Aware Parsing (`Docling`, `Marker`, AWS Textract):** Preserves multi-column PDFs, financial tables, and figures intact as structured Markdown/JSON.
-4. **Contextual Retrieval:** Prepends a concise document-level summary (e.g., *"From Acme Corp Q3 2026 10-Q filing:"*) to every chunk prior to embedding and BM25 indexing, reducing top-20 chunk retrieval failure rates by **49%** (and **67%** when paired with reranking; [Anthropic Engineering, 2024](https://www.anthropic.com/news/contextual-retrieval)).
-
-#### 3.2 Choosing Between RAG and Fine-Tuning (`LoRA`)
-Newcomers often ask: *"Why build a RAG search pipeline at all: can't we just fine-tune the LLM on our PDFs?"* Here is the crisp engineering boundary:
-
-| Dimension | Retrieval-Augmented Generation (RAG) | Fine-Tuning (`LoRA` / `SFT`) |
-|---|---|---|
-| **Primary Purpose** | Dynamic facts, private knowledge bases, source citations, per-user ACLs | Teaching domain tone, compact output formats, specialized SQL/DSL syntax, or distilling a large teacher into a fast 8B student |
-| **Data Freshness** | Instant (upsert/delete vectors in milliseconds) | Static until the next training job |
-| **Hallucination Control** | High (verifiable chunk citations) | Low on unseen facts |
+### 4.3 Chunking Strategies & Vector Embeddings
+- **Fixed-Size Chunking with Overlap:** 512 tokens with 50-token overlap; simple but splits semantic paragraphs.
+- **Semantic Chunking:** Computes cosine similarity between consecutive sentences and places chunk boundaries where semantic similarity drops sharply.
+- **Document Chunking with Metadata:** Attaching `user_id`, `tenant_id`, and `created_at` timestamps to vectors for payload filtering.
 
 ---
 
-## Tier 2: Production Architecture & Scale (Post-Training, `Qdrant`, Hybrid RAG & `vLLM`)
+## 5. Technical Deep Dive
 
-Now that the roles of Context Engineering, RAG, and Fine-Tuning are clear, **Tier 2** dives under the hood of all three in production: how to fine-tune weights cheaply (`LoRA`/`DPO`), how to index millions of multi-tenant chunks in **`Qdrant`**, and how to serve thousands of concurrent users smoothly on **`vLLM`**.
+### 5.1 Low-Rank Adaptation (LoRA) & QLoRA
+Instead of updating the full weight matrix $W_0 \in \mathbb{R}^{d \times k}$, LoRA freezes $W_0$ and decomposes updates into two low-rank matrices $B \in \mathbb{R}^{d \times r}$ and $A \in \mathbb{R}^{r \times k}$ where rank $r \ll \min(d, k)$:
+$$W = W_0 + \Delta W = W_0 + \frac{\alpha}{r} (B \cdot A)$$
 
-### 4. Post-Training (`SFT`, `LoRA`/`QLoRA`, `DPO`/`GRPO`) & Test-Time Compute
+For $d = 4096, k = 4096, r = 16$:
+- Full parameter count: $4096 \times 4096 = 16,777,216$ parameters.
+- LoRA parameter count: $(4096 \times 16) + (16 \times 4096) = 131,072$ parameters (**$> 99\%$ parameter reduction!**).
 
-#### 4.1 Parameter-Efficient Fine-Tuning (`LoRA` / `QLoRA`) & Alignment (`DPO` / `GRPO`)
-- **In Plain English:**
-  1. **`LoRA` & `QLoRA` (Sticky Notes on a Locked Encyclopedia):** Full fine-tuning rewrites all 70 billion weights (expensive and risks erasing general intelligence). **`LoRA`** locks the encyclopedia shut and trains tiny "sticky-note" adapter layers alongside it (`<0.1%` of weights!). **`QLoRA`** shrinks that locked encyclopedia to `4-bit` so you can fine-tune a large model on a single 24 GB GPU.
-  2. **`DPO` (Learning from Side-by-Side Preferences):** Shows the model pairs of answers `(Winner vs. Loser)` for the same prompt and nudges it to sound more like the Winner.
-  3. **`GRPO` & Test-Time Thinking:** Used by modern reasoning models (`GPT-5`, `Gemini 3 Deep Think`, `Claude 4.5/4.6`, `DeepSeek-R1`), letting the model "think out loud" on scratch paper and rewarding answers that pass real code/math checks.
+### 5.2 Direct Preference Optimization (DPO) vs. RLHF
+Standard RLHF trains a separate Reward Model and runs unstable PPO reinforcement learning. DPO derives an analytical relationship between the reward function and optimal policy, optimizing likelihood directly over preference pairs $(x, y_w, y_l)$ (where $y_w$ is preferred and $y_l$ is dispreferred):
+$$\mathcal{L}_{\text{DPO}}(\theta; \pi_{\text{ref}}) = -\mathbb{E}_{(x, y_w, y_l)} \left[ \log \sigma \left( \beta \log \frac{\pi_\theta(y_w \mid x)}{\pi_{\text{ref}}(y_w \mid x)} - \beta \log \frac{\pi_\theta(y_l \mid x)}{\pi_{\text{ref}}(y_l \mid x)} \right) \right]$$
 
-<details>
-<summary><b>Deep Dive: Low-Rank Matrix Math ($\Delta W = BA$) & Primary Papers</b></summary>
+### 5.3 Qdrant Hybrid RAG & Reciprocal Rank Fusion (RRF)
+Pure dense vector search fails on precise part numbers, SKU codes, and rare acronyms. Pure BM25 fails on semantic paraphrasing. **Hybrid Search** executes both in parallel and fuses ranks via Reciprocal Rank Fusion:
 
-- **`LoRA`** ([Hu et al., ICLR 2022](https://arxiv.org/abs/2106.09685)): Freezes $W_0 \in \mathbb{R}^{d \times k}$ and learns $\Delta W = B A$ with $A \in \mathbb{R}^{r \times k}, B \in \mathbb{R}^{d \times r}$ ($r \ll d$, e.g., $r = 16$), cutting trainable parameters up to **10,000×** and VRAM by **3×**. **`QLoRA`** ([Dettmers et al., NeurIPS 2023](https://arxiv.org/abs/2305.14314)) stores $W_0$ in 4-bit NormalFloat (`NF4`).
-- **`DPO`** ([Rafailov et al., NeurIPS 2023](https://arxiv.org/abs/2305.18290)) & **`GRPO`** ([Shao et al., 2024](https://arxiv.org/abs/2402.03300); [DeepSeek-AI, 2025](https://arxiv.org/abs/2501.12948)): Eliminate the separate critic/reward model overhead of classic `PPO` RLHF.
-
-</details>
-
-### 5. Production Vector Databases & `Qdrant` Architecture
-
-While `LoRA` shapes *how* the model speaks, **`Qdrant`** stores the live facts it reads. Let's see how vector databases index meaning alongside security filters:
-
-> **What is a `Vector Database`?** A traditional SQL database searches for exact spelling (`WHERE text LIKE '%refund%'`), missing `"money-back guarantee"` completely. A **Vector Database (`Qdrant`)** stores meaning vectors (`embeddings`) alongside normal metadata fields (`tenant_id`, `date`) so you can search by **meaning + keywords + security filters** in a few milliseconds.
-
-#### 5.1 Selecting the Right Vector Search Engine
-
-| Engine | Architecture | Sweet Spot & Trade-Offs |
-|---|---|---|
-| **`Qdrant`** | Dedicated Rust engine (`HNSW` + Sparse + Payload Index) | **Top choice for Production RAG & Agents:** local `:memory:`/disk mode up to distributed cloud, **Filterable HNSW**, native Dense+Sparse RRF, and 32× Binary Quantization |
-| **`pgvector`** | PostgreSQL extension (`HNSW` / `StreamingDiskANN`) | Great when vectors live alongside relational ACID tables at moderate scale (`<10M-50M` vectors) |
-| **`FAISS`** | C++/GPU in-memory ANN library (Meta) | Ultra-fast raw ANN math inside custom Python/C++ services; **not** a database (no CRUD API, WAL durability, or metadata filtering engine out of the box) |
-| **`OpenSearch`** | Distributed Lucene + `k-NN` cluster | Heavy enterprise log/search stacks already standardized on AWS OpenSearch |
-
-#### 5.2 Why `Qdrant` Excels: Filterable HNSW, Native Hybrid RRF & Quantization
-Why do production engineering teams reach for `Qdrant` specifically when scaling multi-tenant RAG? Because naive vector search breaks the moment you add customer security filters:
-- **In Plain English (The Multi-Tenant Filtering Trap):** Suppose 500 companies share one vector database, and tiny Client `"Acme"` owns only `0.2%` of the documents.
-  - *If you search Top-10 globally first, then filter for `"Acme"` (`Post-Filtering`):* All 10 results belong to bigger clients: `"Acme"` gets **0 results**!
-  - *If you cross out non-Acme nodes before walking the search graph (`Naive Pre-Filtering`):* You chop up the highway bridges connecting the graph, breaking search accuracy!
-  - **How `Qdrant` Solves It (`Filterable HNSW`):** `Qdrant` pre-builds dedicated mini-bridges per tenant/tag right inside the graph ([Qdrant Filterable HNSW Guide](https://qdrant.tech/articles/filtrable-hnsw/)), giving fast, accurate filtered results every time.
-- **32× Memory Compression (`Binary Quantization`):** Turns bulky 32-bit decimal numbers into tiny `1-bit` (`+` or `-`) signs in RAM (**32× smaller** and up to **40× faster**; [Qdrant Quantization Docs](https://qdrant.tech/documentation/concepts/quantization/)), then double-checks the top few finalists from disk so accuracy barely budges.
-- **Single-Call Hybrid Search (`Prefetch` + Server-Side `RRF`):**
+<p align="center">
+  <img src="../../assets/animations/qdrant_hybrid_rerank_motion.svg" width="100%" alt="Motion visualization of Qdrant Hybrid Search combining dense cosine and sparse BM25 vectors via Reciprocal Rank Fusion and Cross-Encoder reranking" />
+</p>
 
 ```python
 from qdrant_client import QdrantClient, models
 
-# Runs 100% in-process locally (swap url="https://..." for Docker / Qdrant Cloud!)
-client = QdrantClient(":memory:")
+client = QdrantClient(path="./qdrant_local")
 
+# Setup hybrid collection with Dense + Sparse vectors
 client.create_collection(
-    collection_name="enterprise_kb",
-    vectors_config={"dense": models.VectorParams(size=4, distance=models.Distance.COSINE)},
-    sparse_vectors_config={"bm25": models.SparseVectorParams()},
-)
-
-client.upsert(
-    collection_name="enterprise_kb",
-    points=[
-        models.PointStruct(
-            id=1,
-            vector={
-                "dense": [0.9, 0.1, 0.2, 0.0],
-                "bm25": models.SparseVector(indices=[101, 409], values=[1.8, 3.2]),
-            },
-            payload={"tenant_id": "acme", "doc_id": "POL-409", "text": "OAuth token rotation policy."},
-        )
-    ],
-)
-
-# Native Hybrid Search (Dense + Sparse) with ACL Payload Filter & Server-Side RRF Fusion:
-results = client.query_points(
-    collection_name="enterprise_kb",
-    prefetch=[
-        models.Prefetch(query=[0.88, 0.12, 0.18, 0.0], using="dense", limit=20),
-        models.Prefetch(
-            query=models.SparseVector(indices=[409], values=[1.0]),
-            using="bm25",
-            limit=20,
-        ),
-    ],
-    query=models.FusionQuery(fusion=models.Fusion.RRF),
-    query_filter=models.Filter(
-        must=[models.FieldCondition(key="tenant_id", match=models.MatchValue(value="acme"))]
-    ),
-    limit=5,
+    collection_name="enterprise_docs",
+    vectors_config={
+        "dense": models.VectorParams(size=768, distance=models.Distance.COSINE)
+    },
+    sparse_vectors_config={
+        "sparse": models.SparseVectorParams()
+    }
 )
 ```
 
-### 6. End-to-End Advanced RAG Pipeline & `RAGAS` Evaluation
-
-Pulling `Top-50` candidates from `Qdrant` gets high recall, but handing all 50 chunks straight to the LLM wastes tokens and dilutes attention. Let's snap a **Cross-Encoder Reranker** and **`RAGAS` quality gates** onto `Qdrant` to complete the retrieval pipeline:
-
-#### 6.1 Hybrid Retrieval, Cross-Encoder Reranking & The `RAGAS` Triad
-Dense embeddings (`Qwen3-Embedding`, `BGE-M3` with Matryoshka dimension compression) capture semantic gist but blur exact part numbers, error codes (`ERR_409_AUTH`), and product SKUs. Combine `Qdrant` Hybrid `RRF` (`Top 50`) with a **Cross-Encoder Reranker (`Qwen3-Reranker` / `ModernBERT` / `Cohere Rerank 4` -> `Top 5`)** and evaluate continuously using the **`RAGAS` Triad**:
+### 5.4 High-Throughput Serving with vLLM & PagedAttention
+Traditional LLM inference allocates contiguous GPU memory for the maximum possible sequence length, wasting 60%–80% of VRAM due to internal fragmentation. **PagedAttention** partitions the KV cache into fixed-size virtual memory blocks (e.g. 16 tokens per block), enabling non-contiguous physical page allocation:
 
 <p align="center">
-  <img src="../../assets/animations/qdrant_hybrid_rerank_motion.svg" width="100%" alt="Animated Qdrant Filterable Hybrid RAG funnel with Reciprocal Rank Fusion and Qwen3 Cross-Encoder Reranking" />
+  <img src="../../assets/animations/vllm_paged_attention_motion.svg" width="100%" alt="Motion visualization of vLLM PagedAttention virtual block tables mapping non-contiguous GPU VRAM pages for continuous batching" />
 </p>
-
-### 7. LLM Inference Optimization: `TTFT`, `TPOT`, `KV Cache` & `vLLM`
-
-Once your RAG pipeline retrieves the exact right `Top-5` chunks, the final bottleneck is **GPU serving speed** when 500 users ask questions at the same moment:
-
-> **What is the `KV Cache`?** Without a memory cache, typing word #500 of an essay would force the LLM to re-read and re-calculate math for words #1 through #499 from scratch every single step! The **`KV Cache`** saves past words' Key and Value vectors in GPU memory so each new word only calculates *itself*, making generation 10×+ faster, at the cost of growing GPU RAM as chats get longer.
-
-#### 7.1 Prefill (`TTFT`) vs. Decode (`TPOT`) & Why `vLLM` Exists
-- **Two Phases of Every LLM Reply:**
-  1. **`TTFT` (Time-To-First-Token: Reading Your Prompt):** Reads all input words at once; bottlenecked by **GPU math speed** (*compute-bound*). Speed up with **Prefix Caching**.
-  2. **`TPOT` (Time-Per-Output-Token: Typing the Reply):** Emits 1 word at a time; bottlenecked by **shipping giant weight matrices from GPU RAM into compute cores for every single word** (*memory-bandwidth bound*). Speed up with **Quantization** or **Speculative Decoding**.
-- **Why `vLLM` (`PagedAttention`) Multiplies Throughput 2×-4×:** Imagine a restaurant blocking off a 12-seat table for every solo diner *"just in case 11 friends show up later"*: most seats sit empty! Standard GPU serving wastes **60%-80% of VRAM** reserving contiguous chat-history (`KV Cache`) blocks the exact same way. **`vLLM`** hands out memory **one small page at a time** as a chat grows and frees seats the instant a reply finishes (**Continuous Batching**).
-
-<p align="center">
-  <img src="../../assets/animations/vllm_paged_attention_motion.svg" width="100%" alt="Animated comparison of Traditional GPU KV-Cache Memory Waste vs vLLM PagedAttention" />
-</p>
-
-<details>
-<summary><b>Deep Dive: OS-Style `PagedAttention` Block Tables & Citation</b></summary>
-
-Modeled on operating-system virtual memory, `PagedAttention` maps logical `KV Cache` blocks to non-contiguous physical GPU HBM blocks via a lightweight block table, slashing memory waste below **`4%`** and unlocking zero-copy shared system-prompt prefixes across concurrent users ([Kwon et al., SOSP 2023](https://arxiv.org/abs/2309.06180)).
-
-</details>
 
 ---
 
-## Mini Hands-On Lab (15-Minute Exercise)
+## 6. Hands-on Implementation
 
-Implement **Reciprocal Rank Fusion (`RRF`)**: the exact rank-merging algorithm running inside `Qdrant`'s `Fusion.RRF`: to combine lexical `BM25` hits and dense vector hits without brittle score normalization:
+Implement Reciprocal Rank Fusion (RRF) in pure Python to merge sparse lexical and dense semantic rankings:
 
 ```python
+from collections import defaultdict
+
 def reciprocal_rank_fusion(
     ranked_lists: list[list[str]], k: int = 60, top_n: int = 3
 ) -> list[tuple[str, float]]:
-    """RRF(d) = sum_{list} 1 / (k + rank_in_list(d)), 1-indexed."""
-    rrf_scores: dict[str, float] = {}
-    for ranking in ranked_lists:
-        for rank_idx, doc_id in enumerate(ranking, start=1):
-            rrf_scores[doc_id] = rrf_scores.get(doc_id, 0.0) + 1.0 / (k + rank_idx)
-    return sorted(rrf_scores.items(), key=lambda item: item[1], reverse=True)[:top_n]
+    rrf_scores: dict[str, float] = defaultdict(float)
+    for ranked_docs in ranked_lists:
+        for rank, doc_id in enumerate(ranked_docs, start=1):
+            rrf_scores[doc_id] += 1.0 / (k + rank)
 
-bm25_hits = ["doc_sku_99", "doc_refund", "doc_faq"]
-dense_hits = ["doc_refund", "doc_policy", "doc_sku_99"]
+    sorted_docs = sorted(rrf_scores.items(), key=lambda item: item[1], reverse=True)
+    return sorted_docs[:top_n]
 
-fused = reciprocal_rank_fusion([bm25_hits, dense_hits], k=60, top_n=2)
-top_ids = {doc for doc, _ in fused}
-assert top_ids == {"doc_sku_99", "doc_refund"}
-print("Lab 06 Passed! Top Hybrid RRF Results:", fused)
+# Dense neural embeddings top-ranked docs
+dense_results = ["doc_A", "doc_B", "doc_C", "doc_D"]
+# Sparse BM25 keyword matching top-ranked docs
+bm25_results  = ["doc_B", "doc_E", "doc_A", "doc_F"]
+
+fused = reciprocal_rank_fusion([dense_results, bm25_results], k=60, top_n=3)
+# doc_B (ranked #2 in dense, #1 in BM25) and doc_A score highest
+assert fused[0][0] in ("doc_B", "doc_A")
+print("Lab 06 Passed! Fused Rankings:", fused)
 ```
 
 ---
 
-## Key Engineering Takeaways
-- Size GPU memory fast: `BF16` $\approx 2$ bytes/param, `INT4` $\approx 0.5$ bytes/param (+ ~20% `KV Cache` overhead).
-- Enforce **Structured Outputs (grammar-constrained JSON decoding)** in production pipelines rather than regex parsing.
-- Use **`Qdrant` Filterable HNSW** (with payload ACL filters, native Dense+Sparse `RRF`, and Scalar/Binary Quantization) + **Cross-Encoder Reranking**, gated by the **`RAGAS` Triad**.
-- Choose **RAG** for dynamic/cited facts, **`LoRA`/`QLoRA`** for domain formatting or distillation, and **`vLLM`** to optimize compute-bound **`TTFT`** and memory-bound **`TPOT`**.
+## 7. Practical Exercises
 
-> **Next in the Journey:** Our `Qdrant` RAG pipeline can now read documents and answer questions accurately, but it is still **passive** (it can't check live order statuses in SQL, run calculations, or recover when a query fails). Let's give our LLM **hands, memory, and reasoning loops** in **[Module 07: AI Agents Fundamentals, Workflows & Reasoning Loops](../05-agentic-ai/07_ai_agents_fundamentals.md)**.
+### Exercise 1: LoRA Parameter Calculation Script
+Write a Python script that takes a Transformer configuration (`num_layers=32, d_model=4096, num_heads=32`) and target rank $r \in [4, 8, 16, 64]$:
+1. Compute total base model parameters in the $W_Q, W_K, W_V, W_O$ attention projections.
+2. Compute the exact parameter count and percentage footprint of the LoRA adapter matrices.
+
+### Exercise 2: RAG Pipeline with Document Metadata Filters
+Using `projects/intermediate/starter-local-rag-agent`:
+1. Index documents tagged with `department` (`"legal"`, `"engineering"`, `"hr"`).
+2. Execute a hybrid search query with an exact payload metadata filter restricting results to `"legal"` documents.
+
+---
+
+## 8. Mini Project
+
+### Air-Gapped Hybrid RAG & SQL Assistant
+Run and inspect the production local starter project:
+- **Location:** [`projects/intermediate/starter-local-rag-agent/`](../../projects/intermediate/starter-local-rag-agent/README.md)
+- **Features:** Okapi BM25 sparse index + dense cosine vectors with in-memory SQLite analytical query routing.
+- **Verification Command:**
+  ```bash
+  python projects/intermediate/starter-local-rag-agent/app.py
+  pytest projects/intermediate/starter-local-rag-agent
+  ```
+
+---
+
+## 9. Advanced Topics
+
+- **Speculative Decoding:** Accelerating inference latency by having a small draft model (e.g. 1B) generate candidate tokens that a large target model (e.g. 70B) verifies in a single forward pass.
+- **Chunking with Late Interaction (ColBERT):** Preserving individual token embeddings per chunk and computing MaxSim late interactions for state-of-the-art retrieval accuracy.
+- **Long-Context KV Cache Compression:** StreamingLLM and RoPE frequency interpolation enabling 100k+ token context windows without OOM crashes.
+
+---
+
+## 10. Common Mistakes & Gotchas
+
+1. **Relying Solely on Dense Vector Search:** Dense embeddings frequently fail on SKU numbers, error codes, and exact user IDs. Always use Hybrid Search with BM25.
+2. **Chunking without Context Headers:** Slicing a table into 500-token chunks leaves subsequent chunks without table headers or column definitions.
+3. **Merging LoRA Weights in Non-Matching Datatypes:** Merging FP16 LoRA adapters into quantized INT4 base weights without dequantizing causes irreversible numerical corruption.
+
+---
+
+## 11. Interview Questions & System Design
+
+### Q1: How does PagedAttention eliminate memory fragmentation in LLM serving?
+Standard GPU memory allocation requires contiguous memory for each request's KV cache based on maximum output sequence length ($T_{\max}$), causing internal fragmentation (allocated but unused memory) and external fragmentation. PagedAttention divides the KV cache into fixed-size physical blocks and maps them using virtual block tables, allowing non-contiguous allocation and shared prompt prefix memory across parallel generation branches.
+
+### Q2: What is the mathematical and architectural difference between SFT and DPO?
+Supervised Fine-Tuning (SFT) trains with standard cross-entropy loss over demonstrations, optimizing conditional log-likelihood $\sum \log P(y_t \mid x, y_{<t})$. DPO optimizes human preference over paired completions $(y_w, y_l)$, increasing the likelihood ratio of the preferred completion relative to a frozen reference model $\pi_{\text{ref}}$ while penalizing divergence via an implicit KL constraint parameter $\beta$.
+
+---
+
+## 12. Recommended Resources
+
+- **LoRA Paper:** [LoRA: Low-Rank Adaptation of Large Language Models](https://arxiv.org/abs/2106.09685) (Hu et al., 2021).
+- **DPO Paper:** [Direct Preference Optimization: Your Language Model is Secretly a Reward Model](https://arxiv.org/abs/2305.18290) (Rafailov et al., 2023).
+- **vLLM Paper:** [Efficient Memory Management for Large Language Model Serving with PagedAttention](https://arxiv.org/abs/2309.06180) (Kwon et al., 2023).
+- **Documentation:** [Qdrant Hybrid Search Guide](https://qdrant.tech/documentation/concepts/hybrid-queries/).
+
+---
+
+## 13. Completion Checklist
+
+- [ ] Calculate GPU VRAM requirements for FP16 and INT4 quantized LLM inference.
+- [ ] Implement guaranteed JSON schema enforcement using Pydantic.
+- [ ] Derive the forward update formula for LoRA rank decomposition ($\Delta W = \frac{\alpha}{r} B A$).
+- [ ] Explain how Reciprocal Rank Fusion fuses disparate rank lists without score calibration.
+- [ ] Describe how PagedAttention solves the memory fragmentation problem in high-concurrency LLM serving.
+- [ ] Run the test suite in [`projects/intermediate/starter-local-rag-agent/`](../../projects/intermediate/starter-local-rag-agent/README.md).
 
 ---
 

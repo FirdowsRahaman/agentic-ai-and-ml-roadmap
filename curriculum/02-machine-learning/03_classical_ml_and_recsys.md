@@ -1,22 +1,15 @@
 # Module 03: Classical Machine Learning, Ensembles & Recommendation Systems
 
-> **Difficulty:** Intermediate | **Estimated Study Time:** 8-10 Hours | **Prerequisites:** [Module 01](../01-foundations/01_python_sql_and_data_stack.md), [Module 02](../01-foundations/02_math_and_statistics.md)
-> **Focus:** Leak-free tabular pipelines, gradient boosting (XGBoost/LightGBM), SHAP, and two-stage RecSys
+> **Difficulty:** Intermediate | **Estimated Study Time:** 8-10 Hours | **Prerequisites:** [Module 01: Python & SQL](../01-foundations/01_python_sql_and_data_stack.md), [Module 02: Math & Statistics](../01-foundations/02_math_and_statistics.md)  
+> **Focus:** Leak-free tabular preprocessing, gradient boosted decision trees (XGBoost/LightGBM), SHAP explainability, class imbalance, and two-stage recommendation funnels
 
 [← Previous: Module 02: Math & Statistics](../01-foundations/02_math_and_statistics.md) | [Roadmap Index](../../README.md) | [Next: Module 04: Deep Learning & RL →](../03-deep-learning/04_deep_learning_and_rl.md)
 
 ---
 
-## Mental Model: Choosing the Right Classical Paradigm
+## 1. Overview
 
-With clean feature matrices from [Module 01](../01-foundations/01_python_sql_and_data_stack.md) and vector/probability intuition from [Module 02](../01-foundations/02_math_and_statistics.md), we can now teach computers to learn patterns directly from historical data. While LLMs dominate text, code, and images, **structured spreadsheet/database tables** (credit scores, fraud detection, dynamic pricing, churn, and shopping feeds) are still ruled by **tree ensembles (`XGBoost`, `LightGBM`), tabular foundation models (`TabPFN`), and two-stage recommendation funnels**, because they run in under 10 milliseconds on cheap CPUs and handle messy columns naturally.
-
-<details>
-<summary><b>Deep Dive: 2026 Enterprise Adoption & Tabular Research Benchmarks</b></summary>
-
-While enterprise AI adoption reached **88%-89%** by 2025-2026, **only ~37% of organizations report measurable enterprise EBIT impact**: separating the top **6% "AI high performers"** who engineer end-to-end workflows from isolated pilot demos ([McKinsey *The State of AI*, 2026](https://www.mckinsey.com/capabilities/quantumblack/our-insights/the-state-of-ai); [Stanford HAI *AI Index*](https://hai.stanford.edu/ai-index)). Across structured tabular benchmarks, gradient-boosted trees and in-context tabular foundation models (`TabPFN`) consistently outperform standard deep neural networks due to axis-aligned feature selection and irregular boundary handling ([Hollmann et al., *Nature* 2025](https://www.nature.com/articles/s41586-024-08328-6); [`TabArena`, NeurIPS 2025](https://arxiv.org/abs/2506.16791); [Grinsztajn et al., NeurIPS 2022](https://arxiv.org/abs/2207.08815)).
-
-</details>
+While foundation models and LLMs dominate unstructured text, code, and images, **structured tabular datasets** (fraud detection, churn prediction, credit risk, dynamic pricing, and recommendation feeds) remain dominated by **gradient boosted decision trees (XGBoost, LightGBM, CatBoost)** and tabular foundation models. They execute in sub-10-millisecond latency budgets on commodity CPUs and handle heterogeneous data types with minimal feature engineering.
 
 ```mermaid
 flowchart TD
@@ -40,128 +33,86 @@ flowchart TD
 
 ---
 
-## Tier 1: Core Foundations (Algorithms, Preprocessing & Evaluation)
+## 2. Learning Objectives
 
-### 1. Core Paradigms & Linear Models
-
-#### 1.1 Learning Paradigms: Supervised, Unsupervised & Ranking
-Instead of a programmer hand-coding brittle `if/else` rules (`Data + Rules -> Output`), machine learning flips the diagram (`Data + Answers -> Learned Rules`):
-- **Supervised Learning:** Learns a mapping $f: X \to y$ from labeled historical examples, split into **Regression** (predicting a number like house price) and **Classification** (predicting a category like fraud vs. legitimate).
-- **Unsupervised Learning:** Discovers hidden patterns in unlabeled $X$, like **Clustering** (`K-Means` customer groups) or **Dimensionality Reduction** (`PCA` compressing redundant columns).
-- **Ranking:** Orders items for each user by relevance (`User × Item -> Top-K feed`).
-
-#### 1.2 Linear Regression vs. Logistic Regression (And What a `Logit` Is)
-The simplest way to do Supervised Learning is with a straight line, either outputting a number directly or squashing that line into a `0%-100%` probability:
-- **Linear Regression (Predicting Any Number):** Draws the best-fitting line/plane $\hat{y} = \mathbf{w}^\top \mathbf{x} + b$ to predict continuous numbers (like house price `\$420,000` or tomorrow's temperature `31.5°C`), penalized by **Mean Squared Error (`MSE`)**.
-- **Logistic Regression (Predicting Probability `0%-100%`):** Takes that raw unbounded score $z = \mathbf{w}^\top \mathbf{x} + b$, called a **`logit`** (which can be `-50` or `+80`), and passes it through an S-shaped **Sigmoid curve** $\sigma(z) = \frac{1}{1 + e^{-z}}$ that squashes any number smoothly between `0` and `1` (e.g., `0.87` = 87% chance of spam). Applying a cutoff (like `>= 0.50`) turns that probability into a Yes/No label!
-
-### 2. Feature Scaling, Encoding & `Scikit-Learn` Pipelines
-
-Before feeding real data into Linear or Logistic Regression, there is a catch: if `salary` ranges up to `200,000` while `age` stops at `80`, the formula will obsess over `salary` simply because its numbers are bigger! Let's fix that cleanly without leaking test data.
-
-> **What is `Scikit-Learn` (`sklearn`)?** Python's gold-standard library for classic table-based ML. Every algorithm and data cleaner in `sklearn` follows one universal 2-step habit: **`.fit(X_train)`** (*learn averages/rules from training data ONLY*) and **`.transform(X_test)` / `.predict(X_test)`** (*apply those learned rules to new data*).
-
-#### 2.1 Which Models Need Feature Scaling and Which Don't?
-- **Need Scaling (Distance- or Slope-Based Models):** `Linear/Logistic Regression`, `KNN`, `SVM`, `K-Means`, `PCA`, and `Neural Networks`. Without scaling, a `salary` column (`0-200,000`) completely dwarfs `age` (`18-80`) just because the numbers are 2,500× bigger!
-- **Do NOT Need Scaling (Tree-Based Models):** `Decision Trees`, `Random Forest`, `XGBoost`, `LightGBM`, `CatBoost`. Trees only ask simple yes/no threshold questions (`Is salary <= 50,000?`), changing dollars to cents just moves the threshold to `5,000,000` without changing a single branch!
-
-```python
-from sklearn.compose import ColumnTransformer
-from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import OneHotEncoder, StandardScaler
-from sklearn.linear_model import LogisticRegression
-
-# Leak-free preprocessing pipeline (fits ONLY on X_train!)
-preprocessor = ColumnTransformer([
-    ("num", StandardScaler(), ["age", "monthly_spend"]),
-    ("cat", OneHotEncoder(handle_unknown="ignore"), ["country", "plan"]),
-])
-
-clf = Pipeline([
-    ("prep", preprocessor),
-    ("model", LogisticRegression(max_iter=1000, class_weight="balanced")),
-])
-```
-
-#### 2.2 Stratified $K$-Fold Cross-Validation
-Wrapping preprocessing inside `Pipeline` stops data leakage on one train/test split, but a single 80/20 split can still get lucky or unlucky on smaller datasets. **$K$-Fold Cross-Validation** rotates through $K$ folds (typically $K=5$), training on $K-1$ slices and testing on the held-out slice each turn, while **`StratifiedKFold`** guarantees every slice keeps the exact same rare-event percentage (essential when fraud is `< 5%`).
-
-### 3. Trees, Bagging (Random Forest) vs. Boosting (`XGBoost` / `LightGBM`)
-
-Linear models draw straight boundaries, so they struggle when risk depends on non-linear rules like *"young driver AND sports car, EXCEPT with 5 years of clean history"*. Decision tree ensembles capture those rules automatically:
-
-#### 3.1 Bagging (`Random Forest`) vs. Gradient Boosting (`XGBoost`, `LightGBM`, `CatBoost`)
-- **In Plain English (The Doctor Panel Analogy):**
-  - **Single Decision Tree:** One doctor playing 20-questions: fast, easy to read, but easily memorizes quirks in old patient files (**overfits**).
-  - **`Random Forest` (Bagging = Parallel Voting):** Asks **100 independent doctors** (each given a slightly shuffled set of patient charts and columns) at the same time and takes a majority vote, canceling out individual blind spots.
-  - **`XGBoost` / `LightGBM` (Boosting = Relay Team Fixing Mistakes):** Doctor #1 makes initial guesses; Doctor #2 studies **only the patients Doctor #1 got wrong**; Doctor #3 studies **the leftover mistakes of #1 + #2**, and so on for 200+ small steps!
-
-<p align="center">
-  <img src="../../assets/animations/bagging_vs_boosting_motion.svg" width="100%" alt="Animated comparison of Random Forest parallel bagging vs XGBoost sequential residual boosting" />
-</p>
-
-| Dimension | Single Decision Tree | Random Forest (Bagging) | Gradient Boosting (`XGBoost` / `LightGBM` / `CatBoost`) |
-|---|---|---|---|
-| **Training Mode** | Single greedy tree (Gini / Entropy) | **Parallel** deep trees on bootstrap samples + random feature subsets | **Sequential** shallow trees; each tree predicts the **negative gradient (residual errors)** of previous trees |
-| **Error Reduced** | High variance (overfits easily) | **Reduces Variance** via averaging | **Reduces Bias** (and controls variance via `learning_rate` + L1/L2 regularization) |
-| **Tabular SOTA?** | Baseline interpretability only | Strong out-of-the-box baseline | **Industry standard** for tabular competitions & production |
-
-- **`XGBoost`** ([Chen & Guestrin, KDD 2016](https://arxiv.org/abs/1603.02754)): Depth-wise tree growth with exact/approximate second-order regularized objective + sparsity-aware missing-value routing.
-- **`LightGBM`** ([Ke et al., NeurIPS 2017](https://proceedings.neurips.cc/paper/2017/hash/6449f44a102fde848669bdd9eb6b76fa-Abstract.html)): Leaf-wise tree growth + histogram binning + GOSS/EFB: achieving **up to 20× faster training** and lower memory on large datasets (`>10k-100M` rows).
-- **`CatBoost`:** Ordered target statistics for high-cardinality categorical columns with minimal tuning.
-- **2025-2026 Frontier: Tabular Foundation Models (`TabPFN`):** Pre-trained transformers using **in-context learning** over synthetic causal tabular priors ([Hollmann et al., *Nature* Jan 2025](https://www.nature.com/articles/s41586-024-08328-6); [`TabArena`, NeurIPS 2025](https://arxiv.org/abs/2506.16791)) now match or beat tuned GBDTs in a single `<1s` forward pass on small-to-medium datasets (`<=10,000` rows), while compiled GBDTs continue to lead at massive row scale and ultra-low CPU latency.
-
-### 4. Evaluation Metrics: Precision, Recall, F1, ROC-AUC vs. PR-AUC
-
-Once `XGBoost` or `TabPFN` outputs predictions, how do you grade it without falling into the rare-event trap we saw with Bayes' Theorem in Module 02?
-
-#### 4.1 Precision, Recall, F1 & Why `PR-AUC` Beats `ROC-AUC` Under Imbalance
-- $\text{Precision} = \frac{TP}{TP + FP}$ (*"When the model raises an alarm, how often is it right?"*: optimize for spam filters, kids' content recommendations).
-- $\text{Recall} = \frac{TP}{TP + FN}$ (*"Out of all real positives, how many did we catch?"*: optimize for cancer screening, fraud/terror detection).
-- $\text{F1} = \frac{2 \cdot \text{Precision} \cdot \text{Recall}}{\text{Precision} + \text{Recall}}$ (harmonic mean).
-- **ROC-AUC vs. PR-AUC:** When negatives outnumber positives 1,000-to-1 (`0.1%` fraud), $TN$ is enormous, keeping False Positive Rate $\frac{FP}{FP + TN}$ artificially tiny and making **ROC-AUC look deceptively high (`0.98`)** even with thousands of false alarms. Always use **PR-AUC (`average_precision_score`)** on heavily imbalanced datasets!
-
-#### 4.2 Model Explainability (`SHAP`) & Probability Calibration (`Platt` / `Isotonic`)
-Winning on `PR-AUC` still leaves two questions every bank, hospital, or product manager will ask before letting you launch: *"Can I trust the exact probability number?"* and *"Can you explain WHY the model rejected this customer?"*
-- **In Plain English:**
-  1. **Calibration:** Just because an `XGBoost` model outputs `0.80` does **not** mean the borrower actually has an 80% chance of defaulting: raw tree scores are often stretched or squished. **Calibration** adjusts those raw scores against real outcomes so `0.80` truly means "8 out of 10".
-  2. **`SHAP` Explainability:** Banks and hospitals aren't allowed to say *"The AI black box said no."* **`SHAP`** breaks every single prediction into exact credit/blame points per column (e.g., `Baseline 15% + High Debt (+31%) + Late Payments (+24%) = 70% Risk`).
-
-<details>
-<summary><b>Deep Dive: Calibration Methods, Brier Score & Shapley References</b></summary>
-
-- **Calibration (`CalibratedClassifierCV`):** Use `method="sigmoid"` (Platt Scaling) on small validation sets (`<1,000` rows) and `method="isotonic"` on larger sets; measure calibration quality via **Brier Score** ($\frac{1}{N}\sum (\hat{p}_i - y_i)^2$, lower is better: [Niculescu-Mizil & Caruana, ICML 2005](https://dl.acm.org/doi/10.1145/1102351.1102430)).
-- **`SHAP` (`shap.TreeExplainer`):** Computes exact game-theoretic Shapley values in polynomial time on trees ($\hat{y}_i = \phi_0 + \sum_j \phi_{ij}$: [Lundberg & Lee, NeurIPS 2017](https://arxiv.org/abs/1705.07874)), satisfying EU AI Act High-Risk adverse-action auditability.
-
-</details>
-
-### 5. Unsupervised Essentials: `K-Means` & `PCA`
-
-What if your table has **zero labels** at all, say, 1 million new shoppers you want to group by behavior or 100 overlapping columns you want to compress?
-
-#### 5.1 Clustering (`K-Means` / `DBSCAN`) & Dimensionality Reduction (`PCA`)
-- **`K-Means` (Grouping Similar Rows):** Drops $K$ pins ("centroids") on the map, assigns every data point to its closest pin, moves each pin to the center of its group, and repeats until stable. *When to skip:* Fails on ring/crescent shapes or heavy outliers: use `DBSCAN` / `HDBSCAN` instead.
-- **`PCA` (Compressing Redundant Columns):** Imagine photographing a 3D cloud of points from the single camera angle that spreads the points out the widest: `PCA` squashes 100 correlated columns down to the few combined directions ("principal components") that preserve the most information.
+By the end of this module, you will be able to:
+- **Design leak-free preprocessing pipelines** using `sklearn.pipeline.Pipeline`, fitting transformers strictly on training splits to prevent data snooping.
+- **Formulate tree ensemble mechanics**, contrasting Bagging (Random Forest variance reduction) with Gradient Boosting (XGBoost/LightGBM residual reduction).
+- **Evaluate models under severe class imbalance** ($< 1\%$ positive rates) using Precision-Recall AUC (PR-AUC) and business-aligned cost matrices.
+- **Explain non-linear tree decisions** using Shapley Additive Explanations (SHAP) for audit compliance and feature importance attribution.
+- **Architect scalable Two-Stage Recommendation Systems** pairing high-recall Approximate Nearest Neighbor (ANN) candidate retrieval with feature-rich ranking and diversity reranking.
 
 ---
 
-## Tier 2: Production Architecture & Scale (Time Series, Fairness & RecSys)
+## 3. Prerequisites
 
-In Tier 1, rows were independent snapshots. **Tier 2** tackles what happens in live production when rows arrive over **time**, impact **protected user groups**, or scale to **10 million catalog items** in a recommendation feed.
+- **Vectorized Computing:** NumPy array transformations and Pandas DataFrames from [Module 01](../01-foundations/01_python_sql_and_data_stack.md).
+- **Statistical Foundations:** Dot product, cosine similarity, ROC vs. PR curves, and p-values from [Module 02](../01-foundations/02_math_and_statistics.md).
 
-### 6. Time Series & Subgroup Fairness
+---
 
-#### 6.1 Chronological Splits (`TimeSeriesSplit`) & Subgroup Fairness Auditing
-1. **Temporal Leakage:** Random shuffling lets the model see Wednesday's stock/demand numbers while predicting Tuesday (**look-ahead bias**). Always use chronological splits (`TimeSeriesSplit`) and decompose into **Trend + Seasonality + Residual**.
-2. **Subgroup Fairness:** Overall accuracy hides demographic disparities. Audit **Equal Opportunity** (True Positive Rate parity) and **False Positive Rate parity** across protected slices before launch.
+## 4. Core Concepts
 
-### 7. Two-Stage Recommendation & Ranking Architecture (Meta / Amazon / YouTube)
+### 4.1 Supervised vs. Unsupervised vs. Ranking Paradigms
+- **Supervised Learning:** Learns a mapping $f(X) \to y$. Evaluated via MSE/MAE for continuous regression, or Log-Loss/PR-AUC for discrete classification.
+- **Unsupervised Learning:** Uncovers latent structures in unlabeled $X$, such as $K$-Means clustering or PCA dimensionality reduction.
+- **Ranking Systems:** Predicts relative item order for a user ($User \times Item \to \text{Top-K}$), evaluated via Normalized Discounted Cumulative Gain (`NDCG@K`) and Mean Reciprocal Rank (`MRR`).
 
-Now combine embeddings from Module 02 with `LightGBM` from Section 3: how do YouTube, Netflix, and Amazon rank **10 million items** for a user in under `30ms`? No heavy tree model can score 10 million rows fast enough, so production feeds split the job into a **fast narrowing funnel**:
+### 4.2 Linear & Logistic Regression Mechanics
+- **Linear Regression:** Fits an affine hyper-plane $\hat{y} = \mathbf{w}^T \mathbf{x} + b$ by minimizing Mean Squared Error:
+  $$\mathcal{L}_{\text{MSE}} = \frac{1}{N} \sum_{i=1}^N (y_i - \hat{y}_i)^2$$
+- **Logistic Regression:** Passes the unbounded logit $z = \mathbf{w}^T \mathbf{x} + b$ through the logistic sigmoid function $\sigma(z) = \frac{1}{1 + e^{-z}}$, optimizing Binary Cross-Entropy (Log-Loss):
+  $$\mathcal{L}_{\text{BCE}} = -\frac{1}{N} \sum_{i=1}^N \left[ y_i \ln(\hat{p}_i) + (1 - y_i) \ln(1 - \hat{p}_i) \right]$$
 
-> **What is `FAISS` / `ANN` (Approximate Nearest Neighbors)?** Checking a user's profile against 10 million products one-by-one takes seconds: way too slow! `ANN` libraries like Meta's **`FAISS`** organize vectors into neighborhood clusters/graphs (`HNSW`) so you jump straight to the 300 closest products in **under 10 milliseconds**.
+### 4.3 Leak-Free Preprocessing Pipelines
+Fitting scalers or encoders on the entire dataset prior to splitting leaks test distribution parameters (mean, variance, category vocabularies) into training, creating artificial validation score inflation:
 
-#### 7.1 Candidate Retrieval (`Two-Tower` + `FAISS`), `LambdaMART` Ranking & `NDCG@K`
+```python
+from sklearn.pipeline import Pipeline
+from sklearn.compose import ColumnTransformer
+from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import train_test_split
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+preprocessor = ColumnTransformer(transformers=[
+    ("num", StandardScaler(), ["age", "monthly_spend"]),
+    ("cat", OneHotEncoder(handle_unknown="ignore"), ["country"]),
+])
+
+# Pipeline fits preprocessor ONLY on X_train during pipeline.fit()
+pipeline = Pipeline([
+    ("prep", preprocessor),
+    ("model", LogisticRegression(penalty="l2", C=1.0)),
+])
+pipeline.fit(X_train, y_train)
+```
+
+---
+
+## 5. Technical Deep Dive
+
+### 5.1 Ensembles: Bagging vs. Boosting
+<p align="center">
+  <img src="../../assets/animations/bagging_vs_boosting_motion.svg" width="100%" alt="Motion visualization comparing Bagging parallel tree variance reduction with Boosting sequential residual reduction" />
+</p>
+
+| Dimension | Random Forest (Bagging) | XGBoost / LightGBM (Boosting) |
+|---|---|---|
+| **Core Strategy** | Parallel independent trees trained on bootstrap samples | Sequential trees fitting the pseudo-residuals of previous trees |
+| **Error Reduction** | Primary focus: **Reduces Variance** | Primary focus: **Reduces Bias** |
+| **Outlier Sensitivity** | Low (outliers diluted across random sub-samples) | Higher (subsequent trees aggressively focus on hard residuals) |
+| **Feature Scaling** | Invariant to monotonic feature scaling | Invariant to monotonic feature scaling |
+
+### 5.2 Tree Explanations via SHAP (Shapley Additive Explanations)
+Rooted in cooperative game theory, TreeSHAP attributes the contribution $\phi_i$ of each feature to the difference between the base expected prediction $\mathbb{E}[f(X)]$ and the instance prediction $f(x)$:
+$$f(x) = \mathbb{E}[f(X)] + \sum_{i=1}^M \phi_i$$
+
+Unlike legacy feature importance (Gini gain), SHAP guarantees efficiency, symmetry, and monotonicity.
+
+### 5.3 Two-Stage Recommendation Architecture at Scale
+When ranking 10 million items under a strict 30ms SLA, production systems decompose scoring into an efficient two-stage funnel:
 
 ```mermaid
 flowchart LR
@@ -178,14 +129,15 @@ flowchart LR
     class S3 final;
 ```
 
-- **Collaborative vs. Content-Based Filtering:** Collaborative filtering learns from user-item interaction matrices/embeddings (suffers from **Cold Start** on brand-new items); Content-based filtering encodes item text/image metadata (solves item cold-start, lacks serendipity). Production Two-Tower models fuse both!
-- **Ranking Metrics:** **Recall@K** for Stage 1 retrieval; **NDCG@K** (Normalized Discounted Cumulative Gain: rewards placing relevant items at rank 1 over rank 10 with logarithmic decay) and **MRR** for Stage 2 ranking; **CTR / Conversion / Dwell Time** online.
+1. **Stage 1: Retrieval (Sub-10ms):** Dual User and Item Two-Tower neural encoders retrieve the top 300 candidates via FAISS Hierarchical Navigable Small World (`HNSW`) vector indexing (`Recall@300`).
+2. **Stage 2: Ranking (~15ms):** LightGBM LambdaMART or Deep & Cross Network (DCNv2) scores candidates on rich real-time cross-features (`NDCG@10`).
+3. **Stage 3: Reranking & Diversity (~5ms):** Maximal Marginal Relevance (`MMR`) filters near-duplicate merchants and enforces commercial business rules.
 
 ---
 
-## Mini Hands-On Lab (15-Minute Exercise)
+## 6. Hands-on Implementation
 
-Implement `NDCG@K` from scratch in NumPy: the standard ranking evaluation metric for search and recommendation engines:
+Implement `NDCG@K` (Normalized Discounted Cumulative Gain) from scratch in pure NumPy:
 
 ```python
 import numpy as np
@@ -202,21 +154,84 @@ def ndcg_at_k(predicted_relevances: list[float], k: int) -> float:
     idcg = dcg_at_k(ideal, k)
     return dcg_at_k(predicted_relevances, k) / idcg if idcg > 0 else 0.0
 
-# Perfect ranking gives 1.0; inverted ranking gives lower score
+# Perfect ranking yields 1.0; inverted ranking produces lower score
 assert np.isclose(ndcg_at_k([3, 2, 1, 0], k=3), 1.0)
 assert ndcg_at_k([0, 1, 2, 3], k=3) < 0.5
-print("Lab 03 Passed! Suboptimal NDCG@3 =", round(ndcg_at_k([0, 1, 2, 3], k=3), 4))
+print("Lab 03 Passed! Inverted NDCG@3 =", round(ndcg_at_k([0, 1, 2, 3], k=3), 4))
 ```
 
 ---
 
-## Key Engineering Takeaways
-- Wrap preprocessing inside `sklearn.pipeline.Pipeline` to eliminate train-test leakage, and scale features for distance/gradient models (not trees).
-- Contrast **Bagging (`Random Forest`: parallel variance reduction)** against **Boosting (`XGBoost`/`LightGBM`: sequential residual bias reduction)**.
-- Use **PR-AUC** (not Accuracy or ROC-AUC) for rare-event classification (`<1%` positives).
-- Explain scale recommendations via the **Two-Stage Funnel**: fast Two-Tower ANN retrieval (`Recall@300`) followed by feature-rich ranking (`NDCG@10`) and MMR diversity.
+## 7. Practical Exercises
 
-> **Next in the Journey:** Tree ensembles rule structured spreadsheet columns, but what happens when your input isn't a neat table of `age` and `spend`, and is instead **raw pixels, spoken audio, or human language**? That is where trees hit a wall and neural networks take over in **[Module 04: Deep Learning, PyTorch & Reinforcement Learning](../03-deep-learning/04_deep_learning_and_rl.md)**.
+### Exercise 1: Cost-Matrix Threshold Optimization
+Given a binary churn classifier predicting probabilities $\hat{p} \in [0, 1]$ on a test set with true labels $y \in \{0, 1\}$:
+- False Negative cost (lost customer): $\$500$.
+- False Positive cost (unnecessary promotional incentive): $\$25$.
+1. Write a Python function `optimal_decision_threshold(y_true, y_probs, cost_fn=500, cost_fp=25)` that scans thresholds from $0.01$ to $0.99$ in steps of $0.01$.
+2. Identify the threshold minimizing total financial loss, comparing it to the naive $0.50$ probability threshold.
+
+### Exercise 2: Time-Series Split Cross-Validation
+1. Demonstrate how standard random $K$-Fold cross-validation leads to look-ahead bias on chronological sales data.
+2. Implement a validation harness using `sklearn.model_selection.TimeSeriesSplit` and compare backtest error metrics against random split metrics.
+
+---
+
+## 8. Mini Project
+
+### End-to-End Leak-Free Churn Pipeline with Safe Model Persistence
+Build a self-contained tabular classification package:
+- **Requirements:**
+  1. Generate synthetic tabular records containing continuous, categorical, and missing columns.
+  2. Implement a leak-free `sklearn.pipeline.Pipeline` with median imputation and standardization.
+  3. Train a regularized logistic regression and calculate validation PR-AUC.
+  4. Save model weights safely to disk using `.npz` (zero pickle deserialization vulnerabilities).
+  5. Load weights and verify that predictions match within floating-point tolerance ($10^{-6}$).
+- **Companion Starter:** Inspect the reference architecture in [`projects/intermediate/starter-local-mlops/`](../../projects/intermediate/starter-local-mlops/README.md).
+
+---
+
+## 9. Advanced Topics
+
+- **Tabular Foundation Models (TabPFN):** In-context transformer architectures trained on millions of synthetic datasets capable of zero-shot Bayesian tabular predictions without backpropagation.
+- **Histogram-Based Gradient Boosting:** How LightGBM and XGBoost bin continuous numerical features into discrete integer buckets (e.g. 256 bins), reducing split-finding complexity from $O(N \log N)$ to $O(K)$.
+- **LambdaMART Loss:** Optimizing non-smooth ranking metrics (like NDCG) directly by computing virtual gradient updates ($\lambda$-gradients) representing the pairwise swap delta between ranked documents.
+
+---
+
+## 10. Common Mistakes & Gotchas
+
+1. **Target Leakage via Preprocessing:** Imputing missing values with the median of the *entire* dataset before train-test split leaks test information into training.
+2. **Evaluating Imbalance with Accuracy:** On a $0.1\%$ fraud dataset, predicting 0 for all records yields $99.9\%$ accuracy while detecting 0 fraud cases. Always evaluate PR-AUC.
+3. **Ignoring Latency in RecSys Ranking:** Attempting to run a 50-layer neural network across all 10 million catalog items breaches real-time SLA limits. Always split into retrieval and ranking stages.
+
+---
+
+## 11. Interview Questions & System Design
+
+### Q1: How does XGBoost handle missing values during training and inference?
+XGBoost handles missing values natively through default split directions. At each tree node, all samples with missing values for the split feature are routed first to the left child and then to the right child. The algorithm calculates the split gain for both directions and permanently assigns the direction that maximizes gain as the default branch for missing values during inference.
+
+### Q2: Why does LightGBM use Leaf-Wise (Best-First) tree growth instead of Depth-Wise?
+Depth-wise growth splits all nodes on the same level regardless of gain, producing balanced but less optimal trees. LightGBM's leaf-wise strategy identifies the single leaf that minimizes loss the most across the entire tree and splits it, achieving lower loss with fewer leaves. It prevents overfitting via `max_depth` and `min_data_in_leaf`.
+
+---
+
+## 12. Recommended Resources
+
+- **Book:** [Hands-On Machine Learning with Scikit-Learn, Keras, and PyTorch](https://www.oreilly.com/library/view/hands-on-machine-learning/9781098125967/) by Aurélien Géron (Chapters 2–7).
+- **Paper:** [XGBoost: A Scalable Tree Boosting System](https://arxiv.org/abs/1603.02754) (Chen & Guestrin, 2016).
+- **Documentation:** [LightGBM Features and Optimizations](https://lightgbm.readthedocs.io/en/latest/Features.html).
+
+---
+
+## 13. Completion Checklist
+
+- [ ] Construct a leak-free scikit-learn pipeline using `ColumnTransformer` and cross-validation.
+- [ ] Contrast the variance-reduction mechanism of Random Forest with the residual-fitting bias reduction of Gradient Boosting.
+- [ ] Implement and evaluate `NDCG@K` on an arbitrary ranked relevance list in pure NumPy.
+- [ ] Formulate a cost-matrix decision threshold optimizing business ROI rather than default $0.5$ probability.
+- [ ] Diagram the three stages of an enterprise recommendation engine (ANN Retrieval, Ranking, MMR Diversity).
 
 ---
 

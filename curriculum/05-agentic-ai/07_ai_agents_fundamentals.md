@@ -1,17 +1,17 @@
 # Module 07: AI Agents Fundamentals, Workflows & Reasoning Loops
 
-> **Difficulty:** Intermediate | **Estimated Study Time:** 6-8 Hours | **Prerequisites:** [Module 06](../04-generative-ai/06_llms_finetuning_and_rag.md)
-> **Focus:** Deterministic workflows vs autonomous agents, safe ReAct execution loops, working memory, and circuit breakers
+> **Difficulty:** Intermediate | **Estimated Study Time:** 6-8 Hours | **Prerequisites:** [Module 06: Generative AI & RAG](../04-generative-ai/06_llms_finetuning_and_rag.md)  
+> **Focus:** Deterministic workflows vs. autonomous agents, safe ReAct execution loops, working memory management, bounded iteration budgets, and circuit breakers
 
 [← Previous: Module 06: LLMs, Fine-Tuning & RAG](../04-generative-ai/06_llms_finetuning_and_rag.md) | [Roadmap Index](../../README.md) | [Next: Module 08: Tools, LangGraph & Google ADK →](./08_tools_langgraph_and_adk.md)
 
 ---
 
-## Mental Model: Workflows (Trains on Tracks) vs. Agents (Taxis with GPS)
+## 1. Overview
 
-In [Module 06](../04-generative-ai/06_llms_finetuning_and_rag.md), our RAG system followed one fixed recipe: *search `Qdrant`, then answer*. What happens when a user asks *"Check why Order #104 was delayed, verify our refund policy, and calculate the partial credit"*? Now the system must take **multiple actions**. Before reaching for complex autonomous agents, always distinguish between a **Workflow** and an **Agent**:
-- **Workflow (Train on Fixed Tracks):** Your Python `if/else` code decides the exact sequence of steps: fast, cheap, predictable, and easy to test.
-- **Autonomous Agent (Taxi with GPS):** You give a goal, and the **LLM itself decides** which tools to call, reads error messages, and detours dynamically until it arrives. **Golden Rule:** Never hire an open-ended taxi when a 3-stop train track solves the problem!
+In [Module 06](../04-generative-ai/06_llms_finetuning_and_rag.md), retrieval followed a static single-turn pattern: *query vector store, retrieve passages, synthesize response*. What happens when a user asks: *"Investigate why Shipment #914 was delayed, check our SLA refund matrix, and calculate the account credit"*? The system must execute multi-step tool calls dynamically. Before implementing open-ended agent loops, engineers must distinguish between a **Deterministic Workflow** and an **Autonomous Agent**:
+- **Workflow (Train on Tracks):** Deterministic engineering logic dictates tool sequencing: predictable, rapid, inexpensive, and easily unit-tested.
+- **Autonomous Agent (Taxi with GPS):** The model itself dynamically decides which tools to invoke, inspects error returns, and iterates until the goal is achieved. **Golden Rule:** Never deploy an open-ended autonomous agent loop when a 3-step deterministic workflow solves the problem.
 
 ```mermaid
 flowchart TD
@@ -33,44 +33,63 @@ flowchart TD
 
 ---
 
-## Tier 1: Core Foundations (Architecture, Workflows vs. Agents & Safe ReAct)
+## 2. Learning Objectives
 
-### 1. Workflows vs. Agents Decision Rubric
+By the end of this module, you will be able to:
+- **Apply the Workflows vs. Agents decision framework**, selecting deterministic prompt chaining or autonomous loops based on task predictability.
+- **Implement a safe ReAct (Reasoning + Acting) execution engine** with bounded iteration limits to prevent infinite tool loops.
+- **Build sandboxed execution tools** using Python's `ast` module to evaluate arithmetic safely without allowing arbitrary code execution.
+- **Manage working memory taxonomies**, distinguishing short-term sliding context windows from long-term vector store persistence.
+- **Enforce production resilience patterns**, including token budget circuit breakers, tool timeouts, and structured error propagation.
 
-#### 1.1 Single LLM Calls vs. Deterministic Workflows vs. Autonomous Agents
-In practice, production teams climb a 4-rung ladder of autonomy, starting at rung 1 and only stepping up when simpler code cannot predict the required steps ahead of time:
+---
 
-| Pattern | Who Controls the Loop? | Best Production Use Case |
-|---|---|---|
-| **Single LLM Call** | None (1-shot generation) | Summarization, translation, structured JSON extraction |
-| **Workflow: Prompt Chaining / Routing** | **Application code** (`if/else`, `asyncio.gather`) | Classify support ticket -> route to Billing Chain vs. Tech Support Chain |
-| **Workflow: Evaluator-Optimizer** | Bounded generator + critic loop | Draft SQL query -> run linter -> refine once |
-| **Autonomous AI Agent** | **The LLM dynamically decides** tools, retries, and termination | Resolving a GitHub issue across unknown files, multi-step research |
+## 3. Prerequisites
 
-#### 1.2 The Four Architectural Pillars of an Agent System
-When a problem genuinely requires that 4th rung, an **Autonomous AI Agent**, every reliable agent is built out of four interlocking parts:
-1. **Core Brain (Reasoning LLM):** Plans steps, selects tools, and interprets error messages.
-2. **Planning & Reflection:** Decomposes goals (`ReAct`, `Plan-and-Execute`) and critiques intermediate results.
-3. **Multi-Tier Memory:** Working scratchpad (in-context), conversational short-term buffer, and external long-term episodic/semantic memory.
-4. **Sandboxed Tools:** Deterministic functions (SQL read views, search APIs, isolated code runners) interacting with external state.
+- **Structured LLM Generation:** Pydantic schemas, system prompts, and JSON outputs from [Module 06](../04-generative-ai/06_llms_finetuning_and_rag.md).
+- **Python AST & Exception Handling:** Standard Python control flow and `ast` library basics.
 
-### 2. The `ReAct` Framework & Secure Zero-Dependency Implementation
+---
 
-How do those four pillars talk to each other turn by turn? Through the **`ReAct` (Reason + Act)** loop:
+## 4. Core Concepts
 
-#### 2.1 Interleaved Reasoning & Action (`ReAct`)
-- **Pure Chain-of-Thought (Yao et al., 2022 comparison):** Reasons coherently in its head, but has zero access to live external facts, hallucinating prices, APIs, or database state.
-- **Pure Action Generation:** Fires tool calls blindly without thinking about *why* the previous call failed.
-- **`ReAct`:** Interleaves explicit `Thought -> Action -> Observation`, grounding every reasoning step in real feedback from your tools.
+### 4.1 The 4-Tier Agentic Taxonomy
+1. **Single LLM Call:** Input $\to$ LLM $\to$ Output (Zero tool calls).
+2. **Prompt Chaining / Router:** Step 1 output becomes Step 2 input via hardcoded Python conditionals.
+3. **Parallel Sub-agent Dispatch:** Multiple independent prompts fired concurrently via `asyncio.gather` and summarized.
+4. **Autonomous ReAct Agent:** Dynamic, cyclic graph loop where the LLM inspects environment feedback and chooses the next action until termination.
 
-#### 2.2 Building a Zero-Dependency `ReAct` Runtime with Safe `AST` Evaluation
-Let's wire a complete `ReAct` loop in ~40 lines of pure Python so you see there is zero magic inside agent frameworks, while avoiding the #1 beginner security bug (`eval()`):
-> **Security Rule:** Never pass LLM-generated strings into Python's raw `eval()`: an indirect prompt injection like `__import__('os').system(...)` compromises the host server! Use an **AST (Abstract Syntax Tree) whitelist evaluator** for math tools.
+### 4.2 The ReAct Loop: Thought $\to$ Action $\to$ Observation $\to$ Reflection
+```mermaid
+flowchart TD
+    OBS["Observation: User Query or Tool Return"] --> REAS["Thought: Reason over current state"]
+    REAS --> ACT{"Action: Call Tool or Return Answer?"}
+    ACT -->|"Tool Call"| TOOL["Execute Sandboxed Tool"]
+    TOOL -->|"Output"| OBS
+    ACT -->|"Final Answer"| DONE["Terminate Loop & Return Response"]
+
+    classDef proc fill:#EDE9FE,stroke:#7C3AED,stroke-width:2px,color:#4C1D95;
+    classDef act fill:#DCFCE7,stroke:#16A34A,stroke-width:1.5px,color:#15803D;
+
+    class OBS,REAS proc;
+    class ACT,TOOL,DONE act;
+```
+
+### 4.3 Memory Management Taxonomy
+- **Short-Term (Working Memory):** The active LLM context window. Managed via sliding token windows, message pruning, and summary compaction.
+- **Episodic Memory:** Traces of previous interactions and user sessions stored in relational databases.
+- **Long-Term (Semantic Memory):** Knowledge base embeddings stored in vector databases (e.g. Qdrant) retrieved on demand.
+
+---
+
+## 5. Technical Deep Dive
+
+### 5.1 Safe Execution: Sandboxed AST Evaluator vs. Insecure `eval()`
+Agents frequently need to perform arithmetic. Calling Python's raw `eval(expr)` exposes the host system to Remote Code Execution (`eval("__import__('os').system('rm -rf /')")`). A safe agent uses Abstract Syntax Tree parsing to whitelist safe mathematical operators:
 
 ```python
 import ast
 import operator
-import re
 
 SAFE_OPS = {
     ast.Add: operator.add,
@@ -93,102 +112,136 @@ def safe_calculate(expr: str) -> str:
         return str(round(_eval_node(tree.body), 4))
     except Exception as exc:
         return f"CalculationError: {exc}"
+```
 
-def lookup_price(product: str) -> str:
-    catalog = {"MacBook Air": "1099", "Pixel 9": "799"}
-    return catalog.get(product.strip(), "Error: Product not found")
+### 5.2 Bounded Agent Loop Engine with Circuit Breakers
+```python
+class BoundedReActAgent:
+    """Executes a bounded ReAct reasoning loop with iteration and token safety limits."""
 
-TOOLS = {"lookup_price": lookup_price, "calculate": safe_calculate}
+    def __init__(self, tools: dict, max_steps: int = 5):
+        self.tools = tools
+        self.max_steps = max_steps
 
-def mock_llm(scratchpad: str, step: int) -> str:
-    if step == 0:
-        return "Thought: Fetch Pixel 9 unit price.\nAction: lookup_price\nAction Input: Pixel 9"
-    if step == 1:
-        return "Thought: Multiply 799 by 3.\nAction: calculate\nAction Input: 799 * 3"
-    return "Thought: Calculation verified.\nFinal Answer: 3 Pixel 9 units cost $2397.0."
+    def run(self, user_prompt: str) -> str:
+        messages = [{"role": "user", "content": user_prompt}]
+        for step in range(self.max_steps):
+            # Simulate or call model tool-routing step
+            action, action_input = self._plan_step(messages)
+            if action == "FINISH":
+                return action_input
 
-def run_react_agent(goal: str, max_steps: int = 5) -> str:
-    scratchpad = f"Goal: {goal}\n"
-    for step in range(max_steps):
-        llm_out = mock_llm(scratchpad, step)
-        if "Final Answer:" in llm_out:
-            return llm_out.split("Final Answer:", 1)[1].strip()
+            # Execute tool with exception guard
+            if action in self.tools:
+                try:
+                    observation = self.tools[action](action_input)
+                except Exception as err:
+                    observation = f"ToolExecutionError: {err}"
+            else:
+                observation = f"Error: Unknown tool '{action}'"
 
-        act = re.search(r"Action:\s*(\w+)", llm_out)
-        inp = re.search(r"Action Input:\s*(.+)", llm_out)
-        if act and inp:
-            fn = TOOLS.get(act.group(1))
-            obs = fn(inp.group(1)) if fn else f"Error: Unknown tool '{act.group(1)}'"
-            scratchpad += f"{llm_out}\nObservation: {obs}\n"
-    return "Terminated: max_steps budget exhausted."
+            messages.append({"role": "assistant", "content": f"Action: {action}({action_input})"})
+            messages.append({"role": "tool", "content": observation})
 
-assert "2397.0" in run_react_agent("Total cost of 3 Pixel 9 phones?")
-assert "CalculationError" in safe_calculate("__import__('os').system('whoami')")
+        return "CircuitBreaker: Maximum execution step budget exceeded."
+
+    def _plan_step(self, history: list[dict]) -> tuple[str, str]:
+        # Minimal rule-based mock for demonstration; replaced by LLM tool calls in production
+        last = history[-1]["content"]
+        if "ToolExecutionError" in last:
+            return "FINISH", "Failed to resolve query safely."
+        if "calculate" not in str(history):
+            return "calculate", "100 * 1.15"
+        return "FINISH", "The total after 15% tax is 115.0"
 ```
 
 ---
 
-## Tier 2: Production Architecture & Scale (Memory Taxonomy, Planning & Failure Modes)
+## 6. Hands-on Implementation
 
-Our 40-line `ReAct` loop works cleanly for a 2-step price check, but on a 15-step research job across multiple days, the `scratchpad` string overflows, forgets past users, or gets stuck repeating a broken tool call forever. **Tier 2** adds structured **Memory**, **Upfront Planning**, and **Circuit Breakers**.
-
-### 3. Production Agent Memory & Planning Topologies
-
-#### 3.1 Multi-Tier Memory Architecture (Working, Episodic, Semantic & Procedural)
-Just like humans separate short-term sticky notes from long-term life memories, production agents split memory into four distinct layers:
-1. **Working Memory (Context Window Scratchpad):** Active trajectory of tool calls and observations; pruned/compressed via rolling summarization once context crosses budget thresholds.
-2. **Episodic Memory:** Vector-indexed past interaction trajectories (*"How did the agent successfully resolve this user's build failure last week?"*) for dynamic few-shot recall.
-3. **Semantic / Entity Memory:** Structured user facts and preferences stored in key-value stores or knowledge graphs (`user_timezone="Asia/Kolkata"`, `preferred_stack="PyTorch"`).
-4. **Procedural Memory:** System instructions, tool definitions, and versioned skill playbooks.
-
-#### 3.2 Planning Strategies (`Plan-and-Execute`) & Production Failure Mitigations
-With memory organized, how do we keep long 15-step tasks cheap and prevent runaway loops?
-- **`ReAct` (Single-Step Greedy):** Low upfront latency, adapts immediately to surprises, but lacks global foresight on 15-step tasks.
-- **`Plan-and-Execute`:** Planner model drafts a complete DAG/checklist upfront; cheaper fast worker models execute each step, only invoking the heavy Re-Planner if an observation invalidates the plan (cuts frontier token spend by 50%+).
-- **Top 3 Production Failure Modes & Fixes:**
-  1. *Infinite Tool Thrashing:* Hard `max_iterations` cap + consecutive identical `(tool, args)` circuit breaker.
-  2. *Context Bloat:* Truncate/summarize giant HTML or SQL tool payloads before appending to working memory.
-  3. *Schema Drift:* Feed `Pydantic` validation errors back as structured `Observation` messages so the LLM self-repairs malformed tool arguments.
-
----
-
-## Mini Hands-On Lab (15-Minute Exercise)
-
-Implement a **Tool-Thrashing Circuit Breaker** that halts an agent loop immediately if the exact same `(tool_name, args_json)` pair is invoked twice within a sliding window:
+Verify the safe AST calculator against both legitimate mathematical expressions and malicious injection payloads:
 
 ```python
-import json
+# Legitimate arithmetic
+assert safe_calculate("2 + 3 * 4") == "14.0"
+assert safe_calculate("(100 - 20) / 4") == "20.0"
 
-class LoopCircuitBreaker:
-    def __init__(self, max_steps: int = 6):
-        self.max_steps = max_steps
-        self.seen_calls: set[str] = set()
-        self.steps = 0
-
-    def check_and_record(self, tool_name: str, args: dict) -> tuple[bool, str]:
-        self.steps += 1
-        if self.steps > self.max_steps:
-            return False, "HALT: max_steps exceeded"
-        signature = f"{tool_name}:{json.dumps(args, sort_keys=True)}"
-        if signature in self.seen_calls:
-            return False, f"HALT: duplicate tool call detected ({signature})"
-        self.seen_calls.add(signature)
-        return True, "ALLOW"
-
-breaker = LoopCircuitBreaker(max_steps=5)
-assert breaker.check_and_record("query_db", {"id": 10})[0] is True
-assert breaker.check_and_record("query_db", {"id": 10})[0] is False
-print("Lab 07 Passed! Duplicate tool loop tripped safely.")
+# Malicious arbitrary code execution payload is blocked safely
+malicious_payload = "__import__('os').system('echo pwned')"
+result = safe_calculate(malicious_payload)
+assert "Disallowed expression node" in result or "CalculationError" in result
+print("Lab 07 Passed! AST sandbox safely isolated execution.")
 ```
 
 ---
 
-## Key Engineering Takeaways
-- Default to **deterministic workflows** (routing, chaining, parallelization) when steps are known; reserve **autonomous agents** for open-ended, dynamic trajectories.
-- Never use `eval()` inside agent tools: sandbox code execution (Docker/WASM/gVisor) or restrict via AST/schema whitelists.
-- Separate **Working, Episodic, and Semantic memory**, and pair `Plan-and-Execute` with hard step/repetition circuit breakers.
+## 7. Practical Exercises
 
-> **Next in the Journey:** Notice how our toy `ReAct` loop parsed `"Action: lookup_price"` using fragile `regex` and vanished if the server restarted mid-task! In real production, we replace regex with **native JSON Function Calling** and replace `for` loops with durable state graphs (**`LangGraph`** & **`Google ADK`**) in **[Module 08: Function Calling, LangGraph & Google ADK](./08_tools_langgraph_and_adk.md)**.
+### Exercise 1: Context Window Compaction Engine
+1. Implement a message buffer manager that tracks token count using `tiktoken` (or approximate character count).
+2. When the message history exceeds 4,000 tokens, automatically summarize messages older than the last 3 turns and prepend the summary as a system message.
+
+### Exercise 2: Tool Execution Timeout Wrapper
+Using Python's `asyncio` or `threading`:
+1. Write a decorator `@with_timeout(seconds=2.0)` that terminates long-running or hanging tool calls and returns a structured timeout error back to the agent reasoning loop.
+
+---
+
+## 8. Mini Project
+
+### Autonomous Customer Support Tier-1 Triage Agent
+Construct a bounded triage agent equipped with three tools:
+1. `lookup_order(order_id: str) -> dict`
+2. `check_refund_eligibility(days_since_delivery: int, condition: str) -> bool`
+3. `calculate_refund_amount(item_price: float, restocking_fee_pct: float) -> float`
+- Ensure all tool inputs are validated with Pydantic, and the agent halts with a circuit breaker after at most 4 tool invocations.
+
+---
+
+## 9. Advanced Topics
+
+- **Plan-and-Solve Prompting:** Decoupling planning into an upfront decomposition step before executing individual actions, reducing compounding hallucination errors in multi-step reasoning.
+- **Reflexion & Self-Correction:** Providing historical execution feedback to the agent so it can self-diagnose past test failures and modify its strategy.
+- **Tree-of-Thoughts (ToT) Search:** Evaluating multiple candidate reasoning branches concurrently using breadth-first or depth-first search with lookahead verification.
+
+---
+
+## 10. Common Mistakes & Gotchas
+
+1. **Unbounded Agent Loops:** Omitting strict iteration limits (`max_steps=5`), allowing an agent to loop endlessly when tools return unexpected errors, burning token budgets.
+2. **Using Python `eval()` for Tool Arithmetic:** Allowing prompt-injected strings to execute raw arbitrary Python commands on the application host.
+3. **Passing Raw Tool Stack Traces into Prompt Context:** Drowning the LLM context window with 500-line database stack traces instead of concise, structured error summaries.
+
+---
+
+## 11. Interview Questions & System Design
+
+### Q1: What are the primary failure modes of autonomous agent loops in production?
+1. **Infinite Looping / Hallucination Cycles:** Repeatedly calling the same tool with the same erroneous parameters when encountering an ambiguous response.
+2. **Context Window Exhaustion:** Tool observations quickly fill the context, pushing the original user goal and system instructions out of memory.
+3. **Cascading Hallucination:** A minor error in Step 1 compounds through Steps 2 and 3, driving the agent to a completely incorrect conclusion.
+4. **Tool Permission Creep:** Giving an autonomous loop unrestricted write or delete privileges without human approval gates.
+
+### Q2: When should you choose a deterministic workflow over an autonomous agent?
+Choose a deterministic workflow whenever the sequence of operations is known in advance (e.g. document summarization, ETL transformations, structured form filing). Workflows provide sub-second latency, deterministic costs, straightforward unit testing, and zero risk of infinite looping. Reserve autonomous agents for open-ended exploration, variable-step code generation, and complex troubleshooting where the exact path cannot be hardcoded.
+
+---
+
+## 12. Recommended Resources
+
+- **Guide:** [Building Effective Agents](https://www.anthropic.com/research/building-effective-agents) (Anthropic, 2024).
+- **Landmark Paper:** [ReAct: Synergizing Reasoning and Acting in Language Models](https://arxiv.org/abs/2210.03629) (Yao et al., 2022).
+- **Paper:** [Reflexion: Language Agents with Verbal Reinforcement Learning](https://arxiv.org/abs/2303.11366) (Shinn et al., 2023).
+
+---
+
+## 13. Completion Checklist
+
+- [ ] Articulate the technical differences between single-turn calls, prompt chains, and autonomous ReAct loops.
+- [ ] Implement a safe AST-based arithmetic evaluator resistant to arbitrary code execution injections.
+- [ ] Build a bounded agent execution loop enforcing maximum step limits and circuit breakers.
+- [ ] Design short-term context compaction strategies preventing context window blowouts.
+- [ ] Pass all unit assertions verifying tool sandboxing and bounded iteration budgets.
 
 ---
 

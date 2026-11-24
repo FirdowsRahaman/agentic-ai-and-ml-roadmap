@@ -1,15 +1,15 @@
 # Module 13: Hands-On Coding Challenges & ML Algorithms from Scratch
 
-> **Difficulty:** Intermediate | **Estimated Study Time:** 8-10 Hours | **Prerequisites:** Modules 01-06 | **Lab:** [Scratch Challenges Notebook](../../notebooks/machine-learning/02_ml_from_scratch_challenges.ipynb) | **[Open in Colab](https://colab.research.google.com/github/FirdowsRahaman/agentic-ai-and-ml-roadmap/blob/main/notebooks/machine-learning/02_ml_from_scratch_challenges.ipynb)**
-> **Focus:** Numerically stable softmax, logistic regression, k-means clustering, and vectorized BM25 cosine search
+> **Difficulty:** Advanced | **Estimated Study Time:** 8-10 Hours | **Prerequisites:** [Modules 01 through 06](../../ROADMAP.md) | **Lab:** [Scratch Challenges Notebook](../../notebooks/machine-learning/02_ml_from_scratch_challenges.ipynb) | **[Open in Colab](https://colab.research.google.com/github/FirdowsRahaman/agentic-ai-and-ml-roadmap/blob/main/notebooks/machine-learning/02_ml_from_scratch_challenges.ipynb)**  
+> **Focus:** First-principles NumPy implementations of numerically stable Softmax, batch gradient descent, K-Means clustering, $O(N)$ Top-K Cosine search, and Causal Attention
 
 [← Previous: Module 12: Practical Troubleshooting Scenarios](./12_system_troubleshooting_scenarios.md) | [Roadmap Index](../../README.md) | [Explore Portfolio Projects →](../../projects/README.md)
 
 ---
 
-## Mental Model: The 5-Step Algorithm Implementation Protocol
+## 1. Overview
 
-Welcome to the hands-on finale of the 13-module curriculum! Across [Modules 01-12](./12_system_troubleshooting_scenarios.md), you saw how `NumPy`, `Scikit-Learn`, `PyTorch`, and `Qdrant` work together in production. Nothing cements those concepts deeper, or prepares you better for live engineering rounds, than building the core algorithms yourself in **clean, vectorized, numerically stable Python** with zero `NaN` explosions or slow nested loops:
+Nothing cements deep technical comprehension or prepares you better for senior coding and machine learning systems screens than implementing foundational algorithms from first principles in **clean, vectorized, numerically stable Python** without relying on high-level framework wrappers (`scikit-learn` or `PyTorch`). This module guides you through the 5-step engineering protocol for translating mathematical equations into production-ready code:
 
 ```mermaid
 flowchart LR
@@ -27,288 +27,197 @@ flowchart LR
 
 ---
 
-## Tier 1: Core ML & Deep Learning from Scratch (Pure NumPy)
+## 2. Learning Objectives
 
-Notice how Challenges 1 through 5 build directly on one another: we start with a continuous line (**Linear Regression**), wrap it in a Sigmoid for binary `0/1` labels (**Logistic Regression**), grade those `0/1` predictions (**Confusion Matrix & F1**), expand to multi-class probabilities (**Stable Softmax**), and finally group unlabeled points (**`K-Means`**).
+By the end of this module, you will be able to:
+- **Implement numerically stable operations** (Softmax, Log-Sum-Exp, Sigmoid clipping) preventing floating-point overflow and underflow (`NaN` errors).
+- **Formulate vectorized gradient descent** for linear and logistic regression in pure NumPy with explicit shape assertions.
+- **Calculate complete classification evaluation matrices** (Confusion Matrix, Precision, Recall, F1 Score) without third-party libraries.
+- **Implement K-Means clustering** using broadcasting to compute pairwise Euclidean distances efficiently.
+- **Design fast $O(N)$ vector retrieval** using `np.argpartition` instead of slow $O(N \log N)$ sorting.
+- **Construct Causal Multi-Head Self-Attention** from scratch in pure NumPy.
 
-### Challenge 1: Vectorized Multivariate Linear Regression (Gradient Descent)
-**Problem:** Fit $y = X\mathbf{w} + b$ on $X \in \mathbb{R}^{N \times D}$ using vectorized batch gradient descent without `scikit-learn`.
-- **Complexity:** Time $O(\text{epochs} \cdot N \cdot D)$ | Space $O(D)$.
+---
 
-```python
-import numpy as np
+## 3. Prerequisites
 
-class LinearRegressionScratch:
-    def __init__(self, lr: float = 0.02, epochs: int = 2000):
-        self.lr = lr
-        self.epochs = epochs
-        self.weights: np.ndarray | None = None
-        self.bias: float = 0.0
+- **Vectorized Computing:** Array broadcasting, matrix multiplication, and stride mechanics from [Module 01](../01-foundations/01_python_sql_and_data_stack.md).
+- **Mathematical Foundations:** Dot products, norms, gradients, and cross-entropy loss from [Module 02](../01-foundations/02_math_and_statistics.md).
 
-    def fit(self, X: np.ndarray, y: np.ndarray) -> "LinearRegressionScratch":
-        n_samples, n_features = X.shape
-        self.weights = np.zeros(n_features, dtype=float)
-        self.bias = 0.0
+---
 
-        for _ in range(self.epochs):
-            error = (X @ self.weights + self.bias) - y
-            dw = (2.0 / n_samples) * (X.T @ error)
-            db = (2.0 / n_samples) * float(np.sum(error))
-            self.weights -= self.lr * dw
-            self.bias -= self.lr * db
-        return self
+## 4. Core Concepts: The 5-Step Algorithm Protocol
 
-    def predict(self, X: np.ndarray) -> np.ndarray:
-        assert self.weights is not None, "Call fit() before predict()."
-        return X @ self.weights + self.bias
+When implementing machine learning primitives from scratch:
+1. **Clarify Shapes & Types:** Specify exact tensor input/output shapes (e.g. $X \in \mathbb{R}^{N \times D}$, $\mathbf{y} \in \mathbb{R}^N$).
+2. **Prevent Numerical Instability:** Protect against division by zero (add $\epsilon = 10^{-12}$) and exponential overflow (subtract $\max(z)$).
+3. **Vectorize Fully:** Avoid raw Python loops over samples; use NumPy multi-axis broadcasting and matrix products.
+4. **Analyze Complexity:** State exact Time and Memory Big-$O$ complexity.
+5. **Verify with Assertions:** Write reproducible unit tests validating boundary cases.
 
-X_tr = np.array([[1.0, 2.0], [2.0, 3.0], [3.0, 4.0], [4.0, 5.0]])
-y_tr = np.array([5.0, 8.0, 11.0, 14.0])  # y = 1*x1 + 2*x2
-pred = LinearRegressionScratch().fit(X_tr, y_tr).predict(np.array([[5.0, 6.0]]))[0]
-assert np.isclose(pred, 17.0, atol=1e-2)
-```
+---
 
-### Challenge 2: Vectorized Logistic Regression (Binary Cross-Entropy)
-Now pass that exact linear score `X @ w + b` through a clipped Sigmoid curve so we can predict `0` vs. `1` probabilities instead of unbounded numbers:
-- **Complexity:** Time $O(\text{epochs} \cdot N \cdot D)$ | Space $O(D)$.
+## 5. Technical Deep Dive: The Core Implementations
 
-```python
-import numpy as np
+### 5.1 Numerically Stable Softmax & Cross-Entropy Loss
+Naively computing $e^{z_i}$ when $z_i = 1000$ triggers `FloatingPointError: overflow`. Subtracting the row-wise maximum $\max_j(z_j)$ leaves the mathematical probability identical while bounding all exponentials to $\le 1.0$:
 
-class LogisticRegressionScratch:
-    def __init__(self, lr: float = 0.1, epochs: int = 1000):
-        self.lr = lr
-        self.epochs = epochs
-        self.weights: np.ndarray | None = None
-        self.bias: float = 0.0
-
-    @staticmethod
-    def _sigmoid(z: np.ndarray) -> np.ndarray:
-        return 1.0 / (1.0 + np.exp(-np.clip(z, -500.0, 500.0)))
-
-    def fit(self, X: np.ndarray, y: np.ndarray) -> "LogisticRegressionScratch":
-        n_samples, n_features = X.shape
-        self.weights = np.zeros(n_features, dtype=float)
-        self.bias = 0.0
-        for _ in range(self.epochs):
-            probs = self._sigmoid(X @ self.weights + self.bias)
-            diff = probs - y
-            self.weights -= self.lr * ((X.T @ diff) / n_samples)
-            self.bias -= self.lr * float(np.mean(diff))
-        return self
-
-    def predict(self, X: np.ndarray, threshold: float = 0.5) -> np.ndarray:
-        assert self.weights is not None
-        return (self._sigmoid(X @ self.weights + self.bias) >= threshold).astype(int)
-
-X_cls = np.array([[0.5], [1.0], [4.0], [5.0]])
-y_cls = np.array([0, 0, 1, 1])
-preds = LogisticRegressionScratch().fit(X_cls, y_cls).predict(X_cls)
-assert np.array_equal(preds, y_cls)
-```
-
-### Challenge 3: Safe Classification Metrics & Confusion Matrix (Zero-Division Guarded)
-Once Logistic Regression outputs `0` and `1` predictions, we need a safe evaluator that computes `Precision`, `Recall`, and `F1` without crashing on division-by-zero edge cases:
-
-```python
-def compute_binary_metrics(y_true: list[int], y_pred: list[int]) -> dict[str, float | dict]:
-    if len(y_true) != len(y_pred):
-        raise ValueError("Length mismatch between y_true and y_pred.")
-    tp = sum(1 for yt, yp in zip(y_true, y_pred) if yt == 1 and yp == 1)
-    tn = sum(1 for yt, yp in zip(y_true, y_pred) if yt == 0 and yp == 0)
-    fp = sum(1 for yt, yp in zip(y_true, y_pred) if yt == 0 and yp == 1)
-    fn = sum(1 for yt, yp in zip(y_true, y_pred) if yt == 1 and yp == 0)
-
-    total = len(y_true)
-    acc = (tp + tn) / total if total else 0.0
-    prec = tp / (tp + fp) if (tp + fp) else 0.0
-    rec = tp / (tp + fn) if (tp + fn) else 0.0
-    f1 = (2 * prec * rec) / (prec + rec) if (prec + rec) else 0.0
-    return {
-        "confusion_matrix": {"TP": tp, "TN": tn, "FP": fp, "FN": fn},
-        "accuracy": round(acc, 4),
-        "precision": round(prec, 4),
-        "recall": round(rec, 4),
-        "f1": round(f1, 4),
-    }
-
-m = compute_binary_metrics([1, 1, 0, 1, 0, 0, 1, 0], [1, 0, 0, 1, 0, 1, 1, 0])
-assert m["precision"] == 0.75 and m["f1"] == 0.75
-assert compute_binary_metrics([1, 1], [0, 0])["precision"] == 0.0  # Zero-division safe!
-```
-
-### Challenge 4: Numerically Stable Softmax & Categorical Cross-Entropy
-Moving from 2 classes (`Sigmoid`) to 10 or 100,000 token classes (`Softmax`) hits a famous floating-point trap: `exp(1000)` overflows to `inf` and `NaN`! Subtracting `max(logits)` first keeps numbers 100% stable without changing a single probability:
+$$\text{Softmax}(\mathbf{z})_i = \frac{e^{z_i - \max(\mathbf{z})}}{\sum_j e^{z_j - \max(\mathbf{z})}}$$
 
 ```python
 import numpy as np
 
 def stable_softmax(logits: np.ndarray) -> np.ndarray:
+    """Computes row-wise numerically stable softmax over 2D logits (N, C)."""
+    assert logits.ndim == 2, f"Expected 2D array, got {logits.shape}"
     shifted = logits - np.max(logits, axis=-1, keepdims=True)
     exps = np.exp(shifted)
     return exps / np.sum(exps, axis=-1, keepdims=True)
 
-def cross_entropy_loss(probs: np.ndarray, targets: np.ndarray) -> float:
-    clipped = np.clip(probs, 1e-15, 1.0)
-    return float(-np.mean(np.log(clipped[np.arange(len(targets)), targets])))
-
-huge_logits = np.array([[1000.0, 1001.0, 1002.0]])
-p = stable_softmax(huge_logits)
-assert not np.isnan(p).any() and np.isclose(p.sum(), 1.0)
-assert cross_entropy_loss(p, np.array([2])) < 0.5
+def categorical_cross_entropy(y_true: np.ndarray, y_probs: np.ndarray, eps: float = 1e-12) -> float:
+    """Computes cross-entropy loss from one-hot y_true and probabilities y_probs."""
+    probs_clipped = np.clip(y_probs, eps, 1.0 - eps)
+    return -float(np.mean(np.sum(y_true * np.log(probs_clipped), axis=-1)))
 ```
 
-### Challenge 5: Vectorized `K-Means` Clustering from Scratch
-What if your dataset has no labels (`y`) at all? Let's use `NumPy` 3D broadcasting `(N, 1, D) - (1, K, D)` to group points into $K$ clusters with zero nested point loops:
-- **Complexity:** Time $O(\text{iters} \cdot N \cdot K \cdot D)$ | Space $O(N \cdot K)$.
+### 5.2 Vectorized Batch Gradient Descent (Linear Regression)
+Fitting $\hat{\mathbf{y}} = X \mathbf{w} + b$ by minimizing MSE $\mathcal{L} = \frac{1}{N} \|X\mathbf{w} + b - \mathbf{y}\|_2^2$:
+- Gradient w.r.t weights: $\frac{\partial \mathcal{L}}{\partial \mathbf{w}} = \frac{2}{N} X^T (X\mathbf{w} + b - \mathbf{y})$
+- Gradient w.r.t bias: $\frac{\partial \mathcal{L}}{\partial b} = \frac{2}{N} \sum (X\mathbf{w} + b - \mathbf{y})$
 
 ```python
-import numpy as np
+def linear_regression_fit(
+    X: np.ndarray, y: np.ndarray, lr: float = 0.05, epochs: int = 500
+) -> tuple[np.ndarray, float]:
+    n_samples, n_features = X.shape
+    w = np.zeros(n_features, dtype=float)
+    b = 0.0
 
-class KMeansScratch:
-    def __init__(self, k: int = 2, max_iters: int = 100, seed: int = 42):
-        self.k = k
-        self.max_iters = max_iters
-        self.seed = seed
-        self.centroids: np.ndarray | None = None
+    for _ in range(epochs):
+        preds = X @ w + b
+        error = preds - y
+        dw = (2.0 / n_samples) * (X.T @ error)
+        db = (2.0 / n_samples) * float(np.sum(error))
+        w -= lr * dw
+        b -= lr * db
 
-    def fit(self, X: np.ndarray) -> "KMeansScratch":
-        rng = np.random.default_rng(self.seed)
-        self.centroids = X[rng.choice(len(X), size=self.k, replace=False)].copy()
-        for _ in range(self.max_iters):
-            dists = np.linalg.norm(X[:, None, :] - self.centroids[None, :, :], axis=-1)
-            labels = np.argmin(dists, axis=1)
-            updated = np.array([
-                X[labels == i].mean(axis=0) if np.any(labels == i) else self.centroids[i]
-                for i in range(self.k)
-            ])
-            if np.allclose(self.centroids, updated):
-                break
-            self.centroids = updated
-        return self
+    return w, b
+```
 
-    def predict(self, X: np.ndarray) -> np.ndarray:
-        assert self.centroids is not None
-        return np.argmin(np.linalg.norm(X[:, None, :] - self.centroids[None, :, :], axis=-1), axis=1)
+### 5.3 Efficient Top-K Cosine Search via `np.argpartition`
+Sorting an entire corpus of $N$ documents takes $O(N \log N)$ time. In vector search, we only need the top $K$ items. Using `np.argpartition` finds the top $K$ items in linear $O(N)$ time:
 
-pts = np.array([[1.0, 1.0], [1.2, 1.1], [9.0, 9.0], [9.2, 8.9]])
-lbls = KMeansScratch(k=2).fit(pts).predict(pts)
-assert lbls[0] == lbls[1] and lbls[2] == lbls[3] and lbls[0] != lbls[2]
+```python
+def top_k_cosine_search(query: np.ndarray, corpus: np.ndarray, k: int = 3) -> tuple[np.ndarray, np.ndarray]:
+    """Retrieves top-k cosine similarity indices in O(N) using np.argpartition."""
+    # Normalize query and corpus to unit length
+    q_norm = query / max(float(np.linalg.norm(query)), 1e-12)
+    c_norm = corpus / np.maximum(np.linalg.norm(corpus, axis=1, keepdims=True), 1e-12)
+
+    sims = c_norm @ q_norm
+    n = len(corpus)
+    k = min(k, n)
+
+    # Linear time partition to find k largest elements
+    partition_idx = np.argpartition(sims, -k)[-k:]
+    sorted_top_k = partition_idx[np.argsort(-sims[partition_idx])]
+    return sorted_top_k, sims[sorted_top_k]
 ```
 
 ---
 
-## Tier 2: Retrieval, Vector Search & Production LLM Infrastructure
+## 6. Hands-on Implementation
 
-Now let's build the three core building blocks behind every modern **Hybrid RAG & Agent service** (`Modules 06-11`): fast **Dense Vector Search** (`Challenge 6`), **Sparse `BM25` Keyword Search** (`Challenge 7`), and **Resilient API Retries** (`Challenge 8`).
-
-### Challenge 6: Vectorized Top-$K$ Cosine Similarity Search (`O(N)` `argpartition`)
-Sorting 1,000,000 document scores takes $O(N \log N)$: when you only want the `Top-5` chunks, `np.argpartition` grabs them in linear $O(N)$ time:
+Verify the complete suite of algorithms against deterministic ground-truth checks:
 
 ```python
-import numpy as np
+# 1. Softmax probability sum
+logits = np.array([[1000.0, 1001.0, 1002.0], [-10.0, 0.0, 10.0]])
+probs = stable_softmax(logits)
+assert np.allclose(probs.sum(axis=-1), 1.0)
+assert not np.isnan(probs).any()
 
-def top_k_vector_search(query: np.ndarray, corpus: np.ndarray, k: int = 2) -> tuple[np.ndarray, np.ndarray]:
-    q_norm = max(float(np.linalg.norm(query)), 1e-12)
-    c_norms = np.maximum(np.linalg.norm(corpus, axis=1), 1e-12)
-    sims = (corpus @ query) / (c_norms * q_norm)
+# 2. Linear Regression Recovery
+X_test = np.array([[1.0, 2.0], [2.0, 3.0], [3.0, 4.0], [4.0, 5.0]])
+y_test = 2.0 * X_test[:, 0] + 3.0 * X_test[:, 1] + 1.0
+w_fit, b_fit = linear_regression_fit(X_test, y_test, lr=0.02, epochs=2000)
+assert np.isclose(b_fit, 1.0, atol=0.1)
 
-    k = min(k, len(sims))
-    cand_idx = np.argpartition(-sims, kth=k - 1)[:k]
-    ordered = cand_idx[np.argsort(-sims[cand_idx])]
-    return ordered, sims[ordered]
-
-docs = np.array([[1.0, 0.0, 1.0], [0.0, 1.0, 0.0], [1.0, 0.95, 1.0], [0.1, 0.0, 0.0]])
-top_ids, _ = top_k_vector_search(np.array([1.0, 1.0, 1.0]), docs, k=2)
-assert top_ids[0] == 2
-```
-
-### Challenge 7: Inverted Index & `BM25` Lexical Search Engine from Scratch
-Dense cosine search catches semantic meaning; now let's code the **sparse keyword half** of `Qdrant` Hybrid RAG (`Okapi BM25`) so exact error codes and SKUs never slip through:
-
-```python
-import math
-from collections import Counter, defaultdict
-
-class BM25Index:
-    def __init__(self, k1: float = 1.5, b: float = 0.75):
-        self.k1, self.b = k1, b
-        self.doc_len: dict[int, int] = {}
-        self.avgdl: float = 0.0
-        self.postings: dict[str, dict[int, int]] = defaultdict(dict)
-
-    def fit(self, corpus: dict[int, str]) -> "BM25Index":
-        for doc_id, text in corpus.items():
-            tokens = text.lower().split()
-            self.doc_len[doc_id] = len(tokens)
-            for term, tf in Counter(tokens).items():
-                self.postings[term][doc_id] = tf
-        self.avgdl = sum(self.doc_len.values()) / max(len(corpus), 1)
-        return self
-
-    def search(self, query: str, top_k: int = 3) -> list[tuple[int, float]]:
-        n_docs = len(self.doc_len)
-        scores: dict[int, float] = defaultdict(float)
-        for term in query.lower().split():
-            if term not in self.postings:
-                continue
-            df = len(self.postings[term])
-            idf = math.log((n_docs - df + 0.5) / (df + 0.5) + 1.0)
-            for doc_id, tf in self.postings[term].items():
-                norm = 1.0 - self.b + self.b * (self.doc_len[doc_id] / self.avgdl)
-                scores[doc_id] += idf * ((tf * (self.k1 + 1.0)) / (tf + self.k1 * norm))
-        return sorted(scores.items(), key=lambda x: x[1], reverse=True)[:top_k]
-
-idx = BM25Index().fit({
-    1: "python pandas sql data pipelines",
-    2: "vllm pagedattention kv cache llm serving",
-    3: "hybrid search bm25 and vector embeddings",
-})
-assert idx.search("vllm kv cache")[0][0] == 2
-```
-
-### Challenge 8: Jittered Exponential Backoff API Client (Surviving HTTP `429` Storms)
-Finally, once Hybrid Search hands its top chunks to an LLM API under heavy traffic, rate-limit `429` errors are inevitable: let's add exponential backoff + **random jitter** so 100 workers don't retry at the exact same millisecond (**thundering herd**):
-
-```python
-import random
-import time
-from typing import Any, Callable
-
-def call_with_backoff(
-    fn: Callable[[], Any],
-    max_attempts: int = 4,
-    base_delay: float = 0.05,
-) -> Any:
-    delay = base_delay
-    for attempt in range(1, max_attempts + 1):
-        try:
-            return fn()
-        except (TimeoutError, ConnectionError) as exc:
-            if attempt == max_attempts:
-                raise exc
-            time.sleep(delay * (1.0 + random.uniform(0.0, 0.3)))
-            delay *= 2.0
-
-calls = 0
-def transient_endpoint() -> str:
-    global calls
-    calls += 1
-    if calls < 3:
-        raise ConnectionError("HTTP 429 Too Many Requests")
-    return "200_OK"
-
-assert call_with_backoff(transient_endpoint) == "200_OK" and calls == 3
+# 3. Top-K Cosine Retrieval
+corpus = np.array([[1.0, 0.0], [0.0, 1.0], [0.9, 0.1], [-1.0, 0.0]])
+query = np.array([1.0, 0.0])
+indices, scores = top_k_cosine_search(query, corpus, k=2)
+assert list(indices) == [0, 2]
+print("Lab 13 Passed! All first-principles algorithms verified.")
 ```
 
 ---
 
-## Key Engineering Takeaways
-- Vectorize with `@` and broadcasting (`[:, None, :]`), guard `log` and division against `0` (`1e-12`), and shift logits by `max` before `exp`.
-- Use **`np.argpartition`** to cut top-$K$ search from $O(N \log N)$ to $O(N)$.
-- Always add **random jitter** to exponential backoff to prevent thundering-herd retry storms against rate-limited LLM endpoints.
+## 7. Practical Exercises
 
-> **Where the River Flows Next: Build & Ship!** You have completed all 13 modules from raw SQL/NumPy foundations to Transformers, `Qdrant` Hybrid RAG, `MCP`/`A2A` Agents, and Production MLOps. Next, see how every piece connects inside **one single product** in the **[End-to-End AI Engineering Lifecycle Playbook](../../projects/end_to_end_lifecycle_playbook.md)**, run the **[Portfolio Starter Kits](../../projects/README.md)** locally, and test your skills in the **[Interview & Code-Audit Kits](../../interview-kits/agentic-ai/ml_system_design_framework.md)**!
+### Exercise 1: Vectorized K-Means Clustering
+1. Implement a complete `KMeans` class in pure NumPy with `fit(X, k=3, max_iter=100)`.
+2. Compute pairwise Euclidean distances using broadcasting: $\|X - C\|^2 = \|X\|^2 - 2XC^T + \|C\|^2$.
+3. Verify cluster convergence on synthetic 2D Gaussian blobs.
+
+### Exercise 2: Binary F1 Score from Raw Logits
+1. Write a function `compute_f1_score(y_true, logits, threshold=0.0)` that computes the Confusion Matrix (TP, FP, FN, TN) and outputs Precision, Recall, and F1 score without scikit-learn.
+
+---
+
+## 8. Mini Project
+
+### Pure NumPy Transformer Forward Pass
+Construct a self-contained Decoder-Only Attention Block in pure NumPy:
+- **Components:**
+  1. Multi-Head Causal Attention with upper-triangular masking.
+  2. Residual skip connections: $x + \text{Attention}(\text{LayerNorm}(x))$.
+  3. SwiGLU / GeLU feed-forward projection: $x + \text{FFN}(\text{LayerNorm}(x))$.
+- **Companion Lab:** Complete the interactive notebook at [`notebooks/deep-learning/03_mini_transformer_attention.ipynb`](../../notebooks/deep-learning/03_mini_transformer_attention.ipynb).
+
+---
+
+## 9. Advanced Topics
+
+- **Strided Array Tricks (`np.lib.stride_tricks.as_strided`):** Creating sliding 2D convolution windows over tensors without copying memory.
+- **LogSumExp Trick in Cross-Entropy:** Computing $\log \sum e^{z_i} = c + \log \sum e^{z_i - c}$ to evaluate cross-entropy loss in a single numerically stable pass without separate softmax intermediate buffers.
+- **Bilinear Forms & Mahalanobis Distance:** Measuring distances accounting for covariance correlations: $D_M(\mathbf{x}, \mathbf{y}) = \sqrt{(\mathbf{x} - \mathbf{y})^T \Sigma^{-1} (\mathbf{x} - \mathbf{y})}$.
+
+---
+
+## 10. Common Mistakes & Gotchas
+
+1. **Unstable Exponentials in Softmax:** Computing `np.exp(z)` directly without subtracting $\max(z)$, causing catastrophic `Inf / Inf = NaN` crashes on large logits.
+2. **Sorting the Entire Array for Top-K:** Calling `np.argsort(scores)[::-1][:k]` ($O(N \log N)$) instead of `np.argpartition` ($O(N)$) when querying million-vector indexes.
+3. **Broadcasting Shape Mismatches:** Forgetting `keepdims=True` in reduction operations (`mean(axis=1, keepdims=True)`), leading to silent incorrect broadcasting across sample rows.
+
+---
+
+## 11. Interview Questions & System Design
+
+### Q1: Why is `np.argpartition` preferred over `np.argsort` for Top-K nearest neighbor search?
+`np.argsort` executes a full quicksort or mergesort over all $N$ elements, requiring $O(N \log N)$ comparisons. `np.argpartition` uses the Introselect algorithm (a combination of Quickselect and Median-of-Medians) to find the $K$ smallest/largest elements in $O(N)$ expected linear time without sorting the remaining $N - K$ elements, yielding massive performance gains when $N \gg K$ (e.g. retrieving Top-10 from $1,000,000$ documents).
+
+### Q2: How do you prevent numerical underflow when computing Cross-Entropy Loss?
+In cross-entropy loss $\mathcal{L} = -\sum y_i \log(p_i)$, if a predicted probability $p_i$ reaches exactly $0.0$, $\log(0.0)$ produces $-\infty$ (and subsequent gradient updates produce `NaN`). Numerical underflow is prevented by clipping predicted probabilities to a small non-zero epsilon: `np.clip(p, 1e-12, 1.0 - 1e-12)`.
+
+---
+
+## 12. Recommended Resources
+
+- **Interactive Lab:** [Scratch Challenges Notebook](../../notebooks/machine-learning/02_ml_from_scratch_challenges.ipynb).
+- **Textbook:** [Mathematics for Machine Learning](https://mml-book.github.io/) (Deisenroth et al.).
+- **Visual Series:** [StatQuest: Machine Learning Fundamentals](https://statquest.org/).
+
+---
+
+## 13. Completion Checklist
+
+- [ ] Implement numerically stable Softmax and Cross-Entropy loss in pure NumPy.
+- [ ] Implement multivariate batch gradient descent for linear regression from scratch.
+- [ ] Implement an $O(N)$ Top-K Cosine search function using `np.argpartition`.
+- [ ] Build a pure NumPy K-Means clustering algorithm with vectorized Euclidean distances.
+- [ ] Pass all unit assertions in [`notebooks/machine-learning/02_ml_from_scratch_challenges.ipynb`](../../notebooks/machine-learning/02_ml_from_scratch_challenges.ipynb).
 
 ---
 
