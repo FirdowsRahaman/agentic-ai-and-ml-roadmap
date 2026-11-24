@@ -1,4 +1,4 @@
-# Contributing to AI/ML Fresher Roadmap
+# Contributing to Agentic AI & ML Roadmap
 
 Thank you for helping improve this open-source learning path for aspiring AI/ML engineers!
 

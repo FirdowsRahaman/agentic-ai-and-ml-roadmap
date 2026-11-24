@@ -1,6 +1,6 @@
-site_name: AI/ML Fresher Roadmap
+site_name: Agentic AI & ML Roadmap
 site_description: Engineering-first roadmap from Python, SQL & Math to Advanced RAG, AI Agents, MCP & Production MLOps.
-repo_url: https://github.com/FirdowsRahaman/ai-ml-fresher-roadmap
+repo_url: https://github.com/FirdowsRahaman/agentic-ai-and-ml-roadmap
 docs_dir: .
 
 theme:

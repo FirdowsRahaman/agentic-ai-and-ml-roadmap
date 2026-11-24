@@ -1,6 +1,6 @@
-![AI/ML Fresher Roadmap Banner](./assets/banner.webp)
+![Agentic AI and ML Roadmap Banner](./assets/banner.webp)
 
-# AI/ML Fresher Roadmap: From Foundations to Agentic AI & Production MLOps
+# Agentic AI and ML Roadmap: From Foundations to Autonomous Agents & Production MLOps
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
 [![CI Verified](https://img.shields.io/badge/Links_%26_Tests-CI_Verified-16A34A.svg)](./.github/workflows/ci-verify.yml)
@@ -142,9 +142,9 @@ Don't try to cram 13 modules in a weekend. Pick the track aligned with your targ
 
 | Lab / Starter Kit | What You Practice | Launch / Open |
 |---|---|---|
-| **Notebook 01: NumPy, Pandas CoW & SQL Windows** | Broadcasting Z-scores, leak-free group imputation, SQLite `LAG` & rolling windows | [Notebook](./notebooks/01_numpy_pandas_sql_lab.ipynb) • [Open in Colab](https://colab.research.google.com/github/FirdowsRahaman/ai-ml-fresher-roadmap/blob/main/notebooks/01_numpy_pandas_sql_lab.ipynb) |
-| **Notebook 02: ML & Search from Scratch** | Stable Softmax, Linear Regression, `O(N)` `argpartition` Cosine Search | [Notebook](./notebooks/02_ml_from_scratch_challenges.ipynb) • [Open in Colab](https://colab.research.google.com/github/FirdowsRahaman/ai-ml-fresher-roadmap/blob/main/notebooks/02_ml_from_scratch_challenges.ipynb) |
-| **Notebook 03: Multi-Head Causal Attention** | Tensor head splitting, $\sqrt{d_k}$ scaling, causal mask verification | [Notebook](./notebooks/03_mini_transformer_attention.ipynb) • [Open in Colab](https://colab.research.google.com/github/FirdowsRahaman/ai-ml-fresher-roadmap/blob/main/notebooks/03_mini_transformer_attention.ipynb) |
+| **Notebook 01: NumPy, Pandas CoW & SQL Windows** | Broadcasting Z-scores, leak-free group imputation, SQLite `LAG` & rolling windows | [Notebook](./notebooks/01_numpy_pandas_sql_lab.ipynb) • [Open in Colab](https://colab.research.google.com/github/FirdowsRahaman/agentic-ai-and-ml-roadmap/blob/main/notebooks/01_numpy_pandas_sql_lab.ipynb) |
+| **Notebook 02: ML & Search from Scratch** | Stable Softmax, Linear Regression, `O(N)` `argpartition` Cosine Search | [Notebook](./notebooks/02_ml_from_scratch_challenges.ipynb) • [Open in Colab](https://colab.research.google.com/github/FirdowsRahaman/agentic-ai-and-ml-roadmap/blob/main/notebooks/02_ml_from_scratch_challenges.ipynb) |
+| **Notebook 03: Multi-Head Causal Attention** | Tensor head splitting, $\sqrt{d_k}$ scaling, causal mask verification | [Notebook](./notebooks/03_mini_transformer_attention.ipynb) • [Open in Colab](https://colab.research.google.com/github/FirdowsRahaman/agentic-ai-and-ml-roadmap/blob/main/notebooks/03_mini_transformer_attention.ipynb) |
 | **Starter Repo 1: Air-Gapped Hybrid RAG + SQL Agent** | `BM25 + Vector RRF`, read-only SQL guardrail, intent router + `pytest` suite | **[Explore Starter Code →](./projects/starter-local-rag-agent/README.md)** |
 | **Starter Repo 2: Local Full-Lifecycle MLOps API** | Leak-free `Pipeline`, `FastAPI` lifespan, `PSI` drift endpoint, `Dockerfile` + `pytest` | **[Explore Starter Code →](./projects/starter-local-mlops/README.md)** |
 | **End-to-End AI Product Playbook (Day 0 → Live)** | Unifies all 13 modules: Unit Economics -> Golden Set -> `Qdrant` + `MCP` -> `SSE` -> Flywheel | **[Read Lifecycle Playbook →](./projects/end_to_end_lifecycle_playbook.md)** |

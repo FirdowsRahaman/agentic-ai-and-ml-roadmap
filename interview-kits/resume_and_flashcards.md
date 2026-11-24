@@ -1,4 +1,4 @@
-# Fresher AI/ML Resume Playbook, Take-Home Rubric & Quick Flashcards
+# AI/ML & Agent Systems Resume Playbook, Take-Home Rubric & Quick Flashcards
 
 [← SQL & Coding Screenings](./sql_and_coding_screenings.md) | [Home](../README.md) | [Portfolio Projects →](../projects/README.md)
 
