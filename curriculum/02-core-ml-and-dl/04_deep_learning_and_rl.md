@@ -37,14 +37,24 @@ flowchart LR
 
 ### 1. Neurons, Layers & Non-Linearity
 
-#### 1.1 How a Neuron Works & Why Activations Are Mandatory
-- **In Plain English:** A single neuron works like a weighted scorecard: it multiplies each input by an importance weight, adds a baseline (`bias`), and passes the total through a **curved switch (`activation function`)** to decide whether to fire.
-- **Why that curved switch is mandatory:** Stacking 100 straight-line equations without curved activations just simplifies into **one single straight line**—giving a 100-layer network zero advantage over basic Linear Regression!
+#### 1.1 How a Neuron Works & Why Activations Make Deep Learning Possible
+- **Step 1 — Inside One Neuron ("Should I Go Outside for a Run?"):**
+  Suppose you check 3 clues: `Sunshine = 0.5`, `Energy = 0.8`, `Friend Joining = 0.2`. A neuron does three simple things:
+  1. **Multiplies by `Weights` (*how much you care*):** `0.5×0.4 + 0.8×0.6 + 0.2×0.9 = 0.86`.
+  2. **Adds a `Bias` (*your starting baseline mood*):** `0.86 + 0.10 = 0.96`.
+  3. **Passes through an `Activation Switch` (`ReLU`):** If the total is negative (say `-4.0` because it's pouring rain), `ReLU` flips it **completely OFF to `0.0`**; if positive (`0.96`), it lets the signal pass forward!
+- **Step 2 — Why That Switch Changes Everything ("Rigid Ruler vs. Hinged Wire"):**
+  - **Without Activation Functions:** Suppose Layer 1 computes `2x + 1` and Layer 2 computes `3 × (Layer 1) + 2`. Plugging Layer 1 into Layer 2 just gives `3(2x + 1) + 2 = 6x + 5`—**still one rigid straight ruler!** Even **100 layers** without activations collapse into **one single straight line** that can never wrap around a circle of data points, recognize a face, or understand language.
+  - **With Activation Functions (`ReLU` / `GELU`):** Every activation adds a **bendable hinge** to the line! Stack 3 hinged neurons and you can fold a triangle; stack thousands and the network can bend around *any* complex shape in photos, audio, or human text.
+
+<p align="center">
+  <img src="../../assets/animations/activation_hinge_motion.svg" width="100%" alt="Animated comparison showing why neural networks without activation functions are stuck as a rigid straight line while ReLU and GELU activations add hinges to wrap complex shapes" />
+</p>
 
 <details>
-<summary><b>Deep Dive: Matrix Collapse Proof</b></summary>
+<summary><b>Deep Dive: Matrix Collapse Proof & Universal Approximation</b></summary>
 
-Without a non-linear activation $\phi(\cdot)$ between layers, consecutive linear transformations collapse associatively: $W_2(W_1 \mathbf{x}) = (W_2 W_1)\mathbf{x} = W_{\text{eff}}\mathbf{x}$. Non-linear activations (`ReLU`, `GELU`) bend the coordinate space at every layer, enabling universal function approximation.
+Without a non-linear activation $\phi(\cdot)$ between layers, consecutive linear transformations collapse associatively: $W_2(W_1 \mathbf{x}) = (W_2 W_1)\mathbf{x} = W_{\text{eff}}\mathbf{x}$. Inserting non-linear activations (`ReLU`, `GELU`) breaks linearity at every layer, unlocking the **Universal Approximation Theorem** (Hornik et al., 1989).
 
 </details>
 
@@ -53,7 +63,7 @@ import numpy as np
 
 def relu_neuron(inputs: np.ndarray, weights: np.ndarray, bias: float) -> float:
     pre_activation = float(np.dot(inputs, weights) + bias)
-    return max(0.0, pre_activation)
+    return max(0.0, pre_activation)  # The hinge! Clips negatives to 0.0
 
 x = np.array([0.5, 0.8, 0.2])
 w = np.array([0.4, 0.6, 0.9])
@@ -61,6 +71,7 @@ b = 0.1
 # 0.5*0.4 + 0.8*0.6 + 0.2*0.9 + 0.1 = 0.20 + 0.48 + 0.18 + 0.10 = 0.96
 out = relu_neuron(x, w, b)
 assert np.isclose(out, 0.96)
+assert relu_neuron(np.array([-2.0, -1.0, 0.0]), w, b) == 0.0  # Negative score -> switched OFF!
 print(f"Neuron output: {out:.2f}")  # 0.96 -> active!
 ```
 

@@ -1,0 +1,103 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 350" width="100%" height="auto" role="img" aria-label="Animated comparison showing why neural networks without activation functions are stuck as a rigid straight line while ReLU and GELU activations add hinges to wrap complex shapes">
+  <style>
+    .bg { fill: #FFFFFF; stroke: #CBD5E1; stroke-width: 1.5; }
+    .kicker { font: 700 11px -apple-system, 'Segoe UI', Arial, sans-serif; fill: #2251FF; letter-spacing: 1.6px; }
+    .title { font: 700 20px Georgia, 'Times New Roman', serif; fill: #051C2C; }
+    .panel { font: 700 13.5px -apple-system, 'Segoe UI', Arial, sans-serif; fill: #051C2C; }
+    .small { font: 600 11px -apple-system, 'Segoe UI', Arial, sans-serif; fill: #475569; }
+    .plot-bg { fill: #F8FAFC; stroke: #CBD5E1; stroke-width: 1.2; }
+
+    /* Left rigid ruler tilts helplessly around center (240, 204) — never able to circle the blue center! */
+    @keyframes helplessTilt {
+      0%, 100% { transform: rotate(-22deg); }
+      50%      { transform: rotate(24deg); }
+    }
+    /* Step counter badge on Right Panel */
+    @keyframes badgeGlow {
+      0%, 30%   { fill: #EFF6FF; stroke: #2251FF; }
+      60%, 92%  { fill: #DCFCE7; stroke: #16A34A; }
+      100%      { fill: #EFF6FF; stroke: #2251FF; }
+    }
+
+    .rigid-stick {
+      transform-origin: 240px 204px;
+      animation: helplessTilt 4.4s ease-in-out infinite;
+    }
+    .status-pill { animation: badgeGlow 5s infinite; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .rigid-stick, .status-pill { animation: none; }
+    }
+  </style>
+
+  <rect x="1" y="1" width="958" height="348" rx="4" class="bg"/>
+  <rect x="1" y="1" width="310" height="5" fill="#051C2C"/>
+  <rect x="311" y="1" width="380" height="5" fill="#2251FF"/>
+  <rect x="691" y="1" width="268" height="5" fill="#00A9F4"/>
+
+  <text x="32" y="34" class="kicker">VISUAL INTUITION  |  WHY ACTIVATION FUNCTIONS MATTER</text>
+  <text x="32" y="60" class="title">The "Rigid Ruler" vs. "Hinged Wire": How Activations Let Deep Networks Bend</text>
+  <line x1="32" y1="74" x2="928" y2="74" stroke="#E2E8F0" stroke-width="1"/>
+
+  <!-- LEFT PANEL: Without Activation (Linear Only) -->
+  <text x="36" y="100" class="panel">1. WITHOUT Activation: 100 Layers Still = 1 Rigid Straight Stick ✕</text>
+  <rect x="36" y="112" width="408" height="184" rx="4" class="plot-bg"/>
+
+  <!-- Outer Ring of Red Dots (Class 0: Fraud / Noise) -->
+  <g fill="#DC2626">
+    <circle cx="120" cy="140" r="6"/><circle cx="240" cy="130" r="6"/><circle cx="360" cy="142" r="6"/>
+    <circle cx="95"  cy="204" r="6"/><circle cx="385" cy="204" r="6"/>
+    <circle cx="125" cy="268" r="6"/><circle cx="240" cy="276" r="6"/><circle cx="355" cy="266" r="6"/>
+  </g>
+  <!-- Inner Bullseye Cluster of Blue Dots (Class 1: Safe Target) -->
+  <g fill="#2251FF">
+    <circle cx="222" cy="192" r="6.5"/><circle cx="258" cy="192" r="6.5"/>
+    <circle cx="240" cy="204" r="6.5"/>
+    <circle cx="224" cy="218" r="6.5"/><circle cx="256" cy="218" r="6.5"/>
+  </g>
+
+  <!-- Helplessly Tilting Straight Ruler -->
+  <g class="rigid-stick">
+    <line x1="68" y1="204" x2="412" y2="204" stroke="#DC2626" stroke-width="3.5" stroke-dasharray="7 4"/>
+  </g>
+
+  <rect x="86" y="246" width="308" height="24" rx="12" fill="#FEF2F2" stroke="#DC2626"/>
+  <text x="240" y="262" text-anchor="middle" font-family="-apple-system, 'Segoe UI', sans-serif" font-size="11" font-weight="700" fill="#B91C1C">Stuck straight! Slices through wrong dots every time</text>
+  <text x="36" y="318" class="small">Math trap: Layer2(Layer1(x)) = 3(2x + 1) + 2 = 6x + 5 (still 1 line!)</text>
+
+  <!-- Divider -->
+  <line x1="474" y1="88" x2="474" y2="330" stroke="#CBD5E1" stroke-width="1.5"/>
+
+  <!-- RIGHT PANEL: With ReLU / GELU Activations -->
+  <text x="502" y="100" class="panel">2. WITH ReLU / GELU: Every Neuron Adds a Hinge to Wrap Any Shape ✓</text>
+  <rect x="502" y="112" width="422" height="184" rx="4" class="plot-bg"/>
+
+  <!-- Same Outer Ring of Red Dots centered around (713, 204) -->
+  <g fill="#DC2626">
+    <circle cx="593" cy="140" r="6"/><circle cx="713" cy="130" r="6"/><circle cx="833" cy="142" r="6"/>
+    <circle cx="568" cy="204" r="6"/><circle cx="858" cy="204" r="6"/>
+    <circle cx="598" cy="268" r="6"/><circle cx="713" cy="276" r="6"/><circle cx="828" cy="266" r="6"/>
+  </g>
+  <!-- Same Inner Bullseye Cluster of Blue Dots -->
+  <g fill="#2251FF">
+    <circle cx="695" cy="192" r="6.5"/><circle cx="731" cy="192" r="6.5"/>
+    <circle cx="713" cy="204" r="6.5"/>
+    <circle cx="697" cy="218" r="6.5"/><circle cx="729" cy="218" r="6.5"/>
+  </g>
+
+  <!-- Animated Morphing Decision Boundary: Straight Line -> V-Hinge -> Closed Hexagon Loop around Blue Dots! -->
+  <path fill="#2251FF" fill-opacity="0.12" stroke="#16A34A" stroke-width="3" stroke-linejoin="round">
+    <animate attributeName="d" dur="5s" repeatCount="indefinite"
+      values="
+        M 545 162 L 625 162 L 713 162 L 800 162 L 880 162 L 713 162 Z;
+        M 630 148 L 713 248 L 796 148 L 796 148 L 713 248 L 630 148 Z;
+        M 668 176 L 713 164 L 758 176 L 762 224 L 713 238 L 664 224 Z;
+        M 668 176 L 713 164 L 758 176 L 762 224 L 713 238 L 664 224 Z;
+        M 545 162 L 625 162 L 713 162 L 800 162 L 880 162 L 713 162 Z"
+      keyTimes="0; 0.28; 0.58; 0.88; 1"/>
+  </path>
+
+  <rect x="559" y="248" width="308" height="24" rx="12" class="status-pill" stroke-width="1.5"/>
+  <text x="713" y="264" text-anchor="middle" font-family="-apple-system, 'Segoe UI', sans-serif" font-size="11" font-weight="700" fill="#051C2C">Hinges fold together → 100% clean separation!</text>
+  <text x="502" y="318" class="small">3 hinges make a triangle; thousands sculpt faces, speech &amp; human grammar.</text>
+</svg>
