@@ -32,12 +32,11 @@ flowchart TD
 
 ---
 
-## Tier 1: Fresher Core (Multi-Agent Topologies & Subagent Delegation)
+## Tier 1: Core Foundations (Multi-Agent Topologies & Subagent Delegation)
 
 ### 1. Why & When to Use Multi-Agent Systems
 
-#### Q1: Why does a single generalist agent with 35+ tools degrade in accuracy, and when is Multi-Agent worth the latency cost?
-**Answer:**
+#### 1.1 Tool-Count Degradation, Context Isolation & Multi-Agent Trade-Offs
 1. **Tool Selection Confusion:** Tool-routing accuracy drops sharply once an LLM must discriminate among 20+ overlapping JSON schemas.
 2. **Context Pollution:** Raw logs from step 1 pollute reasoning at step 6. Subagents run in **isolated context windows** and return only a distilled 200-token artifact to the supervisor!
 3. **Model Heterogeneity:** Pair a frontier model (`Gemini 2.5 Pro` / `Claude Sonnet`) as the **Supervisor** with fast, low-cost workers (`Gemini 2.5 Flash` / local `Qwen 7B`) for high-volume extraction.
@@ -45,8 +44,7 @@ flowchart TD
 
 ---
 
-#### Q2: Compare the 4 Canonical Multi-Agent Patterns
-**Answer:**
+#### 1.2 Sequential, Hierarchical Supervisor, Parallel Map-Reduce & Critic Topologies
 
 | Architecture | Control Flow | Frameworks | Best Fit |
 |---|---|---|---|
@@ -85,12 +83,11 @@ supervisor = Agent(
 
 ---
 
-## Tier 2: MNC Production Depth (Model Context Protocol & MCP Security)
+## Tier 2: Production Architecture & Scale (Model Context Protocol & MCP Security)
 
 ### 2. Model Context Protocol (`MCP`) Architecture & Transports
 
-#### Q3: What are the 3 Primitives and 2 Standard Transports of MCP?
-**Answer:**
+#### 2.1 `MCP` Primitives (`Tools`, `Resources`, `Prompts`) & Transports (`stdio` / `Streamable HTTP`)
 Open-sourced by Anthropic and adopted across IDEs, cloud platforms, and agent SDKs, **MCP** uses **JSON-RPC 2.0** between an **MCP Host/Client** and an **MCP Server**, exposing three standardized primitives:
 1. **`Tools` (Model-Controlled):** Executable functions (`query_postgres`, `create_jira_issue`) invoked by the LLM.
 2. **`Resources` (Application-Controlled):** Read-only structured context (`postgres://schema/users`, documentation files) attached like REST `GET` endpoints.
@@ -122,8 +119,7 @@ def fetch_order_summary(order_id: str) -> dict[str, str | float]:
 
 ---
 
-#### Q4: What are the unique Security Threats of third-party MCP Servers ("Tool Poisoning" & "Rug Pulls")?
-**Answer:**
+#### 2.2 Securing `MCP` Ecosystems Against Tool Poisoning & Schema Rug-Pulls
 1. **Tool Description Poisoning:** A malicious MCP server hides covert prompt-injection instructions inside its tool `description` metadata (invisible to the human user, read directly by the LLM), tricking the agent into exfiltrating `~/.ssh` keys or environment variables via another legitimate MCP server!
 2. **Dynamic Tool Rug-Pulls:** An unpinned remote MCP server passes security review on Day 1, then silently mutates its tool definitions on Day 5.
 3. **Production Defenses:** Pin and cryptographic-hash MCP tool schemas, scope OAuth 2.1 tokens per server with least privilege, isolate local `stdio` servers in containers, and require explicit `HITL` consent whenever cross-server data flows to external network endpoints.
@@ -160,10 +156,10 @@ print("Lab 09 Passed! Distilled Supervisor Output:", final_report)
 
 ---
 
-## Key Takeaways for Interviews
+## Key Engineering Takeaways
 - Use **Multi-Agent Subagents** primarily for **context isolation**, **tool-count reduction (`<10` tools/agent)**, and **privilege separation** — not for simple tasks solvable by a 2-step workflow.
 - Know the **3 MCP Primitives (`Tools`, `Resources`, `Prompts`)** and **2 Transports (`stdio` for local, `Streamable HTTP` with OAuth 2.1 for remote production)**.
-- Call out **MCP Tool Poisoning** (prompt injection hidden inside tool schemas) to stand out immediately in senior/MNC interviews.
+- Call out **MCP Tool Poisoning** (prompt injection hidden inside tool schemas) when auditing third-party tool integrations.
 
 ---
 

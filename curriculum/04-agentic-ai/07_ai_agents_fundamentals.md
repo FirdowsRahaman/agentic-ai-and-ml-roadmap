@@ -30,12 +30,11 @@ flowchart TD
 
 ---
 
-## Tier 1: Fresher Core (Architecture, Workflows vs. Agents & Safe ReAct)
+## Tier 1: Core Foundations (Architecture, Workflows vs. Agents & Safe ReAct)
 
 ### 1. Workflows vs. Agents Decision Rubric
 
-#### Q1: Compare a Single LLM Call, a Deterministic Workflow, and an Autonomous AI Agent
-**Answer:**
+#### 1.1 Single LLM Calls vs. Deterministic Workflows vs. Autonomous Agents
 
 | Pattern | Who Controls the Loop? | Best Production Use Case |
 |---|---|---|
@@ -46,8 +45,7 @@ flowchart TD
 
 ---
 
-#### Q2: What are the 4 Pillars of an AI Agent Architecture?
-**Answer:**
+#### 1.2 The Four Architectural Pillars of an Agent System
 1. **Core Brain (Reasoning LLM):** Plans steps, selects tools, and interprets error messages.
 2. **Planning & Reflection:** Decomposes goals (`ReAct`, `Plan-and-Execute`) and critiques intermediate results.
 3. **Multi-Tier Memory:** Working scratchpad (in-context), conversational short-term buffer, and external long-term episodic/semantic memory.
@@ -57,16 +55,14 @@ flowchart TD
 
 ### 2. The `ReAct` Framework & Secure Zero-Dependency Implementation
 
-#### Q3: Why does `ReAct` (Reason + Act) outperform pure Chain-of-Thought or pure Action-calling?
-**Answer:**
+#### 2.1 Interleaved Reasoning & Action (`ReAct`)
 - **Pure Chain-of-Thought (Yao et al., 2022 comparison):** Reasons coherently but has zero access to live external facts, hallucinating prices, APIs, or database state.
 - **Pure Action Generation:** Fires tool calls blindly without reasoning about why the previous call failed.
 - **`ReAct`:** Interleaves explicit `Thought -> Action -> Observation`, grounding every reasoning turn in real tool feedback.
 
 ---
 
-#### Q4: Implement a Safe Pure-Python `ReAct` Loop (Using `ast` Instead of Unsafe `eval()`)
-**Answer:**
+#### 2.2 Building a Zero-Dependency `ReAct` Runtime with Safe `AST` Evaluation
 > **Security Rule:** Never pass LLM-generated strings into Python's raw `eval()` — an indirect prompt injection like `__import__('os').system(...)` compromises the host server! Use an **AST (Abstract Syntax Tree) whitelist evaluator** for math tools.
 
 ```python
@@ -130,12 +126,11 @@ assert "CalculationError" in safe_calculate("__import__('os').system('whoami')")
 
 ---
 
-## Tier 2: MNC Production Depth (Memory Taxonomy, Planning & Failure Modes)
+## Tier 2: Production Architecture & Scale (Memory Taxonomy, Planning & Failure Modes)
 
 ### 3. Production Agent Memory & Planning Topologies
 
-#### Q5: How is Agent Memory architected across Working, Episodic, Semantic, and Procedural tiers?
-**Answer:**
+#### 3.1 Multi-Tier Memory Architecture (Working, Episodic, Semantic & Procedural)
 1. **Working Memory (Context Window Scratchpad):** Active trajectory of tool calls and observations; pruned/compressed via rolling summarization once context crosses budget thresholds.
 2. **Episodic Memory:** Vector-indexed past interaction trajectories (*"How did the agent successfully resolve this user's build failure last week?"*) for dynamic few-shot recall.
 3. **Semantic / Entity Memory:** Structured user facts and preferences stored in key-value stores or knowledge graphs (`user_timezone="Asia/Kolkata"`, `preferred_stack="PyTorch"`).
@@ -143,8 +138,7 @@ assert "CalculationError" in safe_calculate("__import__('os').system('whoami')")
 
 ---
 
-#### Q6: `ReAct` vs. `Plan-and-Execute` vs. `Tree-of-Thoughts` — Latency & Failure Tradeoffs
-**Answer:**
+#### 3.2 Planning Strategies (`Plan-and-Execute`) & Production Failure Mitigations
 - **`ReAct` (Single-Step Greedy):** Low upfront latency, adapts immediately to surprises, but lacks global foresight on 15-step tasks.
 - **`Plan-and-Execute`:** Planner model drafts a complete DAG/checklist upfront; cheaper fast worker models execute each step, only invoking the heavy Re-Planner if an observation invalidates the plan (cuts frontier token spend by 50%+).
 - **Top 3 Production Failure Modes & Fixes:**
@@ -185,7 +179,7 @@ print("Lab 07 Passed! Duplicate tool loop tripped safely.")
 
 ---
 
-## Key Takeaways for Interviews
+## Key Engineering Takeaways
 - Default to **deterministic workflows** (routing, chaining, parallelization) when steps are known; reserve **autonomous agents** for open-ended, dynamic trajectories.
 - Never use `eval()` inside agent tools — sandbox code execution (Docker/WASM/gVisor) or restrict via AST/schema whitelists.
 - Separate **Working, Episodic, and Semantic memory**, and pair `Plan-and-Execute` with hard step/repetition circuit breakers.

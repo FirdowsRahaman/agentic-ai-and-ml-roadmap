@@ -26,12 +26,11 @@ flowchart LR
 
 ---
 
-## Tier 1: Fresher Core (Must-Know Foundations)
+## Tier 1: Core Foundations (Must-Know Foundations)
 
 ### 1. Linear Algebra Intuition
 
-#### Q1: Scalar vs. Vector vs. Matrix vs. Tensor — How do shapes map to real ML data?
-**Answer:**
+#### 1.1 Tensor Ranks, Dimensionality & Matrix Multiplication Shape Rules
 
 | Object | Rank | Typical Shape | Real-World ML Meaning |
 |---|---|---|---|
@@ -47,8 +46,7 @@ flowchart LR
 
 ---
 
-#### Q2: What is a Dot Product vs. Cosine Similarity, and when does magnitude matter?
-**Answer:**
+#### 1.2 Dot Product vs. Cosine Similarity
 - **Dot Product:** $\mathbf{a} \cdot \mathbf{b} = \sum_i a_i b_i = \|\mathbf{a}\|\|\mathbf{b}\|\cos\theta$. Sensitive to both angle **and** vector length. Used inside linear layers (`X @ W + b`) and attention logits (`Q @ K.T`).
 - **Cosine Similarity:** Normalizes both vectors to unit length so only **directional alignment** matters (range `[-1, 1]`):
   $$\cos(\theta) = \frac{\mathbf{a} \cdot \mathbf{b}}{\|\mathbf{a}\|_2 \|\mathbf{b}\|_2}$$
@@ -71,8 +69,7 @@ print(f"Cosine Similarity: {cosine_similarity(short_doc, long_duplicate_doc):.3f
 
 ### 2. Descriptive Statistics & Distributions
 
-#### Q3: Mean vs. Median vs. Percentiles (`p50`, `p95`, `p99`) — Which should you report?
-**Answer:**
+#### 2.1 Central Tendency & Tail Latency Percentiles (`p50`, `p95`, `p99`)
 - **Mean:** Pulled heavily by extreme outliers. Suitable for symmetric, Gaussian-like errors.
 - **Median (`p50`):** Robust midpoint; mandatory when imputing skewed features like income, house prices, or transaction amounts.
 - **Tail Percentiles (`p95`, `p99`):** Standard in production ML SLAs! An average API latency of `80ms` can hide the fact that 1% of users wait `4,200ms` (`p99 = 4.2s`).
@@ -88,8 +85,7 @@ print(f"p99 latency:    {np.percentile(latencies_ms, 99):.1f} ms")    # 3190.6 m
 
 ---
 
-#### Q4: Variance, Standard Deviation, and the Normal (Gaussian) Distribution
-**Answer:**
+#### 2.2 Dispersion Metrics & The Empirical Gaussian Rule (68–95–99.7)
 - **Variance ($\sigma^2$):** Average squared deviation from the mean.
 - **Standard Deviation ($\sigma$):** $\sqrt{\sigma^2}$ — expressed in the **same units** as the original feature.
 - **Normal Distribution ($\mathcal{N}(\mu, \sigma^2)$):** Symmetric bell curve obeying the **68–95–99.7 empirical rule** within $1\sigma, 2\sigma, 3\sigma$ of the mean $\mu$.
@@ -108,27 +104,25 @@ print(f"Fraction within 2 std devs: {within_2_std:.3f}")  # ~0.954 (95%)
 
 ---
 
-#### Q5: Correlation vs. Causation — What does Pearson's $r$ miss?
-**Answer:**
+#### 2.3 Linear Correlation vs. Confounders & Non-Linear Dependence
 Pearson correlation ($r \in [-1, 1]$) measures **linear** co-movement only:
 1. **Confounders:** Ice cream sales and drowning incidents correlate positively ($r > 0.8$) because **summer heat** drives both — banning ice cream will not reduce drownings.
 2. **Non-linear blindness:** If $y = x^2$ on $x \in [-3, 3]$, $y$ is 100% determined by $x$, yet Pearson correlation is **$0.0$**! Use Spearman rank correlation or mutual information for monotonic/non-linear relationships.
 
 ---
 
-## Tier 2: MNC Production Depth (Probability & Hypothesis Testing)
+## Tier 2: Production Architecture & Scale (Probability & Hypothesis Testing)
 
-### 3. Conditional Probability & Bayes' Theorem (Classic Screening Trap)
+### 3. Conditional Probability, Base Rates & Bayes' Theorem
 
-#### Q6: Explain Bayes' Theorem and solve the "99% Accurate Rare-Disease Test" paradox.
-**Answer:**
+#### 3.1 Bayes' Theorem & The Low-Base-Rate False-Positive Paradox
 $$P(A \mid B) = \frac{P(B \mid A) \cdot P(A)}{P(B)}$$
 
 - $P(A)$: **Prior** probability (base rate before seeing evidence).
 - $P(B \mid A)$: **Likelihood** (sensitivity / true positive rate).
 - $P(A \mid B)$: **Posterior** probability (updated belief after evidence).
 
-**Interview Trap:** A disease affects **0.1%** of the population ($P(D) = 0.001$). A test has **99% sensitivity** ($P(+\mid D)=0.99$) and **99% specificity** ($P(-\mid \neg D)=0.99$, so false-positive rate $P(+\mid \neg D)=0.01$). If a random person tests positive, what is $P(D \mid +)$?
+**Base-Rate Example:** A disease affects **0.1%** of the population ($P(D) = 0.001$). A test has **99% sensitivity** ($P(+\mid D)=0.99$) and **99% specificity** ($P(-\mid \neg D)=0.99$, so false-positive rate $P(+\mid \neg D)=0.01$). If a random person tests positive, what is $P(D \mid +)$?
 
 ```python
 p_disease = 0.001
@@ -145,8 +139,7 @@ print(f"Actual probability of having the disease: {posterior:.1%}")  # Only 9.0%
 
 ### 4. Central Limit Theorem (CLT), p-values & Confidence Intervals
 
-#### Q7: Why does the Central Limit Theorem (CLT) make online A/B testing possible?
-**Answer:**
+#### 4.1 Sampling Distributions, Confidence Intervals & Practical vs. Statistical Significance
 Real user metrics (like revenue per session or click counts) are heavily skewed, **not** normally distributed. The **Central Limit Theorem** guarantees that the **distribution of sample means** across $N$ independent users converges to a **Normal Distribution** $\mathcal{N}(\mu, \sigma^2 / N)$ as $N$ grows large — allowing us to compute Z-scores, **95% Confidence Intervals** ($\bar{x} \pm 1.96 \frac{s}{\sqrt{N}}$), and **$p$-values** in A/B experiments.
 
 - **Correct definition of a $p$-value:** Assuming the Null Hypothesis $H_0$ is true (no real difference between Model A and Model B), the $p$-value is the probability of observing a difference at least as extreme as our experiment purely by random chance.
@@ -185,7 +178,7 @@ print("Lab 02 Passed!", res)
 
 ---
 
-## Key Takeaways for Interviews
+## Key Engineering Takeaways
 - Track **tensor shapes** explicitly: `(N, D) @ (D, H) -> (N, H)`.
 - Use **Cosine Similarity** when document length shouldn't bias semantic similarity, and report **`p50`/`p95`/`p99` percentiles** alongside means.
 - Apply **Bayes' Theorem** whenever base rates are rare (`< 1%` fraud/disease) — high accuracy does not imply high precision.

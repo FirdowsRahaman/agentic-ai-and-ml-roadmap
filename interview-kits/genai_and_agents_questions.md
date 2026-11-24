@@ -28,7 +28,13 @@ Dense embeddings blur exact identifiers (error codes, SKUs, clause numbers, name
 - **Architecture:** Contextual/layout-aware chunking -> **Hybrid Search (`BM25` + Dense `HNSW`)** merged via **Reciprocal Rank Fusion (`RRF`)** -> **Cross-Encoder Reranker (`Top 50 -> Top 5`)** -> Constrained JSON generation with verified citations.
 - **Evaluation (`RAGAS` Triad):** Separate retrieval quality (**Context Precision & Context Recall**) from generation quality (**Faithfulness** to context and **Answer Relevance** to query).
 
-**Q4: Does RAG completely eliminate hallucinations? When would you Fine-Tune instead of using RAG?**
+**Q4: Why do naive Pre-Filtering and Post-Filtering break vector search in multi-tenant RAG, and how does `Qdrant` solve it?**
+*Answer:*
+- **Post-Filtering** retrieves global `Top-K` vectors first and filters by `tenant_id` afterward — if a small tenant owns `0.2%` of chunks, `Top-20` often yields **0 valid results**.
+- **Naive Pre-Filtering** masks unauthorized nodes out of an `HNSW` graph, severing navigation edges and degrading recall.
+- **`Qdrant` Filterable HNSW** builds payload-aware subgraph edges directly into the `HNSW` index (and dynamically falls back to indexed scan at very low cardinality), maintaining sub-10ms high-recall filtered search alongside 4x–32x Scalar/Binary Quantization.
+
+**Q5: Does RAG completely eliminate hallucinations? When would you Fine-Tune instead of using RAG?**
 *Answer:*
 **No!** RAG reduces hallucinations by grounding context, but noisy retrieval, conflicting chunks, or weak prompts still produce fabrications. Use **RAG** for dynamic/private facts requiring citations and ACL filtering; use **Fine-Tuning (`LoRA`)** to instill consistent output schemas, domain DSLs, tone, or latency/cost distillation into a smaller model.
 
@@ -36,17 +42,17 @@ Dense embeddings blur exact identifiers (error codes, SKUs, clause numbers, name
 
 ## 3. Inference Optimization, Agents & Security
 
-**Q5: Explain `TTFT` vs. `TPOT`, `KV Cache` fragmentation, and why `vLLM` achieves 2x–4x higher throughput.**
+**Q6: Explain `TTFT` vs. `TPOT`, `KV Cache` fragmentation, and why `vLLM` achieves 2x–4x higher throughput.**
 *Answer:*
 - **`TTFT` (Prefill)** processes all input tokens in parallel (**compute-bound**; speed up via Prefix Caching).
 - **`TPOT` (Decode)** generates 1 token at a time (**memory-bandwidth bound**; speed up via `FP8`/`AWQ` quantization & Speculative Decoding). Streaming improves *perceived* UX latency without lowering total generation wall-time.
 - **`vLLM` `PagedAttention` + Continuous Batching** stores `KV Cache` in non-contiguous fixed pages (eliminating 60%+ contiguous VRAM waste) and swaps completed sequences per token step.
 
-**Q6: When should you build a Deterministic Workflow instead of an Autonomous Agent, and how does `MCP` work?**
+**Q7: When should you build a Deterministic Workflow instead of an Autonomous Agent, and how does `MCP` work?**
 *Answer:*
 Use **Workflows** (routing, prompt chaining, `asyncio.gather` parallelization) whenever step structure is predictable — lower latency, lower cost, deterministic testing. Reserve **Autonomous Agents (`LangGraph` / `Google ADK`)** for open-ended multi-step loops requiring dynamic recovery. **`MCP` (Model Context Protocol)** standardizes `Tools`, `Resources`, and `Prompts` over **JSON-RPC 2.0** (`stdio` locally, `Streamable HTTP` + OAuth 2.1 remotely).
 
-**Q7: What is Indirect Prompt Injection, and how do you secure tool-calling agents in production?**
+**Q8: What is Indirect Prompt Injection, and how do you secure tool-calling agents in production?**
 *Answer:*
 Malicious instructions embedded inside untrusted external data retrieved by tools (emails, PDFs, web pages, poisoned MCP tool descriptions). Defend via **Defense-in-Depth**: read-only least-privilege DB credentials, isolated Docker/WASM sandboxes, strict `Pydantic` output validation, session token/iteration circuit breakers, and durable **`HITL` approval interrupts** before any external write/financial action.
 

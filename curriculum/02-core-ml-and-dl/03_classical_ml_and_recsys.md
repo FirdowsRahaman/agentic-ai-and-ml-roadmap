@@ -32,20 +32,18 @@ flowchart TD
 
 ---
 
-## Tier 1: Fresher Core (Algorithms, Preprocessing & Evaluation)
+## Tier 1: Core Foundations (Algorithms, Preprocessing & Evaluation)
 
 ### 1. Core Paradigms & Linear Models
 
-#### Q1: Traditional Programming vs. Supervised vs. Unsupervised Learning
-**Answer:**
+#### 1.1 Learning Paradigms: Supervised, Unsupervised & Ranking
 - **Traditional Rules:** Human writes `if-else` heuristics (`Data + Rules -> Output`). Brittle on edge cases.
 - **Supervised Learning:** Algorithm learns mapping $f: X \to y$ from historical `(features, label)` pairs (`Data + Labels -> Model`). Split into **Regression** (continuous target, e.g., house price) and **Classification** (discrete class, e.g., fraud vs. legitimate).
 - **Unsupervised Learning:** Discovers latent structure in unlabeled $X$ — e.g., **Clustering** (`K-Means` customer segmentation) and **Dimensionality Reduction** (`PCA` compressing correlated features).
 
 ---
 
-#### Q2: Linear Regression vs. Logistic Regression — Why is "Logistic Regression" a Classifier?
-**Answer:**
+#### 1.2 Linear Regression (MSE) vs. Logistic Regression (Sigmoid + Log Loss)
 - **Linear Regression** predicts an unbounded continuous value $\hat{y} = \mathbf{w}^\top \mathbf{x} + b$, trained by minimizing **Mean Squared Error (MSE)**.
 - **Logistic Regression** passes that linear logit $z = \mathbf{w}^\top \mathbf{x} + b$ through the **Sigmoid** function $\sigma(z) = \frac{1}{1 + e^{-z}}$, squashing outputs into calibrated probabilities $P(y=1 \mid \mathbf{x}) \in (0, 1)$, trained by minimizing **Binary Cross-Entropy (Log Loss)**. Applying a decision threshold (e.g., $\tau = 0.5$ or a cost-optimal threshold) turns the probability into a class label.
 
@@ -53,8 +51,7 @@ flowchart TD
 
 ### 2. Feature Scaling, Encoding & Cross-Validation
 
-#### Q3: Which algorithms require Feature Scaling (`StandardScaler` / `MinMaxScaler`), and which do NOT?
-**Answer:**
+#### 2.1 Feature Scaling Rules & Leak-Free `ColumnTransformer` Pipelines
 - **Require Scaling (Distance- or Gradient-Based):** `Linear/Ridge/Lasso Regression`, `Logistic Regression`, `KNN`, `SVM`, `K-Means`, `PCA`, and `Neural Networks`. Without scaling, a `salary` column (`0–200,000`) completely dominates `age` (`18–80`) in Euclidean distances and gradient steps.
 - **Do NOT Require Scaling (Tree-Based):** `Decision Trees`, `Random Forest`, `XGBoost`, `LightGBM`, `CatBoost`. Trees split on monotonic threshold inequalities (`feature <= threshold`), which are invariant to monotonic rescaling!
 
@@ -78,16 +75,14 @@ clf = Pipeline([
 
 ---
 
-#### Q4: Why use Stratified $K$-Fold Cross-Validation instead of a single Train/Test split?
-**Answer:**
+#### 2.2 Stratified $K$-Fold Cross-Validation
 A single 80/20 split can get lucky or unlucky on small-to-medium datasets. **$K$-Fold Cross-Validation** partitions training data into $K$ folds (typically $K=5$), training on $K-1$ folds and validating on the held-out fold $K$ times. **`StratifiedKFold`** guarantees every fold preserves the exact minority-class ratio (vital when positive labels are `< 5%`).
 
 ---
 
 ### 3. Trees, Bagging (Random Forest) vs. Boosting (`XGBoost` / `LightGBM`)
 
-#### Q5: How do Decision Trees, Random Forests (Bagging), and Gradient Boosted Trees (Boosting) differ?
-**Answer:**
+#### 3.1 Bagging (`Random Forest`) vs. Gradient Boosting (`XGBoost`, `LightGBM`, `CatBoost`)
 
 ```mermaid
 flowchart LR
@@ -126,8 +121,7 @@ flowchart LR
 
 ### 4. Evaluation Metrics: Precision, Recall, F1, ROC-AUC vs. PR-AUC
 
-#### Q6: Confusion Matrix, Precision vs. Recall Tradeoff, and when to prefer PR-AUC over ROC-AUC
-**Answer:**
+#### 4.1 Precision, Recall, F1 & Why `PR-AUC` Beats `ROC-AUC` Under Imbalance
 - $\text{Precision} = \frac{TP}{TP + FP}$ (*"When the model raises an alarm, how often is it right?"* — optimize for spam filters, kids' content recommendations).
 - $\text{Recall} = \frac{TP}{TP + FN}$ (*"Out of all real positives, how many did we catch?"* — optimize for cancer screening, fraud/terror detection).
 - $\text{F1} = \frac{2 \cdot \text{Precision} \cdot \text{Recall}}{\text{Precision} + \text{Recall}}$ (harmonic mean).
@@ -137,19 +131,17 @@ flowchart LR
 
 ### 5. Unsupervised Essentials: `K-Means` & `PCA`
 
-#### Q7: How do `K-Means` and `PCA` work, and what are their pitfalls?
-**Answer:**
+#### 5.1 Clustering (`K-Means` / `DBSCAN`) & Dimensionality Reduction (`PCA`)
 - **`K-Means`:** Iteratively assigns points to the nearest of $K$ centroids (Euclidean distance) and recomputes centroids as cluster means. Choose $K$ via the **Elbow Method (inertia)** + **Silhouette Score**. *Pitfalls:* Assumes spherical, equal-sized clusters; fails on outliers and non-convex shapes (use `DBSCAN` or `HDBSCAN` for arbitrary shapes/noise).
 - **`PCA` (Principal Component Analysis):** Projects scaled data onto orthogonal eigenvectors of the covariance matrix ordered by explained variance — used to compress correlated features, speed up training, and visualize embeddings in 2D.
 
 ---
 
-## Tier 2: MNC Production Depth (Time Series, Fairness & RecSys)
+## Tier 2: Production Architecture & Scale (Time Series, Fairness & RecSys)
 
 ### 6. Time Series & Subgroup Fairness
 
-#### Q8: What breaks if you run random `train_test_split` on Time Series data, and how do you audit Fairness?
-**Answer:**
+#### 6.1 Chronological Splits (`TimeSeriesSplit`) & Subgroup Fairness Auditing
 1. **Temporal Leakage:** Random shuffling lets the model see Wednesday's stock/demand numbers while predicting Tuesday (**look-ahead bias**). Always use chronological splits (`TimeSeriesSplit`) and decompose into **Trend + Seasonality + Residual**.
 2. **Subgroup Fairness:** Overall accuracy hides demographic disparities. Audit **Equal Opportunity** (True Positive Rate parity) and **False Positive Rate parity** across protected slices before launch.
 
@@ -157,8 +149,7 @@ flowchart LR
 
 ### 7. Two-Stage Recommendation & Ranking Architecture (Meta / Amazon / YouTube)
 
-#### Q9: How do scale platforms rank 10M+ items under a 40ms p99 SLA?
-**Answer:**
+#### 7.1 Candidate Retrieval (`Two-Tower` + `FAISS`), `LambdaMART` Ranking & `NDCG@K`
 
 ```mermaid
 flowchart LR
@@ -182,7 +173,7 @@ flowchart LR
 
 ## Mini Hands-On Lab (15-Minute Exercise)
 
-Implement `NDCG@K` from scratch in NumPy — a classic Applied Scientist / RecSys screening challenge:
+Implement `NDCG@K` from scratch in NumPy — the standard ranking evaluation metric for search and recommendation engines:
 
 ```python
 import numpy as np
@@ -207,7 +198,7 @@ print("Lab 03 Passed! Suboptimal NDCG@3 =", round(ndcg_at_k([0, 1, 2, 3], k=3), 
 
 ---
 
-## Key Takeaways for Interviews
+## Key Engineering Takeaways
 - Wrap preprocessing inside `sklearn.pipeline.Pipeline` to eliminate train-test leakage, and scale features for distance/gradient models (not trees).
 - Contrast **Bagging (`Random Forest` — parallel variance reduction)** against **Boosting (`XGBoost`/`LightGBM` — sequential residual bias reduction)**.
 - Use **PR-AUC** (not Accuracy or ROC-AUC) for rare-event classification (`<1%` positives).

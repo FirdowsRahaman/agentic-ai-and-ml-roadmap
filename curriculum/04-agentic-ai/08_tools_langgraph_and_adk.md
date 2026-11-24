@@ -34,12 +34,11 @@ flowchart LR
 
 ---
 
-## Tier 1: Fresher Core (Function Calling & Strict Tool Schemas)
+## Tier 1: Core Foundations (Function Calling & Strict Tool Schemas)
 
 ### 1. Function Calling Mechanics & Schema Engineering
 
-#### Q1: How does Function Calling work under the hood, and what makes a Tool Schema production-grade?
-**Answer:**
+#### 1.1 The Function Calling Lifecycle & Strict JSON Schema Contracts
 1. **Declaration:** Your client sends tool definitions (JSON Schemas) in the request payload.
 2. **Selection:** The model emits a structured `tool_calls` object (`name` + `arguments` JSON) instead of plain text.
 3. **Execution & Return:** Your backend validates the arguments, runs the Python/REST function, appends a `tool` message correlated by `tool_call_id`, and invokes the LLM to synthesize the final answer.
@@ -73,14 +72,13 @@ WEATHER_TOOL_SCHEMA = {
     },
 }
 ```
-> **Interview Gold:** Tool `description` strings are **system prompts in disguise** — explicitly stating *when* and *when NOT* to call a tool + setting `"strict": True` and `"additionalProperties": False` eliminates 90%+ of tool hallucinations.
+> **Schema Design Rule:** Tool `description` strings are **system prompts in disguise** — explicitly stating *when* and *when NOT* to call a tool + setting `"strict": True` and `"additionalProperties": False` eliminates 90%+ of tool hallucinations.
 
 ---
 
 ### 2. Stateful Cyclical Orchestration with `LangGraph`
 
-#### Q2: Why do DAG pipelines fail for agents, and how does `LangGraph` model cyclical state machines?
-**Answer:**
+#### 2.1 Cyclical State Graphs, Reducers & Conditional Routing in `LangGraph`
 Classic ETL/Chain pipelines are **Directed Acyclic Graphs (DAGs)** — data flows strictly forward with no cycles. Agents require **controlled loops** (call tool -> inspect error -> retry with refined query -> terminate).
 **`LangGraph` Primitives:**
 - **`State` (`TypedDict` / `Pydantic`):** Single typed source of truth passed across nodes, using reducer annotations (`Annotated[list, operator.add]`) so nodes append messages cleanly rather than overwriting history.
@@ -121,12 +119,11 @@ def route_after_reasoning(state: AgentState) -> str:
 
 ---
 
-## Tier 2: MNC Production Depth (`Google ADK` & Durable `HITL` Interrupts)
+## Tier 2: Production Architecture & Scale (`Google ADK` & Durable `HITL` Interrupts)
 
 ### 3. Code-First Enterprise Agents with Google Agent Development Kit (`ADK`)
 
-#### Q3: How does Google ADK (`google-adk`) streamline agent engineering, local debugging, and deployment?
-**Answer:**
+#### 3.1 Code-First Agent Engineering, Visual Debugging (`adk web`) & Cloud Run Deployment
 **Google Agent Development Kit (`ADK`)** treats agents as modular, testable Python software artifacts with built-in evaluation, trace inspection, and serverless deployment:
 - **Native Python Functions as Tools:** Automatically infers parameter schemas and docstrings directly from typed Python functions.
 - **Developer CLI Workflow:**
@@ -158,8 +155,7 @@ root_agent = Agent(
 
 ### 4. Durable Persistence & Human-in-the-Loop (`HITL`) Interrupts
 
-#### Q4: How do production orchestrators pause an agent for hours awaiting human approval without holding open an HTTP thread?
-**Answer:**
+#### 4.1 Durable State Checkpointing & Asynchronous `HITL` Approval Flows
 Holding a `time.sleep()` or open WebSocket for 4 hours while a manager reviews a `\$5,000` refund crashes worker pools! Production frameworks (`LangGraph Checkpointers` backed by Postgres/Redis, or `Google ADK` session state) use **Durable State Serialization**:
 1. Before running a mutating tool (`issue_refund`, `delete_user`, `send_external_email`), an **`interrupt_before`** hook serializes the exact graph state + `thread_id` to Postgres and **releases all compute resources**.
 2. A webhook notifies a Slack/UI review queue with the proposed tool name and arguments.
@@ -196,7 +192,7 @@ print("Lab 08 Passed! Strict schema validation + HITL threshold verified.")
 
 ---
 
-## Key Takeaways for Interviews
+## Key Engineering Takeaways
 - Function Calling is a **two-party protocol**: the LLM proposes a strict JSON call; the client validates, executes, and returns the observation.
 - Use **`LangGraph`** when you need explicit cyclical state machines, reducer-managed state, and Postgres-backed checkpointing.
 - Use **`Google ADK`** for code-first agent definitions, visual trace debugging (`adk web`), trajectory evaluation (`adk eval`), and serverless Cloud Run deployment.

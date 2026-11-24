@@ -8,7 +8,7 @@
 
 ## Mental Model: Why This Module Matters
 
-Every machine learning model and AI agent sits on top of **data pipelines** and **clean Python engineering**. Before an interviewer asks you about Transformers or XGBoost, they verify whether you can extract messy data with SQL, transform millions of rows with vectorized NumPy/Pandas without running out of memory, and write type-safe, asynchronous Python services.
+Every machine learning model and AI agent sits on top of **data pipelines** and **clean Python engineering**. Before training Transformers or gradient-boosted ensembles, every reliable AI system must extract messy data with SQL, transform millions of rows with vectorized NumPy/Pandas without running out of memory, and write type-safe, asynchronous Python services.
 
 ```mermaid
 flowchart LR
@@ -28,20 +28,18 @@ flowchart LR
 
 ---
 
-## Tier 1: Fresher Core (Must-Know Foundations)
+## Tier 1: Core Foundations (Must-Know Foundations)
 
 ### 1. Python Core Mechanics
 
-#### Q1: Why is Python the dominant language for AI/ML despite being slower than C++?
-**Answer:**
+#### 1.1 Python as a High-Performance C++/CUDA/Rust Glue Layer
 Python acts as an ergonomic **glue language** over high-performance C, C++, CUDA, and Rust backends:
 - Libraries like **NumPy**, **PyTorch**, and **Polars** execute heavy matrix algebra in compiled C++/CUDA/Rust while exposing concise Python APIs.
 - Unmatched ecosystem across classical ML (`scikit-learn`), deep learning (`torch`), data validation (`pydantic`), and GenAI (`langgraph`, `vllm`).
 
 ---
 
-#### Q2: List vs. Tuple vs. Set vs. Dict — Complexity & Mutability
-**Answer:**
+#### 1.2 Core Data Structures, Mutability & Lookup Complexity
 
 | Structure | Syntax | Mutable? | Lookup Time | Primary AI/ML Use Case |
 |---|---|---|---|---|
@@ -57,8 +55,7 @@ vocab = {"<PAD>": 0, "<UNK>": 1, "ai": 2}  # O(1) token lookup
 
 ---
 
-#### Q3: What is the difference between `==` and `is`, and `append()` vs. `extend()`?
-**Answer:**
+#### 1.3 Value Equality (`==`) vs. Object Identity (`is`) & List Mutation
 - `==` compares **value equality**; `is` checks **object identity** (same memory address — use `is None`, never `== None`).
 - `append(x)` adds `x` as a **single item**; `extend(iterable)` unpacks and appends **each element**.
 
@@ -76,8 +73,7 @@ items2.extend([3, 4])  # [1, 2, 3, 4]
 
 ---
 
-#### Q4: What are Python Generators (`yield`), and why are they critical in ML pipelines?
-**Answer:**
+#### 1.4 Lazy Batch Streaming with Python Generators (`yield`)
 A generator yields items **lazily one batch at a time** instead of materializing an entire dataset in RAM.
 
 ```python
@@ -95,14 +91,13 @@ def stream_batches(file_path: str, batch_size: int = 64) -> Iterator[list[str]]:
         if batch:
             yield batch
 ```
-> **Interview Insight:** PyTorch `IterableDataset` and Hugging Face streaming datasets (`streaming=True`) rely on generators so you can train on terabytes of data from a 16 GB RAM laptop.
+> **Engineering Insight:** PyTorch `IterableDataset` and Hugging Face streaming datasets (`streaming=True`) rely on generators so you can train on terabytes of data from a 16 GB RAM laptop.
 
 ---
 
 ### 2. Vectorized Computing with NumPy
 
-#### Q5: Why is NumPy 30x–100x faster than Python `for` loops, and what is Broadcasting?
-**Answer:**
+#### 2.1 SIMD Memory Layout & NumPy Broadcasting Rules
 1. **Contiguous Memory & SIMD:** NumPy arrays store homogeneous C types (`float32`, `int64`) in contiguous memory blocks, unlocking CPU SIMD vectorization without Python's dynamic type-checking overhead per element.
 2. **Broadcasting:** NumPy automatically stretches dimensions of size `1` (without copying memory) when shapes are compatible from right to left.
 
@@ -128,8 +123,7 @@ print(X_scaled.shape)          # (4, 3)
 
 ### 3. Tabular Wrangling with Modern Pandas (2.x / 3.0 Safe)
 
-#### Q6: How do you safely inspect, slice (`loc` vs. `iloc`), and impute missing values in Pandas?
-**Answer:**
+#### 3.1 Label vs. Positional Indexing (`loc`/`iloc`) & Copy-on-Write Imputation
 - `df.loc[row_label, col_label]` selects by **explicit labels** (inclusive slice end).
 - `df.iloc[row_pos, col_pos]` selects by **0-based integer positions** (exclusive slice end).
 - **Avoid deprecated `df['col'].fillna(..., inplace=True)`!** Pandas 2.x/3.0 enforces **Copy-on-Write (CoW)**, so chained `inplace=True` triggers warnings or fails. Always assign back explicitly (`df['col'] = df['col'].fillna(...)`).
@@ -156,8 +150,7 @@ print(df)
 
 ### 4. SQL Foundations with Real Queries
 
-#### Q7: How do `INNER JOIN`, `LEFT JOIN`, and `GROUP BY ... HAVING` work in ML feature extraction?
-**Answer:**
+#### 4.1 Relational Joins (`INNER` vs. `LEFT`) & Group Filtering (`WHERE` vs. `HAVING`)
 - **`WHERE`** filters individual rows *before* aggregation.
 - **`HAVING`** filters aggregated groups *after* `GROUP BY`.
 - **`LEFT JOIN`** preserves every entity in your base population (e.g., all registered users), filling `NULL` when an event table (e.g., `purchases`) has zero matches — critical so you don't accidentally drop churned/inactive users!
@@ -180,12 +173,11 @@ HAVING COUNT(o.order_id) >= 0;
 
 ---
 
-## Tier 2: MNC Production Depth (Modern AI Engineering)
+## Tier 2: Production Architecture & Scale (Modern AI Engineering)
 
-### 5. Analytical SQL: CTEs & Window Functions (Top Screening Topic)
+### 5. Analytical SQL: CTEs & Window Functions
 
-#### Q8: Why are SQL Window Functions (`ROW_NUMBER`, `LAG`, `AVG() OVER`) essential for ML feature engineering?
-**Answer:**
+#### 5.1 Point-in-Time Feature Engineering with `LAG`, `AVG() OVER` & `ROW_NUMBER`
 Unlike `GROUP BY` (which collapses rows), **Window Functions** compute rankings, time deltas, and rolling statistics while preserving individual event rows — ideal for point-in-time transaction and clickstream features.
 
 ```sql
@@ -220,8 +212,7 @@ WHERE rn = 1;
 
 ### 6. Modern Python for AI Engineers: `uv`, `Pydantic`, `async/await` & `pytest`
 
-#### Q9: Why do production AI/LLM backends rely on `Pydantic` and `asyncio`?
-**Answer:**
+#### 6.1 Reproducible Environments (`uv`), Schema Validation (`Pydantic`) & `asyncio` Concurrency
 1. **`uv` / Virtual Environments:** Modern AI repos pin reproducible environments via `pyproject.toml` and `uv.lock` (`uv sync`) rather than global `pip install`.
 2. **`Pydantic` Validation:** Enforces strict runtime type checking and JSON Schema serialization for API requests, feature vectors, and LLM structured outputs.
 3. **`async` / `await` Concurrency:** LLM calls and vector DB lookups are **network I/O-bound**. Running 10 RAG sub-queries sequentially at 800 ms each takes **8.0 seconds**; running them concurrently via `asyncio.gather()` takes **~800 ms**.
@@ -288,7 +279,7 @@ print("Lab 01 Passed!", out.to_dict(orient="records"))
 
 ---
 
-## Key Takeaways for Interviews
+## Key Engineering Takeaways
 - Use **generators (`yield`)** for lazy batch streaming and **NumPy broadcasting** instead of Python `for` loops.
 - Avoid chained `inplace=True` in Pandas; use `groupby().transform()` and explicit column assignment for Copy-on-Write compatibility.
 - Master **SQL `LEFT JOIN`**, **`HAVING` vs. `WHERE`**, and **Window Functions (`ROW_NUMBER`, `LAG`, `OVER`)** — they are tested in almost every screening.

@@ -50,10 +50,10 @@ flowchart LR
 ## Worked Blueprint 2: Enterprise Hybrid RAG & Action Copilot
 
 1. **Clarify & Scope:** 50,000 internal Confluence/PDF docs + live Jira/Order tools; strict document ACL permissions (HR docs invisible to interns); **`TTFT < 800ms`**.
-2. **Ingestion & ACL Indexing:** Parse tables with `Docling`, chunk by section headers (`512` tokens + contextual header prefix), attach `allowed_groups` metadata array to every chunk in `OpenSearch` / `pgvector`.
+2. **Ingestion & ACL Indexing:** Parse tables with `Docling`, chunk by section headers (`512` tokens + contextual header prefix), and index dense + sparse vectors in **`Qdrant`** (using **Binary/Scalar Quantization** to cut RAM 4x–32x and payload-indexed `allowed_groups` arrays).
 3. **Retrieval & Reranking Funnel:**
-   - **Pre-filter by user ACL token** *before* ANN/BM25 search (never filter permissions purely in the prompt!).
-   - Hybrid `BM25 + Dense HNSW` -> `RRF` (`Top 40`) -> Cross-Encoder Reranker (`BGE-Reranker`, `Top 5`).
+   - **Filterable HNSW (`Qdrant` Payload Index):** Enforce user ACL filters *during* graph traversal (avoiding post-filtering zero-result bugs and naive pre-filtering graph disconnection; never filter permissions purely in the LLM prompt!).
+   - Native `Qdrant` Hybrid `BM25 + Dense HNSW` -> `Fusion.RRF` (`Top 40`) -> Cross-Encoder Reranker (`BGE-Reranker`, `Top 5`).
 4. **Agentic Routing & Safety:** Deterministic intent router sends pure Q&A straight to grounded generation, and action requests (`issue_refund`) to a `LangGraph`/`ADK` workflow with **`HITL` checkpoint interrupts** for mutations `> $100` and strict `Pydantic` schemas.
 5. **Evaluation & FinOps:** Gate CI/CD on **`RAGAS` Triad** (*Faithfulness $\ge 0.92$, Context Precision $\ge 0.85$*) over a 200-question golden set; enforce Redis semantic cache + `max_session_usd = $0.20` circuit breaker.
 

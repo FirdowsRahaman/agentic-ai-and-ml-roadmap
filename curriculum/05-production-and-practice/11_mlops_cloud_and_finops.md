@@ -29,12 +29,11 @@ flowchart LR
 
 ---
 
-## Tier 1: Fresher Core (Serialization, `FastAPI`, `Docker`, `MLflow` & `DVC`)
+## Tier 1: Core Foundations (Serialization, `FastAPI`, `Docker`, `MLflow` & `DVC`)
 
 ### 1. Safe Model Serialization & Serving via `FastAPI`
 
-#### Q1: Why is Python `pickle` dangerous for ML model files, and when should you use `safetensors`, `ONNX`, or `joblib`?
-**Answer:**
+#### 1.1 Safe Model Serialization (`safetensors`, `ONNX`) & Startup-Loaded `FastAPI` Services
 - **Security Trap (`pickle` / `torch.load` default):** `pickle` executes arbitrary Python bytecode during deserialization — loading an untrusted `.pkl` file can compromise your production server!
 - **`safetensors` (Hugging Face / PyTorch standard):** Zero-copy, memory-mapped tensor format that stores **pure weights + JSON header** with **zero arbitrary code execution** and 2x–4x faster GPU loading.
 - **`ONNX` (Open Neural Network Exchange):** Framework-agnostic computation graph enabling graph fusion and quantized CPU/GPU inference via **ONNX Runtime** (`2x–5x` speedup over eager PyTorch).
@@ -76,8 +75,7 @@ def predict_churn(payload: ChurnFeatures) -> dict[str, float | bool]:
 
 ### 2. Containerization (`Docker`) & Experiment/Data Versioning (`MLflow` + `DVC`)
 
-#### Q2: Docker Image vs. Container, and what makes a `Dockerfile` production-ready?
-**Answer:**
+#### 2.1 Layered Container Caching & Non-Root `Docker` Hardening
 - **Image:** Immutable layered filesystem blueprint. **Container:** Isolated running process instantiated from an image.
 - **Production Dockerfile Best Practices:** Pin a slim base image (`python:3.12-slim`), copy `requirements.txt`/`pyproject.toml` *before* source code to maximize Docker layer caching, drop root privileges (`USER appuser`), and expose a `/health` probe.
 
@@ -100,20 +98,18 @@ CMD ["uvicorn", "src.app:app", "--host", "0.0.0.0", "--port", "8000"]
 
 ---
 
-#### Q3: How do `Git`, `DVC`, and `MLflow` work together for 100% ML Reproducibility?
-**Answer:**
+#### 2.2 Synchronizing Code, Datasets & Artifacts with `Git`, `DVC` & `MLflow`
 - **`Git`:** Versions source code, configs, and small `.dvc` pointer files.
 - **`DVC` (Data Version Control):** Stores 50 GB Parquet/image datasets in S3/GCS content-addressed storage while committing tiny SHA-256 pointer files into Git.
 - **`MLflow`:** Logs hyperparameters, validation metrics (`PR-AUC`, `p99` latency), Git commit SHA, and versioned model artifacts in a central **Model Registry** (`Staging -> Champion`).
 
 ---
 
-## Tier 2: MNC Production Depth (Serving Architectures, `Feast`, `PSI` Drift, Rollouts & Infra FinOps)
+## Tier 2: Production Architecture & Scale (Serving Architectures, `Feast`, `PSI` Drift, Rollouts & Infra FinOps)
 
 ### 3. Classical ML Serving vs. LLM Serving, and Feature Stores (`Feast`)
 
-#### Q4: How does deploying an LLM differ architecturally from deploying an `XGBoost` microservice?
-**Answer:**
+#### 3.1 Stateless CPU Model Serving vs. Stateful GPU `KV Cache` Serving
 
 | Dimension | Classical ML (`XGBoost` / `LightGBM`) | LLM Serving (`vLLM` / `TensorRT-LLM`) |
 |---|---|---|
@@ -123,8 +119,7 @@ CMD ["uvicorn", "src.app:app", "--host", "0.0.0.0", "--port", "8000"]
 
 ---
 
-#### Q5: What is Training-Serving Skew, and how does a Feature Store (`Feast`) eliminate it?
-**Answer:**
+#### 3.2 Eliminating Training-Serving Skew with Dual Offline/Online Feature Stores (`Feast`)
 **Training-Serving Skew** occurs when offline training features (computed in batch SQL/Pandas) subtly diverge from live inference features (re-implemented in Go/Python microservices with different null handling or window boundaries).
 - **`Feast` Dual-Store Architecture:** Defines feature transformations **once**:
   1. **Offline Store (`BigQuery` / `Snowflake` / `Parquet`):** Generates historical training sets using **point-in-time joins** (preventing future label leakage).
@@ -134,8 +129,7 @@ CMD ["uvicorn", "src.app:app", "--host", "0.0.0.0", "--port", "8000"]
 
 ### 4. Statistical Drift (`PSI`), Safe Deployments & Cloud GPU FinOps
 
-#### Q6: Covariate Drift vs. Concept Drift, and how `Population Stability Index (PSI)` triggers retraining
-**Answer:**
+#### 4.1 Detecting Covariate Shift (`PSI`, K-S) vs. Concept Drift
 - **Data / Covariate Drift ($P(X)$ shifts):** Input distribution changes (e.g., inflation shifts transaction amounts upward). Quantified via **Kolmogorov-Smirnov (K-S) test** or **PSI**:
   $$\text{PSI} = \sum_{i=1}^{B} (p_{\text{prod}, i} - p_{\text{train}, i}) \cdot \ln\left(\frac{p_{\text{prod}, i}}{p_{\text{train}, i}}\right)$$
   - `PSI < 0.10`: Stable | `0.10 <= PSI < 0.25`: Investigate | **`PSI >= 0.25`: Significant drift -> trigger automated CI/CD retraining**.
@@ -143,16 +137,14 @@ CMD ["uvicorn", "src.app:app", "--host", "0.0.0.0", "--port", "8000"]
 
 ---
 
-#### Q7: Shadow Deployment vs. Canary Release vs. Online A/B Testing
-**Answer:**
+#### 4.2 Progressive Delivery: Shadow Traffic, Canary Rollouts & Online A/B Tests
 1. **Shadow (Dark Traffic):** Mirror 100% of live requests to the Challenger model asynchronously; discard Challenger outputs from user responses while verifying latency, memory, and prediction distributions at **zero user risk**.
 2. **Canary Rollout:** Route `1% -> 10% -> 50% -> 100%` of live traffic with automated rollback if `5xx` error rates or `p99` latency breach guardrails.
 3. **Online A/B Test:** Randomize by `user_id` (`50/50`), measuring **Primary Business KPI** statistical lift ($p < 0.05$) alongside strict **Guardrail Metrics** (latency, unsubscribe rate).
 
 ---
 
-#### Q8: How do ML Teams slash Cloud GPU Training Costs by 70% and prevent Orphaned GPU Billing Disasters?
-**Answer:**
+#### 4.3 Preemptible Spot GPU Checkpointing & Automated Cloud Cost Kill-Switches
 1. **Spot / Preemptible GPUs + Emergency Checkpointing:** Rent spare cloud A100/H100 capacity at a **60–80% discount**. Save checkpoints to S3/GCS every $N$ steps and trap the cloud `SIGTERM` / 2-minute preemption notice to flush optimizer + model state cleanly so replacement nodes resume automatically.
 2. **Automated Cloud Infrastructure Kill-Switches:**
    - Cap Kubernetes autoscalers (`maxReplicas`), enforce idle-GPU auto-shutdown (`GPU utilization < 5%` for 30 mins), and wire **AWS Budgets -> SNS -> Lambda** (or **GCP Billing Budgets -> Pub/Sub -> Cloud Function**) to automatically scale non-prod GPU groups to zero when spend crosses threshold.
@@ -189,7 +181,7 @@ print(f"Lab 11 Passed! Stable PSI={compute_psi(train_dist, stable_prod):.3f}, Dr
 
 ---
 
-## Key Takeaways for Interviews
+## Key Engineering Takeaways
 - Load models **once inside `FastAPI` `lifespan`** (never per request), prefer **`safetensors` / `ONNX`** over unsafe `pickle`, and run Docker containers as a non-root user.
 - Autoscale LLM GPU pods on **KV Cache VRAM utilization & queue depth**, not CPU %.
 - Prevent Training-Serving Skew with **`Feast`**, detect covariate shift with **`PSI >= 0.25`**, roll out via **Shadow -> Canary -> A/B**, and train on **Spot GPUs with preemption checkpointing**.

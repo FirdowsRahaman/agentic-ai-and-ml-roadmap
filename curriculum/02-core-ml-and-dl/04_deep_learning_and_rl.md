@@ -29,12 +29,11 @@ flowchart LR
 
 ---
 
-## Tier 1: Fresher Core (Neurons, Activations, Losses & PyTorch Loop)
+## Tier 1: Core Foundations (Neurons, Activations, Losses & PyTorch Loop)
 
 ### 1. Neurons, Layers & Non-Linearity
 
-#### Q1: How does an artificial neuron compute its output, and why are Activation Functions mandatory?
-**Answer:**
+#### 1.1 Affine Projections & Why Non-Linear Activations Prevent Layer Collapse
 A neuron computes an affine dot product $z = \mathbf{w}^\top \mathbf{x} + b$ followed by a non-linear activation $\phi(z)$.
 - **Why non-linearity is mandatory:** A stack of linear matrices without activations collapses into a single linear matrix: $W_2(W_1 \mathbf{x}) = (W_2 W_1)\mathbf{x} = W_{\text{eff}}\mathbf{x}$. Without non-linear activations, a 100-layer network has the exact same expressive power as 1-layer Linear Regression!
 
@@ -56,8 +55,7 @@ print(f"Neuron output: {out:.2f}")  # 0.96 -> active!
 
 ---
 
-#### Q2: Compare Sigmoid, Tanh, ReLU, GELU/SwiGLU, and Softmax
-**Answer:**
+#### 1.2 Modern Activation Functions (`ReLU`, `GELU`, `SwiGLU`, `Softmax`)
 
 | Activation | Formula / Behavior | Range | Where Used & Key Tradeoff |
 |---|---|---|---|
@@ -71,16 +69,14 @@ print(f"Neuron output: {out:.2f}")  # 0.96 -> active!
 
 ### 2. Loss Functions, Backpropagation & PyTorch Idioms
 
-#### Q3: Match the Problem Type to the Right PyTorch Loss Function
-**Answer:**
+#### 2.1 Numerically Stable Loss Functions (`MSE`, `BCEWithLogitsLoss`, `CrossEntropyLoss`)
 - **Regression:** `nn.MSELoss()` (penalizes large outliers quadratically) or `nn.HuberLoss()` (robust to outliers).
 - **Binary Classification:** `nn.BCEWithLogitsLoss()` — takes **raw unnormalized logits** (fuses Sigmoid + log numerically stably; never apply `nn.Sigmoid()` manually before `BCELoss`!).
 - **Multi-Class Classification / Next-Token Prediction:** `nn.CrossEntropyLoss()` — takes **raw logits** of shape `(B, C)` and integer targets `(B,)` (fuses `LogSoftmax` + `NLLLoss`).
 
 ---
 
-#### Q4: Epoch vs. Batch Size vs. Iteration, and the Canonical PyTorch Training & Eval Loop
-**Answer:**
+#### 2.2 Canonical PyTorch Training & Validation Loop
 If `N = 10,000` training samples and `batch_size = 100`, then **1 Epoch** (one full pass over the dataset) equals **`100` Iterations** (100 gradient updates).
 
 ```python
@@ -110,19 +106,18 @@ torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
 optimizer.step()
 
 # --- Inference / Validation Step ---
-model.eval()   # Disables Dropout! (Forgetting model.eval() is a top interview bug)
+model.eval()   # Disables Dropout! (Forgetting model.eval() leaves Dropout active!)
 with torch.no_grad():                  # Disables autograd graph -> halves memory
     val_preds = model(x_batch).argmax(dim=-1)
 ```
 
 ---
 
-## Tier 2: MNC Production Depth (Stability, Normalization, Optimizers & RL)
+## Tier 2: Production Architecture & Scale (Stability, Normalization, Optimizers & RL)
 
 ### 3. Vanishing/Exploding Gradients, Normalization & Modern Optimizers
 
-#### Q5: What causes Vanishing & Exploding Gradients, and what 4 mechanisms solved them?
-**Answer:**
+#### 3.1 Jacobian Products & The 4 Fixes for Vanishing / Exploding Gradients
 By the Chain Rule, backpropagating through $L$ layers multiplies $L$ Jacobian matrices. If singular values are $< 1$, gradients shrink exponentially ($0.5^{50} \approx 10^{-15}$ — early layers freeze); if $> 1$, gradients explode to `NaN`.
 **The 4 Engineering Fixes:**
 1. **Non-saturating activations** (`ReLU`, `GELU`) instead of `Sigmoid`.
@@ -132,8 +127,7 @@ By the Chain Rule, backpropagating through $L$ layers multiplies $L$ Jacobian ma
 
 ---
 
-#### Q6: Batch Normalization vs. Layer Normalization (and `RMSNorm`) — Why do Transformers use `LayerNorm`?
-**Answer:**
+#### 3.2 `BatchNorm` vs. `LayerNorm` & `RMSNorm`
 
 | Property | Batch Normalization (`BatchNorm`) | Layer Normalization (`LayerNorm` / `RMSNorm`) |
 |---|---|---|
@@ -144,8 +138,7 @@ By the Chain Rule, backpropagating through $L$ layers multiplies $L$ Jacobian ma
 
 ---
 
-#### Q7: `SGD` vs. `Adam` vs. `AdamW` + Learning Rate Warmup & Cosine Decay
-**Answer:**
+#### 3.3 Decoupled Weight Decay (`AdamW`) & Warmup-Cosine Learning Rate Schedules
 - **`Adam`:** Tracks exponentially decaying 1st moment (momentum $m_t$) and 2nd moment (per-parameter variance $v_t$) for adaptive step sizes.
 - **Why `AdamW` beat `Adam`:** Classic `Adam` mixes L2 regularization into the adaptive gradient denominator, weakening weight decay for parameters with large historical gradients. **`AdamW` decouples weight decay** ($w \leftarrow w - \eta \lambda w$), dramatically improving generalization in ViTs and LLMs.
 - **LR Schedule:** Modern training pairs **Linear Warmup** (first 3–5% of steps so early Adam variance estimates stabilize) with **Cosine Annealing Decay**.
@@ -154,8 +147,7 @@ By the Chain Rule, backpropagating through $L$ layers multiplies $L$ Jacobian ma
 
 ### 4. Reinforcement Learning (RL) & Connection to Post-Training LLMs
 
-#### Q8: How does Reinforcement Learning formalize sequential decision-making (MDP), and how does it power modern LLMs?
-**Answer:**
+#### 4.1 Markov Decision Processes (MDP) & Policy Optimization (`PPO` / `GRPO`)
 An RL **Agent** interacts with an **Environment** modeled as a Markov Decision Process $(S, A, P, R, \gamma)$: at state $s_t$, policy $\pi_\theta(a_t \mid s_t)$ selects action $a_t$, transitioning to $s_{t+1}$ and receiving scalar reward $r_t$ to maximize discounted return $G_t = \sum_{k=0}^{\infty} \gamma^k r_{t+k}$.
 - **Modern LLM Connection:** In **RLHF (`PPO`)** and **Reasoning RL (`GRPO` — Group Relative Policy Optimization)**, the prompt is the initial state, each generated token is an action, and a Reward Model (or deterministic unit-test/math verifier!) scores the completed response to teach models human alignment and multi-step reasoning.
 
@@ -187,7 +179,7 @@ print("Lab 04 Passed! Output shape:", normed.shape)
 
 ---
 
-## Key Takeaways for Interviews
+## Key Engineering Takeaways
 - Always pair `nn.CrossEntropyLoss()` / `nn.BCEWithLogitsLoss()` with **raw unnormalized logits**, and switch `model.eval()` + `torch.no_grad()` during validation/inference.
 - Explain **Vanishing Gradients** via repeated Jacobian multiplication and cite the 4 fixes: ReLU/GELU, He/Xavier init, Residual skip connections, and LayerNorm/BatchNorm.
 - Know why **`LayerNorm`/`RMSNorm`** + **`AdamW`** + **Warmup-Cosine LR** is the universal recipe for Transformers.

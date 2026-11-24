@@ -32,7 +32,7 @@
 ---
 
 ## 4. Open-Source Repositories Worth Studying
-- **LLM & Multimodal Serving:** [vllm-project/vllm](https://github.com/vllm-project/vllm) • [ollama/ollama](https://github.com/ollama/ollama)
+- **LLM, Vector Search & Multimodal Serving:** [vllm-project/vllm](https://github.com/vllm-project/vllm) • [qdrant/qdrant](https://github.com/qdrant/qdrant) • [ollama/ollama](https://github.com/ollama/ollama)
 - **Agents & MCP:** [langchain-ai/langgraph](https://github.com/langchain-ai/langgraph) • [google/adk-python](https://github.com/google/adk-python) • [modelcontextprotocol/python-sdk](https://github.com/modelcontextprotocol/python-sdk)
 - **Data, Tabular & MLOps:** [pola-rs/polars](https://github.com/pola-rs/polars) • [duckdb/duckdb](https://github.com/duckdb/duckdb) • [mlflow/mlflow](https://github.com/mlflow/mlflow) • [feast-dev/feast](https://github.com/feast-dev/feast)
 

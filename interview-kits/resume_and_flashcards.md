@@ -10,7 +10,7 @@ Recruiters and hiring managers scan a fresher resume in **8–12 seconds**. Avoi
 
 ```text
 [Weak Bullet]:  Built a PDF RAG chatbot using LangChain and OpenAI.
-[Hired Bullet]: Built an air-gapped Hybrid RAG agent (BM25 + ChromaDB + BGE Reranker + Ollama 4-bit)
+[Hired Bullet]: Built an air-gapped Hybrid RAG agent (Qdrant Dense+Sparse RRF + BGE Reranker + Ollama 4-bit)
                 over 2,500 policy PDFs, improving RAGAS Faithfulness from 0.68 to 0.93 at $0 API cost.
 ```
 
@@ -61,6 +61,7 @@ Recruiters and hiring managers scan a fresher resume in **8–12 seconds**. Avoi
 | **Token (`BPE`)** | Subword text unit (~3–4 chars) produced by Byte-Pair Encoding, avoiding Out-Of-Vocabulary failures and governing LLM billing/context. |
 | **Embedding** | Dense continuous vector capturing semantic similarity such that related concepts have high cosine/dot-product alignment. |
 | **Structured Outputs** | Grammar-constrained token decoding guaranteeing LLM responses conform 100% to a strict JSON / `Pydantic` schema. |
+| **`Qdrant` (Filterable HNSW)** | Rust vector database combining payload-indexed HNSW subgraph filtering, native Dense+Sparse RRF, and 32x Binary Quantization. |
 | **Hybrid Search + `RRF`** | Fusing lexical `BM25` keyword hits with dense semantic `HNSW` vectors via Reciprocal Rank Fusion. |
 | **Cross-Encoder Reranker** | Joint query+chunk transformer (`BGE`/`Cohere`) scoring top retrieved candidates with full cross-attention before LLM generation. |
 | **`RAGAS` Triad** | RAG evaluation framework isolating **Context Precision/Recall**, **Faithfulness** (groundedness), and **Answer Relevance**. |

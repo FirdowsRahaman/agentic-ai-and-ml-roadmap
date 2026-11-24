@@ -6,9 +6,9 @@
 
 ---
 
-## Mental Model: The 5-Step Live ML Coding Protocol
+## Mental Model: The 5-Step Algorithm Implementation Protocol
 
-Live coding rounds test whether you can translate math into **clean, vectorized, numerically stable Python** with zero `NaN` explosions or slow nested loops:
+Implementing algorithms from first principles builds deep mastery by translating mathematical equations into **clean, vectorized, numerically stable Python** with zero `NaN` explosions or slow nested loops:
 
 ```mermaid
 flowchart LR
@@ -310,7 +310,7 @@ assert call_with_backoff(transient_endpoint) == "200_OK" and calls == 3
 
 ---
 
-## Key Takeaways for Interviews
+## Key Engineering Takeaways
 - Vectorize with `@` and broadcasting (`[:, None, :]`), guard `log` and division against `0` (`1e-12`), and shift logits by `max` before `exp`.
 - Use **`np.argpartition`** to cut top-$K$ search from $O(N \log N)$ to $O(N)$.
 - Always add **random jitter** to exponential backoff to prevent thundering-herd retry storms against rate-limited LLM endpoints.

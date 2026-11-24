@@ -19,7 +19,7 @@ This curated collection is divided into two tracks — plus **2 runnable starter
 ---
 
 ## Local Project 1: Private Air-Gapped Desktop RAG & Multi-Tool Agent
-> **Key Skills:** Ollama, Llama 3.2 / Qwen 3, ChromaDB, BM25 Hybrid Search, DuckDB (SQL), LangGraph  
+> **Key Skills:** Ollama, Llama 3.2 / Qwen 3, Qdrant (Embedded Hybrid Search), DuckDB (SQL), LangGraph  
 > **Hardware:** Any 8GB–16GB RAM laptop or Apple Silicon / RTX GPU (\$0 API Cost)  
 > **Runnable Starter Code:** **[Open `starter-local-rag-agent/` →](./starter-local-rag-agent/README.md)**
 
@@ -31,7 +31,7 @@ Law firms, healthcare clinics, and defense researchers face strict privacy regul
 flowchart TD
     UI["Local CLI / Streamlit UI"] --> LG["Intent Router & State Machine (LangGraph)"]
     LG <-->|"Reasoning Loop"| OLLAMA["Ollama Local LLM (4-bit GGUF)"]
-    LG -->|"Unstructured Policy Query"| RAG["Hybrid RAG (BM25 + Dense Vector RRF)"]
+    LG -->|"Unstructured Policy Query"| RAG["Qdrant Hybrid RAG (BM25 Sparse + Dense RRF)"]
     LG -->|"Analytical Metrics Query"| SQL["In-Process DuckDB SQL Engine"]
     RAG -->|"Grounded Citations"| LG
     SQL -->|"Validated Query Rows"| LG
@@ -48,7 +48,7 @@ flowchart TD
 ```
 
 1. **Local Model Runtime:** Run **Ollama** serving 4-bit quantized open-weight models (`qwen2.5:7b` or `llama3.2:3b`) under 4.5 GB RAM.
-2. **Hybrid Document Search:** Combine **BM25** lexical search + **ChromaDB** dense embeddings via **Reciprocal Rank Fusion (`RRF`)**.
+2. **Embedded Hybrid Vector Database (`Qdrant`):** Use **`QdrantClient(path="./qdrant_local")`** to store both dense semantic embeddings and sparse `BM25` vectors on local disk with payload metadata filters and server-side **Reciprocal Rank Fusion (`RRF`)**.
 3. **Embedded OLAP SQL Engine:** Query local CSV/Parquet files in milliseconds via in-process **DuckDB** with read-only SQL guardrails.
 4. **Orchestration:** Route unstructured policy questions to Hybrid RAG and quantitative questions to DuckDB SQL.
 
@@ -225,7 +225,7 @@ flowchart TD
 
 | Track | Project | Core Stack | Cloud Spend | Primary Differentiator |
 |---|---|---|---|---|
-| **Local** | **1. Air-Gapped RAG & SQL Copilot** ([Starter](./starter-local-rag-agent/README.md)) | Ollama, BM25+Chroma, DuckDB | **\$0** | Offline privacy + Hybrid RRF + DuckDB SQL routing |
+| **Local** | **1. Air-Gapped RAG & SQL Copilot** ([Starter](./starter-local-rag-agent/README.md)) | Ollama, Qdrant Hybrid, DuckDB | **\$0** | Offline privacy + Qdrant RRF + DuckDB SQL routing |
 | **Local** | **2. Edge CV Multi-Object Tracker** | YOLOv11, ONNX, ByteTrack, OpenCV | **\$0** | Threaded 45+ FPS edge tracking & dwell analytics |
 | **Local** | **3. Autograd & Mini-Transformer** | Pure Python, NumPy | **\$0** | First-principles mastery of backprop & causal attention |
 | **Local** | **4. Full-Lifecycle Local MLOps** ([Starter](./starter-local-mlops/README.md)) | Scikit-Learn, FastAPI, Docker, PSI | **\$0** | End-to-end API, non-root Docker, PSI drift & Pytest |

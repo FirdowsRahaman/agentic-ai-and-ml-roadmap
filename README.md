@@ -7,9 +7,9 @@
 [![Modules](https://img.shields.io/badge/Curriculum-13_Two--Tier_Modules-7C3AED.svg)](#curriculum-modules-5-progressive-phases)
 [![Projects](https://img.shields.io/badge/Portfolio-10_Blueprints_%2B_2_Runnable_Starters-D97706.svg)](#portfolio-projects-local-0--enterprise-cloud)
 
-A structured, **engineering-first** curriculum built to take aspiring AI/ML engineers from **Python, SQL & Math foundations** all the way to **Transformers, Advanced RAG, Autonomous Agents (`LangGraph` / `Google ADK`), `MCP`, `vLLM` Serving, and Production MLOps**.
+A structured, **engineering-first** handbook and roadmap built to take learners, software engineers, and aspiring AI/ML engineers from **Python, SQL & Math foundations** all the way to **Transformers, `Qdrant` Hybrid RAG, Autonomous Agents (`LangGraph` / `Google ADK`), `MCP`, `vLLM` Serving, and Production MLOps**.
 
-> **How Every Module Is Designed:** Each module splits into **Tier 1 (Fresher Core)** for approachable first-pass intuition + **Tier 2 (MNC Production Depth)** for system-design rigor, ending with a **15-Minute Runnable Lab** and **Interview Takeaways**.
+> **How Every Module Is Designed:** Each module splits into **Tier 1 (Core Foundations)** for approachable first-pass learning + **Tier 2 (Production Architecture & Scale)** for real-world systems mastery, ending with a **15-Minute Runnable Lab** and **Key Engineering Takeaways** — while dedicated mock interview Q&A lives inside **[`interview-kits/`](./interview-kits/ml_system_design_framework.md)**.
 
 ---
 
@@ -101,8 +101,8 @@ Don't try to cram 13 modules in a weekend. Pick the track aligned with your targ
 ### Phase 3: Multimodal AI, LLMs & Advanced RAG (`curriculum/03-modern-ai-and-genai/`)
 - **[05 — NLP, Self-Attention, Computer Vision & Audio AI](./curriculum/03-modern-ai-and-genai/05_nlp_cv_and_multimodal.md)**  
   `BPE Tokenizers` `Scaled Dot-Product Attention (Q,K,V) & RoPE` `ResNet Skip Highway` `IoU / mAP` `ViT & CLIP` `Whisper & Audio Codecs`
-- **[06 — Generative AI, Fine-Tuning (`LoRA`/`DPO`) & Production RAG](./curriculum/03-modern-ai-and-genai/06_llms_finetuning_and_rag.md)**  
-  `VRAM Math` `Structured JSON Decoding` `Chunking` `Hybrid Search (BM25 + HNSW + RRF)` `Cross-Encoder Rerank` `RAGAS` `LoRA / QLoRA / DPO / GRPO` `TTFT / TPOT & vLLM`
+- **[06 — Generative AI, Fine-Tuning (`LoRA`/`DPO`), `Qdrant` & Production RAG](./curriculum/03-modern-ai-and-genai/06_llms_finetuning_and_rag.md)**  
+  `VRAM Math` `Structured JSON Decoding` `Chunking` `Qdrant Filterable HNSW & Quantization` `Hybrid Search (BM25 + Dense + RRF)` `Cross-Encoder Rerank` `RAGAS` `LoRA / QLoRA / DPO / GRPO` `TTFT / TPOT & vLLM`
 
 ### Phase 4: Autonomous Agents & MCP (`curriculum/04-agentic-ai/`)
 - **[07 — AI Agents Fundamentals & Workflows](./curriculum/04-agentic-ai/07_ai_agents_fundamentals.md)**  
@@ -154,7 +154,7 @@ Don't try to cram 13 modules in a weekend. Pick the track aligned with your targ
 ### Track 1: 100% Local Projects (\$0 Cloud Spend)
 | Project | Architecture Highlights | Blueprint & Starter |
 |---|---|---|
-| **1. Private Air-Gapped RAG & SQL Copilot** | Ollama 4-bit, `BM25 + Chroma RRF`, in-process analytical SQL, router | [Blueprint](./projects/README.md#local-project-1-private-air-gapped-desktop-rag--multi-tool-agent) • [Starter](./projects/starter-local-rag-agent/README.md) |
+| **1. Private Air-Gapped RAG & SQL Copilot** | Ollama 4-bit, `Qdrant` Hybrid `RRF`, in-process analytical SQL, router | [Blueprint](./projects/README.md#local-project-1-private-air-gapped-desktop-rag--multi-tool-agent) • [Starter](./projects/starter-local-rag-agent/README.md) |
 | **2. Real-Time Edge CV Multi-Object Tracker** | Threaded OpenCV, `YOLOv11` `ONNX Runtime`, `ByteTrack`, zone dwell times | [Blueprint](./projects/README.md#local-project-2-real-time-edge-computer-vision--multi-object-tracking-pipeline) |
 | **3. Autograd Engine & Mini-Transformer** | Reverse-mode autodiff DAG + causal multi-head self-attention in pure NumPy | [Blueprint](./projects/README.md#local-project-3-autograd-engine--character-level-transformer-from-scratch) • [Lab](./notebooks/03_mini_transformer_attention.ipynb) |
 | **4. Full-Lifecycle Local MLOps Service** | Leak-free pipeline, `FastAPI`, `PSI` drift monitor, non-root `Docker`, `pytest` | [Blueprint](./projects/README.md#local-project-4-full-lifecycle-local-mlops-pipeline-with-mlflow-optuna--docker) • [Starter](./projects/starter-local-mlops/README.md) |

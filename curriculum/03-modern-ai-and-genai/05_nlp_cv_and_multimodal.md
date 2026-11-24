@@ -29,12 +29,11 @@ flowchart LR
 
 ---
 
-## Tier 1: Fresher Core (NLP Foundations, Transformers & CNNs)
+## Tier 1: Core Foundations (NLP Foundations, Transformers & CNNs)
 
 ### 1. Classical NLP & Subword Tokenization
 
-#### Q1: BoW vs. TF-IDF vs. Subword Tokenizers (`BPE` / `Tiktoken`)
-**Answer:**
+#### 1.1 Lexical Representations (`BoW`, `TF-IDF`) & Subword Byte-Pair Encoding (`BPE`)
 - **Bag-of-Words (BoW):** Counts word frequencies while discarding word order (`"not good, very bad"` == `"not bad, very good"`). Produces ultra-sparse vectors.
 - **TF-IDF:** Multiplies local term frequency by corpus rarity:
   $$\text{TF-IDF}(t, d, D) = \text{TF}(t, d) \times \log\left(\frac{N}{|\{d \in D : t \in d\}|}\right)$$
@@ -43,17 +42,15 @@ flowchart LR
 
 ---
 
-#### Q2: Static Embeddings (`Word2Vec`) vs. Contextual Embeddings (`BERT` / `RoBERTa`)
-**Answer:**
+#### 1.2 Static Word Vectors vs. Contextualized Token Representations
 - **Static (`Word2Vec` CBOW / Skip-gram):** Assigns **one fixed vector per word** regardless of context — `"bank"` has the exact same vector in *"river bank"* and *"investment bank"*.
 - **Contextual (`BERT`):** Computes each token's representation dynamically via bidirectional self-attention over its surrounding sentence, resolving polysemy.
 
 ---
 
-### 2. Transformer Architecture & Self-Attention Math (Mandatory Interview Core)
+### 2. Transformer Architecture & Self-Attention Mechanics
 
-#### Q3: How does Scaled Dot-Product Self-Attention ($Q, K, V$) work mathematically?
-**Answer:**
+#### 2.1 Scaled Dot-Product Attention ($Q, K, V$), Causal Masking & `RoPE`
 Given input token embeddings $X \in \mathbb{R}^{T \times d_{\text{model}}}$, we project each token into three learned subspaces:
 - **Query ($Q = X W_Q$):** *"What information am I looking for?"*
 - **Key ($K = X W_K$):** *"What information do I contain?"*
@@ -67,8 +64,7 @@ $$\text{Attention}(Q, K, V) = \text{softmax}\left(\frac{Q K^\top}{\sqrt{d_k}} + 
 
 ---
 
-#### Q4: Encoder-Only vs. Decoder-Only vs. Encoder-Decoder Transformers
-**Answer:**
+#### 2.2 Encoder-Only vs. Decoder-Only vs. Encoder-Decoder Topologies
 
 | Architecture | Attention Visibility | Representative Models | Primary Production Use Cases |
 |---|---|---|---|
@@ -80,8 +76,7 @@ $$\text{Attention}(Q, K, V) = \text{softmax}\left(\frac{Q K^\top}{\sqrt{d_k}} + 
 
 ### 3. Computer Vision: CNNs, ResNet & Transfer Learning
 
-#### Q5: Why do Dense Layers fail on images, and how do CNNs + ResNet Skip Connections work?
-**Answer:**
+#### 3.1 Spatial Convolutions, Residual Identity Highways & Transfer Learning
 Flattening a `1000×1000×3` image into a 1,000-unit dense layer creates **3 billion weights** in layer 1 alone while destroying 2D spatial locality. **CNNs** use small sliding kernels (local receptive fields + weight sharing) with spatial output size:
 $$W_{\text{out}} = \left\lfloor \frac{W_{\text{in}} - K + 2P}{S} \right\rfloor + 1$$
 
@@ -127,12 +122,11 @@ optimizer = torch.optim.AdamW(model.fc.parameters(), lr=1e-3)
 
 ---
 
-## Tier 2: MNC Production Depth (Detection, ViT, CLIP & Audio AI)
+## Tier 2: Production Architecture & Scale (Detection, ViT, CLIP & Audio AI)
 
 ### 4. Vision Hierarchy (`IoU`, `mAP`, `ViT`) & Multimodal Alignment (`CLIP`)
 
-#### Q6: Image Classification vs. Object Detection vs. Segmentation, and `CNN` vs. `ViT`
-**Answer:**
+#### 4.1 Detection/Segmentation Metrics (`IoU`, `mAP`), Vision Transformers (`ViT`) & `CLIP`
 - **Classification** (`ConvNeXt`, `ViT`) -> single image label; evaluated via Accuracy / Top-5.
 - **Object Detection** (`YOLOv11`, `RT-DETR`) -> `[x, y, w, h, class, conf]` boxes; evaluated via **IoU** ($\frac{\text{Area}(B_p \cap B_{gt})}{\text{Area}(B_p \cup B_{gt})}$) and **mAP@0.5:0.95**.
 - **Semantic vs. Instance Segmentation** (`SegFormer`, `SAM 2`) -> pixel-level class mask (`mIoU`) vs. distinct per-object instance masks (`Mask AP`).
@@ -143,8 +137,7 @@ optimizer = torch.optim.AdamW(model.fc.parameters(), lr=1e-3)
 
 ### 5. Audio & Speech AI (`Mel Spectrograms`, `Whisper` & Native Audio Models)
 
-#### Q7: How do modern Speech & Audio AI models (`Whisper`, Multimodal Audio LLMs) process sound?
-**Answer:**
+#### 5.1 Log-Mel Spectrograms, `Whisper` ASR & Native Neural Audio Codecs
 1. **Waveform to Log-Mel Spectrogram:** Raw 16 kHz 1D audio waveforms are windowed via Short-Time Fourier Transform (STFT) into 2D **Log-Mel Spectrograms** (`80` or `128` Mel frequency bins × time frames, matching human pitch perception).
 2. **`Whisper` Architecture (OpenAI):** Passes the Log-Mel spectrogram through 2 `1D Conv` layers + a **Transformer Encoder**, then decodes timestamps, language IDs, and transcribed/translated text autoregressively via a **Transformer Decoder**.
 3. **Native Multimodal Audio Tokens:** Frontier voice models (`Gemini Live`, `GPT-4o Realtime`) discretize audio directly into neural codec tokens (`SoundStream` / `EnCodec`), enabling low-latency speech-in, speech-out reasoning while preserving emotion, tone, and speaker prosody without a brittle `ASR -> Text LLM -> TTS` cascade.
@@ -186,7 +179,7 @@ print("Lab 05 Passed! Causal attention verified with zero future leakage.")
 
 ---
 
-## Key Takeaways for Interviews
+## Key Engineering Takeaways
 - Know the **Scaled Dot-Product Attention** equation $\text{softmax}(QK^\top / \sqrt{d_k} + M)V$ cold — especially why $\frac{1}{\sqrt{d_k}}$ prevents softmax gradient saturation and how causal masking prevents future token leakage.
 - Contrast **Encoder (`BERT` — embeddings/reranking)** vs. **Decoder (`GPT`/`Llama` — generation)** vs. **Encoder-Decoder (`Whisper`/`T5`)**.
 - Explain **ResNet skip connections** via the `+1` identity gradient term, **`CLIP`** via symmetric InfoNCE contrastive alignment, and **Audio AI** via Log-Mel Spectrograms vs. native neural audio codecs.

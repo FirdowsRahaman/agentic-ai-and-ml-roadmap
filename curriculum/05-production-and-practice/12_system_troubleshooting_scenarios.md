@@ -8,7 +8,7 @@
 
 ## Mental Model: Production ML Diagnostic Decision Tree
 
-Interviewers ask open-ended *"What broke and how do you fix it?"* scenarios to separate candidates who have debugged real systems from candidates who only memorized definitions:
+Real-world ML systems rarely fail with a clean Python traceback — they degrade silently through data leakage, distribution shift, ungrounded retrieval, or GPU memory bottlenecks. Use this diagnostic tree when debugging live systems:
 
 ```mermaid
 flowchart TD
@@ -30,7 +30,7 @@ flowchart TD
 
 ---
 
-## Tier 1: Fresher Core Scenarios (Data, Metrics, Leakage & Overfitting)
+## Tier 1: Core Foundations Scenarios (Data, Metrics, Leakage & Overfitting)
 
 ### Scenario 1: *"Your fraud classifier hit 99.8% test accuracy. Should we ship it today?"*
 **Diagnosis & Remediation:**
@@ -68,7 +68,7 @@ Classic **High-Variance Overfitting**. Fix in order of engineering ROI:
 
 ---
 
-## Tier 2: MNC Production Scenarios (GenAI, Serving, RecSys & System Design)
+## Tier 2: Production & Scale Scenarios (GenAI, Serving, RecSys & System Design)
 
 ### Scenario 5: *"Your enterprise RAG bot answers confidently using facts that do not exist in the retrieved chunks."*
 **Diagnosis & Remediation:**
@@ -149,7 +149,7 @@ print(f"Lab 12 Passed! Optimal threshold={opt_tau} cuts cost from ${default_cost
 
 ---
 
-## Key Takeaways for Interviews
+## Key Engineering Takeaways
 - **Day-1 live collapse** = Data Leakage or Training-Serving Skew; **gradual multi-month decay** = Covariate/Concept Drift.
 - Never hardcode `0.5` as your classification threshold — optimize $\tau^*$ against asymmetric business FP/FN costs.
 - Memorize the **CUDA OOM rescue stack**: `BF16` Mixed Precision -> Gradient Accumulation -> Activation Checkpointing -> `QLoRA` / `FSDP`.
