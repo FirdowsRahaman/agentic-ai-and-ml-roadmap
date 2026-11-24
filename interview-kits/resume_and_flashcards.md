@@ -29,6 +29,11 @@ Recruiters and hiring managers scan a fresher resume in **8–12 seconds**. Avoi
 3. **Production Trade-off / Metric:** Mention latency, memory, failure mode, or metric (`PR-AUC`, `TTFT`, `PSI`).
 4. **Honest Depth Calibration:** If asked about something you haven't run at petabyte scale, state the architectural principle clearly and anchor it to your local/cloud project implementation.
 
+### How to Ace 2026 AI-Assisted Coding Rounds (`Cursor` / `Copilot` Permitted)
+1. **State Architecture & Edge Cases *Before* Prompting AI:** Tell the interviewer your schema, complexity target, and failure modes upfront before generating boilerplate.
+2. **Audit Every Generated Line Out Loud:** Explicitly check AI output for silent killers — train-test leakage, missing `model.eval()`, sequential `await` inside loops, post-filtering tenant leaks, and KV prefix-cache invalidation.
+3. **Write Deterministic `assert` / `pytest` Checks Immediately:** Never declare an AI-generated function "done" without executing edge-case tests (`empty input`, `NaN`, `HTTP 429`, `unauthorized tenant`).
+
 ### Top 10 Interview Red Flags to Avoid
 - Reporting *"99% accuracy"* without checking class imbalance (`PR-AUC` / Confusion Matrix).
 - Fitting `StandardScaler`, imputers, or target encoders **before** `train_test_split`.
@@ -50,6 +55,8 @@ Recruiters and hiring managers scan a fresher resume in **8–12 seconds**. Avoi
 | **Bias–Variance Tradeoff** | Balancing underfitting (oversimplified high-bias models) against overfitting (noise-memorizing high-variance models). |
 | **`XGBoost` / `LightGBM`** | Gradient-boosted decision tree ensembles where each shallow tree sequentially predicts the negative gradient residuals of prior trees. |
 | **PR-AUC** | Area under the Precision–Recall curve; the gold-standard metric for heavily imbalanced rare-event classification (`<1%` positives). |
+| **`SHAP` & Calibration** | Game-theoretic additive feature attributions (`TreeExplainer`) paired with `Platt`/`Isotonic` probability calibration (Brier Score). |
+| **`TabPFN`** | Pre-trained tabular foundation model performing `<1s` zero-shot in-context predictions on small-to-medium (`<=10k` row) structured datasets. |
 | **Data Leakage** | When target proxies, future events, or test-fold statistics contaminate training transformations, causing live Day-1 collapse. |
 | **Two-Tower Model** | Dual user/item neural encoders mapping into a shared vector space for `<10ms` ANN candidate retrieval (`FAISS` / `HNSW`). |
 | **`NDCG@K`** | Normalized Discounted Cumulative Gain: ranking metric rewarding relevant items placed near rank #1 with logarithmic position decay. |
@@ -60,6 +67,7 @@ Recruiters and hiring managers scan a fresher resume in **8–12 seconds**. Avoi
 | **`CLIP`** | Contrastive vision-language model aligning image and text encoders into a shared embedding space via symmetric InfoNCE loss. |
 | **Token (`BPE`)** | Subword text unit (~3–4 chars) produced by Byte-Pair Encoding, avoiding Out-Of-Vocabulary failures and governing LLM billing/context. |
 | **Embedding** | Dense continuous vector capturing semantic similarity such that related concepts have high cosine/dot-product alignment. |
+| **Context Engineering** | Ordering static instructions/schemas first for 50%–90% KV prefix-cache hits while pruning noisy tool outputs to preserve signal-to-noise. |
 | **Structured Outputs** | Grammar-constrained token decoding guaranteeing LLM responses conform 100% to a strict JSON / `Pydantic` schema. |
 | **`Qdrant` (Filterable HNSW)** | Rust vector database combining payload-indexed HNSW subgraph filtering, native Dense+Sparse RRF, and 32x Binary Quantization. |
 | **Hybrid Search + `RRF`** | Fusing lexical `BM25` keyword hits with dense semantic `HNSW` vectors via Reciprocal Rank Fusion. |
@@ -72,7 +80,9 @@ Recruiters and hiring managers scan a fresher resume in **8–12 seconds**. Avoi
 | **`vLLM` (`PagedAttention`)** | High-throughput LLM serving engine storing `KV Cache` in non-contiguous memory pages alongside continuous iteration-level batching. |
 | **AI Agent vs. Workflow** | Workflows follow developer-coded paths; Agents dynamically select tools, inspect observations, and control their own loop (`ReAct`). |
 | **`LangGraph` / `Google ADK`** | Production frameworks for stateful cyclical agent graphs, durable `HITL` checkpointing, visual trace debugging, and subagent delegation. |
-| **`MCP`** | Model Context Protocol: open JSON-RPC 2.0 standard (`stdio` / `Streamable HTTP`) connecting AI hosts to `Tools`, `Resources`, and `Prompts`. |
+| **`MCP`** | Model Context Protocol: vertical JSON-RPC 2.0 standard (`stdio` / `Streamable HTTP`) connecting an agent to `Tools`, `Resources`, and `Prompts`. |
+| **`A2A` Protocol** | Agent-to-Agent Protocol: horizontal standard (`/.well-known/agent-card.json`) enabling opaque peer agents across frameworks to collaborate. |
+| **Eval-Driven Development** | Curating a 100+ row Golden Dataset, categorizing trace errors, and enforcing CI/CD eval gates before changing prompts or weights. |
 | **Indirect Prompt Injection** | Adversarial instructions hidden inside untrusted external data (PDFs, emails, web pages) read by an agent's tools. |
 | **Human-in-the-Loop (`HITL`)** | Persisting agent graph state to a database checkpoint and pausing execution for human sign-off before irreversible actions. |
 | **`safetensors` / `ONNX`** | Safe, zero-code-execution tensor serialization (`safetensors`) and portable optimized inference graph format (`ONNX`). |

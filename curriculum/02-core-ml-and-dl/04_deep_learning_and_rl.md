@@ -145,6 +145,14 @@ By the Chain Rule, backpropagating through $L$ layers multiplies $L$ Jacobian ma
 
 ---
 
+#### 3.4 Multi-GPU Distributed Training (`DDP` vs. `FSDP` / `DeepSpeed ZeRO-3`)
+During `BF16` mixed-precision training with `AdamW`, **1 billion parameters consumes ~16 GB of VRAM just for model state** (`2B` weights + `2B` gradients + `12B` FP32 master weights & Adam $m_t, v_t$ moments — [Rajbhandari et al., SC20 (`ZeRO`)](https://arxiv.org/abs/1910.02054)):
+- **`DDP` (Distributed Data Parallel):** Replicates the **entire model + optimizer** on every GPU, splitting mini-batches across GPUs and averaging gradients via `AllReduce`. Fast, but fails the moment a model exceeds a single GPU's VRAM.
+- **`FSDP` (PyTorch Fully Sharded Data Parallel / `ZeRO-3`):** Shards **parameters, gradients, and optimizer states** across all $N$ GPUs (`1/N` memory per GPU), gathering layer weights just-in-time via `AllGather` before each forward/backward pass.
+- **Tensor Parallelism (`TP`):** Splits individual matrix multiplications *within* a layer across fast intra-node `NVLink` GPUs (essential for 70B+ LLM serving/training).
+
+---
+
 ### 4. Reinforcement Learning (RL) & Connection to Post-Training LLMs
 
 #### 4.1 Markov Decision Processes (MDP) & Policy Optimization (`PPO` / `GRPO`)

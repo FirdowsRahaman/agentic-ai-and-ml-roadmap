@@ -130,6 +130,13 @@ flowchart LR
 
 ---
 
+#### 4.2 Model Explainability (`SHAP`) & Probability Calibration (`Platt` / `Isotonic`)
+In regulated domains (banking, underwriting, healthcare — classified as **High-Risk** under the EU AI Act), shipping an uncalibrated black-box `XGBoost` score is non-compliant:
+1. **Probability Calibration ([Niculescu-Mizil & Caruana, ICML 2005](https://dl.acm.org/doi/10.1145/1102351.1102430)):** Raw boosted-tree and neural-network `predict_proba()` scores distort true empirical probabilities (pushing predictions away from or toward `0` and `1`). Wrap classifiers in `CalibratedClassifierCV(method="isotonic")` (or `"sigmoid"` Platt scaling on smaller validation sets) and evaluate with **Brier Score** ($\frac{1}{N}\sum (\hat{p}_i - y_i)^2$) so a predicted `0.20` default risk genuinely defaults 20% of the time.
+2. **`SHAP` (`SHapley Additive exPlanations`, [Lundberg & Lee, NeurIPS 2017](https://arxiv.org/abs/1705.07874)):** Uses game-theoretic Shapley values (`shap.TreeExplainer(model)`) to decompose *every individual prediction* into exact additive feature contributions ($\hat{y}_i = \phi_0 + \sum_j \phi_{ij}$), providing both **global feature importance** and **per-customer adverse-action explanations** (*"Loan declined primarily due to debt-to-income +0.31 and 3 recent delinquencies +0.24"*).
+
+---
+
 ### 5. Unsupervised Essentials: `K-Means` & `PCA`
 
 #### 5.1 Clustering (`K-Means` / `DBSCAN`) & Dimensionality Reduction (`PCA`)

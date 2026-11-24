@@ -127,6 +127,34 @@ CMD ["uvicorn", "src.app:app", "--host", "0.0.0.0", "--port", "8000"]
 
 ---
 
+#### 3.3 Real-Time `SSE` Token/Tool Streaming (`FastAPI`) & User Feedback Data Flywheels
+Production GenAI and agent frontends never block on a synchronous 12-second `POST` request — they stream typed **Server-Sent Events (`SSE`)** so users see live tool progress (`"Querying Qdrant..."`) and sub-second `TTFT` tokens, then capture explicit/implicit user feedback into a **Data Flywheel**:
+
+```python
+import json
+from collections.abc import AsyncIterator
+from fastapi import FastAPI
+from fastapi.responses import StreamingResponse
+
+stream_app = FastAPI()
+
+async def agent_event_stream(session_id: str, prompt: str) -> AsyncIterator[str]:
+    # 1. Emit live tool-status frame for UI progress indicator
+    yield f"event: status\ndata: {json.dumps({'step': 'qdrant_hybrid_search'})}\n\n"
+    # 2. Stream incremental answer tokens as they decode
+    for tok in ("Refund ", "approved ", "under ", "Policy ", "[POL-101]."):
+        yield f"event: token\ndata: {json.dumps({'text': tok})}\n\n"
+    # 3. Emit trace_id so frontend thumbs-up/down binds to the exact OpenTelemetry span!
+    yield f"event: done\ndata: {json.dumps({'trace_id': f'tr_{session_id}'})}\n\n"
+
+@stream_app.get("/chat/stream")
+async def chat_stream(session_id: str, q: str) -> StreamingResponse:
+    return StreamingResponse(agent_event_stream(session_id, q), media_type="text/event-stream")
+```
+- **Closing the Data Flywheel:** Binding frontend thumbs-up/down, copy events, and human-edited replies to `trace_id` automatically populates (a) **hard-negative regression tests** for your `EDD` Golden Set (`Module 10`) and (b) `(prompt, human_edited_chosen, model_rejected)` preference pairs for **`DPO` fine-tuning** (`Module 06`).
+
+---
+
 ### 4. Statistical Drift (`PSI`), Safe Deployments & Cloud GPU FinOps
 
 #### 4.1 Detecting Covariate Shift (`PSI`, K-S) vs. Concept Drift

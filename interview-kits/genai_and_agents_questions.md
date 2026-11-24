@@ -48,9 +48,11 @@ Dense embeddings blur exact identifiers (error codes, SKUs, clause numbers, name
 - **`TPOT` (Decode)** generates 1 token at a time (**memory-bandwidth bound**; speed up via `FP8`/`AWQ` quantization & Speculative Decoding). Streaming improves *perceived* UX latency without lowering total generation wall-time.
 - **`vLLM` `PagedAttention` + Continuous Batching** stores `KV Cache` in non-contiguous fixed pages (eliminating 60%+ contiguous VRAM waste) and swaps completed sequences per token step.
 
-**Q7: When should you build a Deterministic Workflow instead of an Autonomous Agent, and how does `MCP` work?**
+**Q7: When should you build a Deterministic Workflow instead of an Autonomous Agent, and how do `MCP` and `A2A` differ?**
 *Answer:*
-Use **Workflows** (routing, prompt chaining, `asyncio.gather` parallelization) whenever step structure is predictable — lower latency, lower cost, deterministic testing. Reserve **Autonomous Agents (`LangGraph` / `Google ADK`)** for open-ended multi-step loops requiring dynamic recovery. **`MCP` (Model Context Protocol)** standardizes `Tools`, `Resources`, and `Prompts` over **JSON-RPC 2.0** (`stdio` locally, `Streamable HTTP` + OAuth 2.1 remotely).
+Use **Workflows** (routing, prompt chaining, `asyncio.gather` parallelization) whenever step structure is predictable — lower latency, lower cost, deterministic testing. Reserve **Autonomous Agents (`LangGraph` / `Google ADK`)** for open-ended multi-step loops requiring dynamic recovery.
+- **`MCP` (Model Context Protocol — Vertical):** Connects a single agent to deterministic **`Tools`, `Resources`, and `Prompts`** over JSON-RPC 2.0 (`stdio` locally, `Streamable HTTP` + OAuth 2.1 remotely).
+- **`A2A` (Agent-to-Agent Protocol — Horizontal):** Linux Foundation / Google standard enabling peer agents across different frameworks/vendors to discover capabilities via `/.well-known/agent-card.json` and delegate opaque multi-turn tasks without exposing internal prompts or database credentials.
 
 **Q8: What is Indirect Prompt Injection, and how do you secure tool-calling agents in production?**
 *Answer:*

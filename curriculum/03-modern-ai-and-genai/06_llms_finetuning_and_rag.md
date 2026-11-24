@@ -44,9 +44,16 @@ flowchart LR
 
 ---
 
-### 2. Prompting, Structured Outputs & Hallucination Grounding
+### 2. Context Engineering, Structured Outputs & Hallucination Grounding
 
-#### 2.1 Constrained Decoding & Guaranteed JSON Schemas
+#### 2.1 Context Engineering (Replacing Legacy "Prompt Tweaking")
+Standalone single-turn "prompt engineering" has evolved into **Context Engineering** — architecting the exact information payload, token budget, and KV-cache layout fed into a model across multi-step execution:
+1. **Prefix-Cache-Friendly Ordering:** Place **100% static content first** (`System Policy -> Tool JSON Schemas -> Static Few-Shot Examples -> Domain Docs`) and **dynamic per-turn state last** (`Recent History -> User Query`). Even a 1-token timestamp change at the top invalidates the entire GPU `KV` prefix cache — costing **2×–10× higher latency and API spend** ([Anthropic Prompt Caching](https://docs.anthropic.com/en/docs/build-with-claude/prompt-caching); [Gemini Context Caching](https://ai.google.dev/gemini-api/docs/caching)).
+2. **Signal-to-Noise & Context Budgeting:** Even with `1M+` token windows, stuffing raw HTML or 50 unranked chunks degrades reasoning accuracy via *Lost-in-the-Middle* attention dilution ([Liu et al., TACL 2024](https://arxiv.org/abs/2307.03172)). Compress verbose tool observations, strip boilerplate fields, and inject only reranked `Top-5` evidence.
+
+---
+
+#### 2.2 Constrained Decoding & Guaranteed JSON Schemas
 In production software, asking an LLM *"Please reply in valid JSON"* via plain-text prompting frequently fails on complex schemas due to markdown wrappers, trailing commas, or missing keys. Modern APIs and open-source engines (`Outlines`, `vLLM`) enforce **Grammar-Constrained Decoding** — masking invalid vocabulary tokens at every decoding step to achieve **100% structural schema compliance** ([OpenAI Structured Outputs Report, 2024](https://openai.com/index/introducing-structured-outputs-in-the-api/); [Willard & Louf, 2023](https://arxiv.org/abs/2307.09702)):
 
 ```python
@@ -64,7 +71,7 @@ json_schema = InvoiceExtraction.model_json_schema()
 
 ---
 
-#### 2.2 Why Hallucinations Happen — and What RAG Actually Guarantees
+#### 2.3 Why Hallucinations Happen — and What RAG Actually Guarantees
 LLMs optimize next-token likelihood rather than factual truth, smoothly extrapolating plausible-sounding fabrications when knowledge is missing or ambiguous.
 - **Engineering Reality:** **RAG grounds the model in retrieved context and drastically reduces hallucinations, but NEVER 100% eliminates them.** If retrieval pulls noisy chunks, if key facts sit buried in the middle of a long context window, or if system prompts lack strict abstention rules, the model can still misinterpret context or fabricate citations. Always pair RAG with explicit abstention prompts (*"If unsupported by context, state insufficient information"*) and automated faithfulness checks.
 

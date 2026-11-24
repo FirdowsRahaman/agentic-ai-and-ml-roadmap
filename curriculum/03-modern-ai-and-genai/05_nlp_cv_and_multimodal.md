@@ -31,20 +31,16 @@ flowchart LR
 
 ## Tier 1: Core Foundations (NLP Foundations, Transformers & CNNs)
 
-### 1. Classical NLP & Subword Tokenization
+### 1. Subword Tokenization, Lexical Baselines & Contextual Embeddings
 
-#### 1.1 Lexical Representations (`BoW`, `TF-IDF`) & Subword Byte-Pair Encoding (`BPE`)
-- **Bag-of-Words (BoW):** Counts word frequencies while discarding word order (`"not good, very bad"` == `"not bad, very good"`). Produces ultra-sparse vectors.
-- **TF-IDF:** Multiplies local term frequency by corpus rarity:
+#### 1.1 Subword Byte-Pair Encoding (`BPE`) vs. Lexical Weighting (`TF-IDF` / `BM25`)
+> **2026 Scope Note:** Legacy preprocessing pipelines (manual regex stemming, stopword stripping, `CountVectorizer` Bag-of-Words, and static 2013 `Word2Vec` CBOW/Skip-gram tables) are obsolete in modern AI engineering. Focus on **subword tokenizers (`BPE`)** for neural models and **`TF-IDF` / `BM25`** for sparse hybrid search.
+
+- **Byte-Pair Encoding (`BPE` / `Tiktoken`):** Modern LLMs preserve exact casing, punctuation, and syntax — iteratively merging frequent byte/character pairs into a fixed vocabulary (`~100k–200k` subword tokens) to represent arbitrary text, code, and multilingual scripts with **zero Out-Of-Vocabulary (`<UNK>`) failures**.
+- **Sparse Lexical Scoring (`TF-IDF` & `BM25`):** Multiplies local term frequency by inverse corpus rarity:
   $$\text{TF-IDF}(t, d, D) = \text{TF}(t, d) \times \log\left(\frac{N}{|\{d \in D : t \in d\}|}\right)$$
-  Still lexical (zero semantic overlap between `"car"` and `"automobile"`), but remains a fast baseline alongside **BM25**.
-- **Byte-Pair Encoding (`BPE`):** Modern LLMs do **not** strip stopwords or stem words. Instead, `BPE` iteratively merges frequent character/byte pairs into a fixed vocabulary (`~100k–200k` tokens), handling rare words, code, and typos with **zero Out-Of-Vocabulary (`<UNK>`) failures**.
-
----
-
-#### 1.2 Static Word Vectors vs. Contextualized Token Representations
-- **Static (`Word2Vec` CBOW / Skip-gram):** Assigns **one fixed vector per word** regardless of context — `"bank"` has the exact same vector in *"river bank"* and *"investment bank"*.
-- **Contextual (`BERT`):** Computes each token's representation dynamically via bidirectional self-attention over its surrounding sentence, resolving polysemy.
+  While purely lexical (zero semantic overlap between `"car"` and `"automobile"`), **Okapi `BM25`** (which adds saturating term frequency and document-length normalization) remains indispensable as the sparse half of **Hybrid RAG** (`Module 06`).
+- **Contextual vs. Static Embeddings:** Unlike legacy static word tables that assigned one fixed vector to `"bank"` everywhere, Transformer encoders (`BERT`, `ModernBERT`, `BGE`) compute dynamic, context-sensitive token vectors via self-attention over the entire sequence.
 
 ---
 

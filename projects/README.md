@@ -1,6 +1,6 @@
 # Real-World AI/ML Portfolio Projects (Local & Cloud Blueprints + Starter Kits)
 
-[← Back to Roadmap](../README.md) | [Starter 1: Local Hybrid RAG + SQL Agent →](./starter-local-rag-agent/README.md) | [Starter 2: Local Full-Lifecycle MLOps →](./starter-local-mlops/README.md)
+[← Back to Roadmap](../README.md) | [End-to-End Lifecycle Playbook →](./end_to_end_lifecycle_playbook.md) | [Starter 1: Local RAG + SQL Agent →](./starter-local-rag-agent/README.md) | [Starter 2: Local MLOps →](./starter-local-mlops/README.md)
 
 ---
 

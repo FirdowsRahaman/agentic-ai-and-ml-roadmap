@@ -33,13 +33,16 @@ flowchart LR
 
 ## Tier 1: Core Foundations (Agent Evals, Tracing & Prompt Injection)
 
-### 1. Evaluating Non-Deterministic Agents & `LLM-as-a-Judge`
+### 1. Eval-Driven Development (`EDD`), Golden Datasets & `LLM-as-a-Judge`
 
-#### 1.1 Outcome Groundedness, Trajectory Efficiency & Operational Metrics
-Two agent runs can call tools in slightly different orders and phrase summaries differently while both solving the user's task accurately. Production evaluation scores **three orthogonal layers**:
-1. **Final Outcome Accuracy / Groundedness:** Is every factual claim supported by tool observations?
-2. **Trajectory Efficiency:** Did the agent select the right tools (`Tool Selection F1`) in minimal steps without redundant retries?
-3. **Operational SLAs:** Latency (`p95`), token cost per resolved ticket, and guardrail block rate.
+#### 1.1 The Eval-Driven Development (`EDD`) Loop & Day-1 Golden Dataset Curation
+Changing a system prompt, chunk size, or model checkpoint by "eyeballing 3 chat examples" (*vibes-based development*) silently breaks downstream edge cases. Production AI teams enforce **Eval-Driven Development (`EDD`)** before shipping any prompt or weight update:
+1. **Day-1 Golden Dataset (`100–200` Curated Examples):** Collect real production queries + adversarial edge cases (ambiguous intent, missing ACL docs, malformed tool outputs). Have domain experts label expected outcomes (measuring **inter-annotator agreement** via Cohen's $\kappa \ge 0.8$), augment carefully with synthetic edge cases, and deduplicate via semantic/MinHash filtering.
+2. **Trace Error Analysis (Open Coding):** Inspect 50–100 failed OpenTelemetry traces manually to group root causes into concrete buckets (e.g., *"38% stale chunk retrieved, 24% wrong SQL join key, 15% premature loop exit"*) — fixing the largest failure bucket first.
+3. **Three-Layer Scoring Gate in CI/CD:**
+   - *Deterministic Code Assertions:* Exact JSON schema validity, SQL syntax parse, forbidden-PII regex, citation ID existence (`0ms`, `\$0` cost).
+   - *Trajectory Efficiency:* Tool-selection F1 and step-count bounds.
+   - *Outcome Groundedness (`LLM-as-a-Judge` / `RAGAS` Faithfulness):* Blocks PR merge if score regresses `>2%` on the Golden Set.
 
 ---
 

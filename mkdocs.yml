@@ -57,6 +57,7 @@ nav:
       - "12 — Troubleshooting Scenarios": curriculum/05-production-and-practice/12_system_troubleshooting_scenarios.md
       - "13 — Algorithms from Scratch": curriculum/05-production-and-practice/13_algorithms_from_scratch.md
   - Portfolio Projects:
+      - "End-to-End Lifecycle Playbook": projects/end_to_end_lifecycle_playbook.md
       - "All 10 Blueprints": projects/README.md
       - "Starter 1: Local RAG + SQL Agent": projects/starter-local-rag-agent/README.md
       - "Starter 2: Local MLOps API": projects/starter-local-mlops/README.md

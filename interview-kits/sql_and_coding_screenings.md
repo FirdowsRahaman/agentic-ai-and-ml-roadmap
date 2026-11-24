@@ -156,4 +156,63 @@ assert cache.get("b") is None and cache.get("a") == [0.1]
 
 ---
 
+## Section 5: 2026 AI-Assisted Coding Round — "Audit This AI-Generated Agent PR"
+
+In 2026 interviews, many teams explicitly allow `Cursor`, `Copilot`, or `Claude` — grading how ruthlessly you **audit, debug, and harden AI-generated code** before shipping.
+
+### Q6: Spot All 5 Production & Security Flaws in This AI-Generated Multi-Tenant RAG/Agent Snippet
+```python
+# --- BROKEN AI-GENERATED PR (DO NOT MERGE!) ---
+# async def answer_tenant_ticket(tenant_id: str, user_query: str, sub_queries: list[str]):
+#     # FLAW 1 (Prefix Cache Bust): Dynamic timestamp at top of system prompt busts KV prefix cache every call!
+#     sys_prompt = f"Current time: {time.time()}. Static 8,000-token policy manual..."
+#     # FLAW 2 (Sequential N+1 I/O): Awaiting inside a for-loop runs 5 network calls serially instead of asyncio.gather!
+#     hits = []
+#     for sq in sub_queries:
+#         hits.extend(await vector_db.top_k(sq, k=10))
+#     # FLAW 3 (Post-Filter Tenant Leak / Zero-Result Bug): Filtering tenant_id AFTER global Top-10 returns 0 docs for small tenants!
+#     allowed = [h for h in hits if h.tenant_id == tenant_id]
+#     # FLAW 4 (SQL Injection + Mutation Risk): Raw f-string interpolation into SQL without parameterization or SELECT-only check!
+#     order = db.execute(f"SELECT * FROM orders WHERE note = '{user_query}'")
+#     # FLAW 5 (Unsafe Eval / Unvalidated Output): Running eval() on LLM JSON string instead of Pydantic validation!
+#     return eval(await llm(sys_prompt, allowed, order))
+```
+
+**Hardened Production Implementation:**
+```python
+import asyncio
+from pydantic import BaseModel
+
+class TicketAnswer(BaseModel):
+    reply: str
+    cited_ids: list[str]
+
+async def mock_qdrant_filtered_search(sub_query: str, tenant_id: str) -> list[str]:
+    await asyncio.sleep(0.01)
+    # Pre/Payload-filtered inside Qdrant Filterable HNSW!
+    return [f"{tenant_id}:{sub_query}:doc1"]
+
+def build_cache_friendly_messages(static_policy: str, dynamic_timestamp: str, query: str) -> list[dict]:
+    # Static prefix FIRST (cached!), dynamic turn LAST
+    return [
+        {"role": "system", "content": static_policy},
+        {"role": "user", "content": f"[{dynamic_timestamp}] {query}"},
+    ]
+
+async def hardened_tenant_pipeline(tenant_id: str, sub_queries: list[str]) -> TicketAnswer:
+    # Parallel I/O fan-out via asyncio.gather + tenant filter pushed into vector DB
+    nested = await asyncio.gather(
+        *(mock_qdrant_filtered_search(sq, tenant_id=tenant_id) for sq in sub_queries)
+    )
+    doc_ids = [doc for batch in nested for doc in batch]
+    raw_llm_json = '{"reply": "Verified tenant policy.", "cited_ids": ["acme:refund:doc1"]}'
+    return TicketAnswer.model_validate_json(raw_llm_json)
+
+res = asyncio.run(hardened_tenant_pipeline("acme", ["refund", "sla"]))
+assert res.cited_ids == ["acme:refund:doc1"]
+assert build_cache_friendly_messages("STATIC_RULES", "2026-11-24", "hi")[0]["content"] == "STATIC_RULES"
+```
+
+---
+
 [← GenAI & Agents Questions](./genai_and_agents_questions.md) | [Home](../README.md) | [Next: Resume Guide & Flashcards →](./resume_and_flashcards.md)

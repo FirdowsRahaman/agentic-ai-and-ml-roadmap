@@ -62,6 +62,20 @@ flowchart LR
 
 ---
 
+## 2026 Market Reality: What NOT to Waste Time On vs. Where to Focus
+
+Hiring data and tech restructuring across 2025–2026 reshaped entry-level and mid-level AI expectations — routine boilerplate roles contracted while **full-stack AI systems engineers** remain supply-constrained:
+
+| Skip / De-Emphasize in 2026 (Low ROI) | Focus Heavily Here Instead (High Hiring Signal) |
+|---|---|
+| Memorizing `Word2Vec`, `Bag-of-Words`, regex stemming, or legacy `RNN`/`VGG` architectures | **`BPE` Tokenizers, `Qdrant` Filterable Hybrid Search (`BM25 + Dense RRF`), Cross-Encoders & `ViT`/`CLIP` Transfer Learning** |
+| Standalone "Prompt Engineering" tricks & single-turn chat wrappers | **Context Engineering** (50%–90% KV prefix-cache ordering, signal-to-noise pruning & grammar-constrained `Pydantic` JSON) |
+| `.ipynb`-only Kaggle notebooks without tests, APIs, calibration, or Docker | **Deployed Systems:** `SHAP` + calibrated models, `FastAPI` `SSE` token streaming, non-root `Docker`, `PSI` drift & `DPO` data flywheels |
+| Vibes-based prompt tweaking & custom brittle agent glue | **Eval-Driven Development (`EDD`)** (Day-1 Golden Datasets in CI/CD) + open agent standards (**`MCP`** vertical tools & **`A2A`** peer agents) |
+| Blindly pasting `Cursor`/`Copilot` code or cramming only abstract puzzles | **Auditing AI-Generated Code** for silent data leakage, tenant filter bugs, `N+1` async bottlenecks & security flaws ([Practice Kit](./interview-kits/sql_and_coding_screenings.md)) |
+
+---
+
 ## Choose Your Learning Track & Realistic Timeline
 
 Don't try to cram 13 modules in a weekend. Pick the track aligned with your target role and background:
@@ -94,29 +108,29 @@ Don't try to cram 13 modules in a weekend. Pick the track aligned with your targ
 
 ### Phase 2: Core Machine Learning & Deep Learning (`curriculum/02-core-ml-and-dl/`)
 - **[03 — Classical ML, Ensembles & Recommendation Systems](./curriculum/02-core-ml-and-dl/03_classical_ml_and_recsys.md)**  
-  `Leak-Free Pipelines` `XGBoost / LightGBM` `StratifiedKFold` `PR-AUC vs ROC-AUC` `K-Means & PCA` `Two-Tower RecSys & NDCG@K`
+  `Leak-Free Pipelines` `XGBoost / LightGBM / TabPFN` `SHAP & Probability Calibration` `PR-AUC` `Two-Tower RecSys & NDCG@K`
 - **[04 — Deep Learning, PyTorch & Reinforcement Learning](./curriculum/02-core-ml-and-dl/04_deep_learning_and_rl.md)**  
-  `GELU / SwiGLU` `BatchNorm vs LayerNorm` `He Init` `AdamW & Cosine Warmup` `Canonical PyTorch Loop` `RL (PPO / GRPO)`
+  `GELU / SwiGLU` `BatchNorm vs LayerNorm` `AdamW & Cosine Warmup` `Multi-GPU DDP vs FSDP (ZeRO-3)` `RL (PPO / GRPO)`
 
 ### Phase 3: Multimodal AI, LLMs & Advanced RAG (`curriculum/03-modern-ai-and-genai/`)
 - **[05 — NLP, Self-Attention, Computer Vision & Audio AI](./curriculum/03-modern-ai-and-genai/05_nlp_cv_and_multimodal.md)**  
   `BPE Tokenizers` `Scaled Dot-Product Attention (Q,K,V) & RoPE` `ResNet Skip Highway` `IoU / mAP` `ViT & CLIP` `Whisper & Audio Codecs`
 - **[06 — Generative AI, Fine-Tuning (`LoRA`/`DPO`), `Qdrant` & Production RAG](./curriculum/03-modern-ai-and-genai/06_llms_finetuning_and_rag.md)**  
-  `VRAM Math` `Structured JSON Decoding` `Chunking` `Qdrant Filterable HNSW & Quantization` `Hybrid Search (BM25 + Dense + RRF)` `Cross-Encoder Rerank` `RAGAS` `LoRA / QLoRA / DPO / GRPO` `TTFT / TPOT & vLLM`
+  `VRAM Math` `Context Engineering & Prefix Caching` `Structured JSON` `Qdrant Filterable HNSW & Quantization` `Hybrid RRF + Rerank` `LoRA / QLoRA / DPO / GRPO` `vLLM`
 
 ### Phase 4: Autonomous Agents & MCP (`curriculum/04-agentic-ai/`)
 - **[07 — AI Agents Fundamentals & Workflows](./curriculum/04-agentic-ai/07_ai_agents_fundamentals.md)**  
   `Workflows vs Agents Rubric` `Safe AST ReAct Loop` `Working / Episodic / Semantic Memory` `Plan-and-Execute` `Loop Circuit Breakers`
 - **[08 — Function Calling, LangGraph & Google ADK](./curriculum/04-agentic-ai/08_tools_langgraph_and_adk.md)**  
   `Strict Tool Schemas` `Cyclical StateGraphs` `Google ADK (adk web / eval / deploy)` `Durable HITL Checkpoints`
-- **[09 — Multi-Agent Systems & Model Context Protocol (MCP)](./curriculum/04-agentic-ai/09_multi_agent_and_mcp.md)**  
-  `Context Isolation` `Supervisor & Parallel Topologies` `MCP Tools / Resources / Prompts` `stdio & Streamable HTTP` `MCP Tool-Poisoning Defense`
-- **[10 — Agent Evaluation, Safety, Governance & Token FinOps](./curriculum/04-agentic-ai/10_agent_evals_and_safety.md)**  
-  `LLM-as-a-Judge Debiasing` `OpenTelemetry Spans` `Indirect Prompt Injection` `PyRIT / Garak` `EU AI Act & NIST RMF` `Model Cascading`
+- **[09 — Multi-Agent Systems, `MCP` & `A2A` Protocol](./curriculum/04-agentic-ai/09_multi_agent_and_mcp.md)**  
+  `Context Isolation` `Supervisor & Parallel Topologies` `MCP (stdio / Streamable HTTP)` `A2A Peer Agent Protocol` `Tool-Poisoning Defense`
+- **[10 — Eval-Driven Development, Safety, Governance & Token FinOps](./curriculum/04-agentic-ai/10_agent_evals_and_safety.md)**  
+  `Eval-Driven Development & Golden Sets` `LLM-as-a-Judge Debiasing` `OpenTelemetry` `Indirect Injection` `EU AI Act & NIST RMF` `Model Cascading`
 
 ### Phase 5: Production MLOps, Troubleshooting & Live Coding (`curriculum/05-production-and-practice/`)
-- **[11 — Production MLOps, Drift & Cloud GPU FinOps](./curriculum/05-production-and-practice/11_mlops_cloud_and_finops.md)**  
-  `safetensors & ONNX` `FastAPI Lifespan` `Non-Root Docker` `MLflow & DVC` `Feast Feature Store` `PSI Drift` `Shadow / Canary / A/B` `Spot GPUs`
+- **[11 — Production MLOps, `SSE` Streaming, Drift & Cloud GPU FinOps](./curriculum/05-production-and-practice/11_mlops_cloud_and_finops.md)**  
+  `safetensors & ONNX` `FastAPI Lifespan & SSE Streaming` `Data Flywheels` `Non-Root Docker` `Feast` `PSI Drift` `Shadow / Canary / A/B` `Spot GPUs`
 - **[12 — Real-World System Troubleshooting Scenarios](./curriculum/05-production-and-practice/12_system_troubleshooting_scenarios.md)**  
   `Day-1 Leakage vs Drift` `MCAR/MAR/MNAR` `Catastrophic Forgetting` `CUDA OOM Rescue Stack` `Cost-Matrix Thresholding`
 - **[13 — Hands-On Algorithms from Scratch (NumPy & Python)](./curriculum/05-production-and-practice/13_algorithms_from_scratch.md)**  
@@ -133,6 +147,7 @@ Don't try to cram 13 modules in a weekend. Pick the track aligned with your targ
 | **Notebook 03: Multi-Head Causal Attention** | Tensor head splitting, $\sqrt{d_k}$ scaling, causal mask verification | [Notebook](./notebooks/03_mini_transformer_attention.ipynb) • [Open in Colab](https://colab.research.google.com/github/FirdowsRahaman/ai-ml-fresher-roadmap/blob/main/notebooks/03_mini_transformer_attention.ipynb) |
 | **Starter Repo 1: Air-Gapped Hybrid RAG + SQL Agent** | `BM25 + Vector RRF`, read-only SQL guardrail, intent router + `pytest` suite | **[Explore Starter Code →](./projects/starter-local-rag-agent/README.md)** |
 | **Starter Repo 2: Local Full-Lifecycle MLOps API** | Leak-free `Pipeline`, `FastAPI` lifespan, `PSI` drift endpoint, `Dockerfile` + `pytest` | **[Explore Starter Code →](./projects/starter-local-mlops/README.md)** |
+| **End-to-End AI Product Playbook (Day 0 → Live)** | Unifies all 13 modules: Unit Economics -> Golden Set -> `Qdrant` + `MCP` -> `SSE` -> Flywheel | **[Read Lifecycle Playbook →](./projects/end_to_end_lifecycle_playbook.md)** |
 
 ---
 
