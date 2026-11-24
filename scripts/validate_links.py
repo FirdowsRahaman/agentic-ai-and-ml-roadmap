@@ -29,7 +29,7 @@ def main() -> int:
     for root, dirs, files in os.walk("."):
         dirs[:] = [d for d in dirs if d not in ignore_dirs]
         for f in files:
-            if f.endswith(".md"):
+            if f.endswith(".md") and not os.path.islink(os.path.join(root, f)):
                 rel = os.path.relpath(os.path.join(root, f), ".").replace("\\", "/")
                 md_files.append(rel)
                 with open(rel, encoding="utf-8") as fp:

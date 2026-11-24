@@ -1,100 +1,52 @@
-name: Verify Links, Notebooks & Starter Tests
+name: CI Quality Gate & Verification
 
 on:
   push:
-    branches: [main]
+    branches: [main, refactor/*]
   pull_request:
     branches: [main]
 
 jobs:
   verify:
+    name: Repository Verification & Tests
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - name: Set up Python 3.12
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+          cache: "pip"
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r projects/starter-local-mlops/requirements.txt pandas
+          pip install numpy pandas pytest fastapi httpx
+          pip install -r requirements-docs.txt
 
-      - name: Verify all Markdown relative links and anchors
+      - name: Validate repository architecture and conventions
+        run: python scripts/validate_structure.py
+
+      - name: Validate Markdown links and anchors
+        run: python scripts/validate_links.py
+
+      - name: Validate Jupyter notebooks in isolated environments
+        run: python scripts/validate_notebooks.py
+
+      - name: Run root integrity test suite
+        run: pytest tests/ -v
+
+      - name: Run Starter Kit 1 (Local RAG Agent) test suite
         run: |
-          python - << 'EOF'
-          import os, re, sys
+          PYTHONPATH=projects/intermediate/starter-local-rag-agent pytest projects/intermediate/starter-local-rag-agent -v
 
-          def slugify(heading: str) -> str:
-              h = heading.strip().lstrip("#").strip().lower()
-              h = re.sub(r"[^\w\s-]", "", h)
-              return h.replace(" ", "-")
-
-          headings = {}
-          md_files = []
-          for root, _, files in os.walk("."):
-              if ".git" in root:
-                  continue
-              for f in files:
-                  if f.endswith(".md"):
-                      rel = os.path.relpath(os.path.join(root, f), ".").replace("\\", "/")
-                      md_files.append(rel)
-                      with open(rel, encoding="utf-8") as fp:
-                          headings[rel] = {slugify(line) for line in fp if line.startswith("#")}
-
-          errors = []
-          for rel in sorted(md_files):
-              with open(rel, encoding="utf-8") as fp:
-                  content = fp.read()
-              # Ignore links inside fenced code blocks
-              stripped = re.sub(r"```.*?```", "", content, flags=re.DOTALL)
-              for m in re.finditer(r"\[([^\]]*)\]\(([^)]+)\)", stripped):
-                  target = m.group(2).strip()
-                  if target.startswith(("http://", "https://", "mailto:")):
-                      continue
-                  path_part, _, anchor = target.partition("#")
-                  resolved = os.path.normpath(os.path.join(os.path.dirname(rel), path_part)) if path_part else rel
-                  resolved_rel = os.path.relpath(resolved, ".").replace("\\", "/")
-                  if not os.path.exists(resolved):
-                      errors.append(f"{rel}: missing target '{target}'")
-                  elif anchor and resolved_rel in headings and anchor not in headings[resolved_rel]:
-                      errors.append(f"{rel}: broken anchor '{target}'")
-              for im in re.finditer(r'<img[^>]+src=["\']([^"\']+)["\']', stripped):
-                  src_target = im.group(1).strip()
-                  if src_target.startswith(("http://", "https://", "data:")):
-                      continue
-                  resolved_img = os.path.normpath(os.path.join(os.path.dirname(rel), src_target))
-                  if not os.path.exists(resolved_img):
-                      errors.append(f"{rel}: missing <img src='{src_target}'>")
-
-          import glob, xml.etree.ElementTree as ET
-          for svg_path in sorted(glob.glob("assets/animations/*.svg")):
-              ET.parse(svg_path)
-
-          if errors:
-              print("\n".join(errors))
-              sys.exit(1)
-          print(f"Verified {len(md_files)} Markdown files with zero broken links or anchors!")
-          EOF
-
-      - name: Execute Jupyter Notebook code cells
+      - name: Run Starter Kit 2 (Local MLOps) test suite
         run: |
-          python - << 'EOF'
-          import json, glob
+          PYTHONPATH=projects/intermediate/starter-local-mlops pytest projects/intermediate/starter-local-mlops/tests -v
 
-          for nb_path in sorted(glob.glob("notebooks/*.ipynb")):
-              with open(nb_path, encoding="utf-8") as fp:
-                  nb = json.load(fp)
-              ns = {}
-              for cell in nb["cells"]:
-                  if cell["cell_type"] == "code":
-                      exec("".join(cell["source"]), ns)
-              print(f"Executed {nb_path} successfully!")
-          EOF
-
-      - name: Run Starter Kit Pytest Suites
-        run: |
-          PYTHONPATH=projects/starter-local-rag-agent pytest projects/starter-local-rag-agent -q
-          PYTHONPATH=projects/starter-local-mlops pytest projects/starter-local-mlops -q
+      - name: Build MkDocs documentation site
+        run: mkdocs build
