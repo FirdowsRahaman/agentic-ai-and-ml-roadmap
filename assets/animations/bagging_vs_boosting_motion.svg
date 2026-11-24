@@ -1,0 +1,109 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 340" width="100%" height="auto" role="img" aria-label="Animated comparison of Random Forest parallel bagging vs XGBoost sequential residual boosting">
+  <style>
+    .bg { fill: #FFFFFF; stroke: #CBD5E1; stroke-width: 1.5; }
+    .kicker { font: 700 11px -apple-system, 'Segoe UI', Arial, sans-serif; fill: #2251FF; letter-spacing: 1.6px; }
+    .title { font: 700 20px Georgia, 'Times New Roman', serif; fill: #051C2C; }
+    .panel { font: 700 13.5px -apple-system, 'Segoe UI', Arial, sans-serif; fill: #051C2C; }
+    .box-txt { font: 700 12px -apple-system, 'Segoe UI', Arial, sans-serif; fill: #051C2C; }
+    .small { font: 600 11px -apple-system, 'Segoe UI', Arial, sans-serif; fill: #475569; }
+
+    /* Left: All 3 Bagging trees fire simultaneously! */
+    @keyframes bagGlow {
+      0%, 20%, 100% { fill: #F8FAFC; stroke: #64748B; stroke-width: 1.5; }
+      45%, 75%      { fill: #DBEAFE; stroke: #2251FF; stroke-width: 2.5; }
+    }
+    /* Right: Boosting trees fire sequentially 1 -> 2 -> 3 */
+    @keyframes boost1 { 0%, 30% { fill: #EFF6FF; stroke: #2251FF; stroke-width: 2.5; } 31%, 100% { fill: #F8FAFC; stroke: #94A3B8; } }
+    @keyframes boost2 { 0%, 32% { fill: #F8FAFC; stroke: #94A3B8; } 33%, 64% { fill: #EFF6FF; stroke: #2251FF; stroke-width: 2.5; } 65%, 100% { fill: #F8FAFC; stroke: #94A3B8; } }
+    @keyframes boost3 { 0%, 65% { fill: #F8FAFC; stroke: #94A3B8; } 66%, 96% { fill: #DCFCE7; stroke: #16A34A; stroke-width: 2.5; } 97%, 100% { fill: #F8FAFC; stroke: #94A3B8; } }
+
+    /* Residual error bar shrinks step by step as Tree 1 -> Tree 2 -> Tree 3 fix mistakes! */
+    @keyframes shrinkErr {
+      0%, 28%   { width: 320px; fill: #DC2626; }
+      35%, 62%  { width: 150px; fill: #D97706; }
+      68%, 95%  { width: 38px;  fill: #16A34A; }
+      100%      { width: 320px; fill: #DC2626; }
+    }
+
+    .bag-card { animation: bagGlow 4.5s ease-in-out infinite; }
+    .bt1 { animation: boost1 4.5s infinite; }
+    .bt2 { animation: boost2 4.5s infinite; }
+    .bt3 { animation: boost3 4.5s infinite; }
+    .err-bar { animation: shrinkErr 4.5s ease-in-out infinite; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .bag-card, .bt1, .bt2, .bt3, .err-bar { animation: none; }
+    }
+  </style>
+
+  <rect x="1" y="1" width="958" height="338" rx="4" class="bg"/>
+  <rect x="1" y="1" width="310" height="5" fill="#051C2C"/>
+  <rect x="311" y="1" width="380" height="5" fill="#2251FF"/>
+  <rect x="691" y="1" width="268" height="5" fill="#00A9F4"/>
+
+  <text x="32" y="34" class="kicker">VISUAL INTUITION  |  PARALLEL VOTING vs. SEQUENTIAL RELAY</text>
+  <text x="32" y="60" class="title">Random Forest (All Doctors Vote Together) vs. XGBoost (Relay Fixing Leftover Mistakes)</text>
+  <line x1="32" y1="74" x2="928" y2="74" stroke="#E2E8F0" stroke-width="1"/>
+
+  <!-- LEFT: Random Forest (Bagging) -->
+  <text x="32" y="102" class="panel">Random Forest (Bagging = Parallel → Cuts Variance)</text>
+
+  <rect x="36"  y="124" width="124" height="54" rx="4" class="bag-card"/>
+  <text x="98"  y="147" text-anchor="middle" class="box-txt">Deep Tree 1</text>
+  <text x="98"  y="165" text-anchor="middle" class="small">Random Slice A</text>
+
+  <rect x="176" y="124" width="124" height="54" rx="4" class="bag-card"/>
+  <text x="238" y="147" text-anchor="middle" class="box-txt">Deep Tree 2</text>
+  <text x="238" y="165" text-anchor="middle" class="small">Random Slice B</text>
+
+  <rect x="316" y="124" width="124" height="54" rx="4" class="bag-card"/>
+  <text x="378" y="147" text-anchor="middle" class="box-txt">Deep Tree 3</text>
+  <text x="378" y="165" text-anchor="middle" class="small">Random Slice C</text>
+
+  <!-- Converging Simultaneous Arrows -->
+  <line x1="98"  y1="178" x2="210" y2="232" stroke="#2251FF" stroke-width="2"/>
+  <line x1="238" y1="178" x2="238" y2="232" stroke="#2251FF" stroke-width="2"/>
+  <line x1="378" y1="178" x2="266" y2="232" stroke="#2251FF" stroke-width="2"/>
+
+  <rect x="108" y="232" width="260" height="44" rx="4" fill="#051C2C"/>
+  <text x="238" y="253" text-anchor="middle" font-family="-apple-system, 'Segoe UI', sans-serif" font-size="12.5" font-weight="700" fill="#FFFFFF">Simultaneous Majority Vote</text>
+  <text x="238" y="269" text-anchor="middle" font-family="-apple-system, 'Segoe UI', sans-serif" font-size="10.5" fill="#38BDF8">Trees never see each other's errors!</text>
+
+  <text x="36" y="308" class="small">Great out-of-the-box baseline; safe against noisy overfitting.</text>
+
+  <!-- Divider -->
+  <line x1="466" y1="88" x2="466" y2="320" stroke="#CBD5E1" stroke-width="1.5"/>
+
+  <!-- RIGHT: XGBoost / LightGBM (Boosting) -->
+  <text x="492" y="102" class="panel">XGBoost / LightGBM (Boosting = Relay → Cuts Bias)</text>
+
+  <rect x="492" y="124" width="118" height="54" rx="4" class="bt1"/>
+  <text x="551" y="147" text-anchor="middle" class="box-txt">Tree 1</text>
+  <text x="551" y="165" text-anchor="middle" class="small">Initial Guess</text>
+
+  <rect x="650" y="124" width="118" height="54" rx="4" class="bt2"/>
+  <text x="709" y="147" text-anchor="middle" class="box-txt">Tree 2</text>
+  <text x="709" y="165" text-anchor="middle" class="small">Fixes Tree 1</text>
+
+  <rect x="808" y="124" width="120" height="54" rx="4" class="bt3"/>
+  <text x="868" y="147" text-anchor="middle" class="box-txt">Tree 3</text>
+  <text x="868" y="165" text-anchor="middle" class="small">Fixes Leftovers</text>
+
+  <!-- Sequential Relay Arrows + Animated Residual Baton -->
+  <line x1="610" y1="151" x2="650" y2="151" stroke="#DC2626" stroke-width="2" stroke-dasharray="4 3"/>
+  <line x1="768" y1="151" x2="808" y2="151" stroke="#DC2626" stroke-width="2" stroke-dasharray="4 3"/>
+  <text x="630" y="116" text-anchor="middle" font-family="-apple-system, 'Segoe UI', sans-serif" font-size="10" font-weight="700" fill="#B91C1C">Errors e1</text>
+  <text x="788" y="116" text-anchor="middle" font-family="-apple-system, 'Segoe UI', sans-serif" font-size="10" font-weight="700" fill="#B91C1C">Errors e2</text>
+
+  <circle r="6.5" fill="#DC2626">
+    <animateMotion dur="4.5s" repeatCount="indefinite" path="M 551 151 L 709 151 L 868 151"/>
+  </circle>
+
+  <!-- Live Shrinking Residual Error Meter -->
+  <text x="492" y="218" class="box-txt">Remaining Prediction Error After Each Relay Step:</text>
+  <rect x="492" y="232" width="436" height="24" rx="4" fill="#F1F5F9" stroke="#CBD5E1"/>
+  <rect x="494" y="234" width="320" height="20" rx="3" fill="#DC2626" class="err-bar"/>
+
+  <text x="492" y="278" class="small">Step 1: 42% Error   →   Step 2: 18% Error   →   Step 3+: &lt;4% Error!</text>
+  <text x="492" y="308" class="small">Each shallow tree studies ONLY the mistakes left behind by earlier trees.</text>
+</svg>

@@ -199,25 +199,9 @@ Pulling `Top-50` candidates from `Qdrant` gets high recall, but handing all 50 c
 #### 6.1 Hybrid Retrieval, Cross-Encoder Reranking & The `RAGAS` Triad
 Dense embeddings (`Qwen3-Embedding`, `BGE-M3` with Matryoshka dimension compression) capture semantic gist but blur exact part numbers, error codes (`ERR_409_AUTH`), and product SKUs. Combine `Qdrant` Hybrid `RRF` (`Top 50`) with a **Cross-Encoder Reranker (`Qwen3-Reranker` / `ModernBERT` / `Cohere Rerank 4` -> `Top 5`)** and evaluate continuously using the **`RAGAS` Triad**:
 
-```mermaid
-flowchart TD
-    Q["User Query + ACL Token"] --> QT["1. Query Rewrite / Multi-Query"]
-    QT --> QD["2. Qdrant Hybrid Prefetch (BM25 Sparse + Dense HNSW + ACL Filter)"]
-    QD --> RRF["3. Server-Side Reciprocal Rank Fusion (Top 50)"]
-    RRF --> CE["4. Cross-Encoder Reranker (Qwen3-Reranker / ModernBERT / Cohere 4 -> Top 5)"]
-    CE --> GEN["5. Grounded LLM Generation + Verified Citations"]
-    GEN --> EVAL["6. RAGAS Triad: Context Precision, Faithfulness, Answer Relevance"]
-
-    classDef inp fill:#E0F2FE,stroke:#0284C7,stroke-width:2px,color:#0369A1;
-    classDef ret fill:#FEF3C7,stroke:#D97706,stroke-width:1.5px,color:#92400E;
-    classDef rank fill:#EDE9FE,stroke:#7C3AED,stroke-width:2px,color:#4C1D95;
-    classDef out fill:#DCFCE7,stroke:#16A34A,stroke-width:2px,color:#15803D;
-
-    class Q,QT inp;
-    class QD,RRF ret;
-    class CE,GEN rank;
-    class EVAL out;
-```
+<p align="center">
+  <img src="../../assets/animations/qdrant_hybrid_rerank_motion.svg" width="100%" alt="Animated Qdrant Filterable Hybrid RAG funnel with Reciprocal Rank Fusion and Qwen3 Cross-Encoder Reranking" />
+</p>
 
 ### 7. LLM Inference Optimization: `TTFT`, `TPOT`, `KV Cache` & `vLLM`
 

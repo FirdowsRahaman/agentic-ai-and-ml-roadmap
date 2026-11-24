@@ -169,6 +169,10 @@ Even a perfectly deployed model decays quietly as the outside world changes—so
   - **Data / Covariate Drift ($P(X)$ changes):** *The customers walking into your store changed*—e.g., your loan model was trained on `\$50k` average salaries, and suddenly `\$120k` applicants flood in. Measured with **`PSI`** (`< 0.10` safe, `>= 0.25` retrain!).
   - **Concept Drift ($P(Y \mid X)$ changes):** *The same customers changed what their behavior means*—e.g., input salaries look identical (`PSI = 0.02`), yet a recession makes people default twice as often! Caught only by tracking real outcomes and accuracy over time.
 
+<p align="center">
+  <img src="../../assets/animations/psi_drift_canary_motion.svg" width="100%" alt="Animated PSI Data Drift bell-curve shift triggering automated Shadow and Canary retraining" />
+</p>
+
 <details>
 <summary><b>Deep Dive: Population Stability Index (`PSI`) Equation & Thresholds</b></summary>
 

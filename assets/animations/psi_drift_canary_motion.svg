@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 340" width="100%" height="auto" role="img" aria-label="Animated PSI Data Drift bell-curve shift triggering automated Shadow and Canary retraining">
+  <style>
+    .bg { fill: #FFFFFF; stroke: #CBD5E1; stroke-width: 1.5; }
+    .kicker { font: 700 11px -apple-system, 'Segoe UI', Arial, sans-serif; fill: #2251FF; letter-spacing: 1.6px; }
+    .title { font: 700 20px Georgia, 'Times New Roman', serif; fill: #051C2C; }
+    .panel { font: 700 13.5px -apple-system, 'Segoe UI', Arial, sans-serif; fill: #051C2C; }
+    .box-txt { font: 700 12px -apple-system, 'Segoe UI', Arial, sans-serif; fill: #051C2C; }
+    .small { font: 600 11px -apple-system, 'Segoe UI', Arial, sans-serif; fill: #475569; }
+
+    /* Live distribution slides right away from Training baseline */
+    @keyframes driftSlide {
+      0%, 22%   { transform: translateX(0px); stroke: #2251FF; fill: #2251FF; }
+      52%, 86%  { transform: translateX(118px); stroke: #DC2626; fill: #DC2626; }
+      100%      { transform: translateX(0px); stroke: #2251FF; fill: #2251FF; }
+    }
+    /* PSI alert badge switches when drift crosses >= 0.25 */
+    @keyframes alertShow {
+      0%, 40%   { opacity: 0; }
+      50%, 86%  { opacity: 1; }
+      100%      { opacity: 0; }
+    }
+    /* Pipeline stages light up sequentially after PSI trigger */
+    @keyframes pipe1 { 0%, 48% { fill: #F8FAFC; stroke: #CBD5E1; } 50%, 64% { fill: #EFF6FF; stroke: #2251FF; stroke-width: 2.5; } 65%, 100% { fill: #F8FAFC; stroke: #CBD5E1; } }
+    @keyframes pipe2 { 0%, 64% { fill: #F8FAFC; stroke: #CBD5E1; } 65%, 79% { fill: #EFF6FF; stroke: #2251FF; stroke-width: 2.5; } 80%, 100% { fill: #F8FAFC; stroke: #CBD5E1; } }
+    @keyframes pipe3 { 0%, 79% { fill: #F8FAFC; stroke: #CBD5E1; } 80%, 96% { fill: #DCFCE7; stroke: #16A34A; stroke-width: 2.5; } 97%, 100% { fill: #F8FAFC; stroke: #CBD5E1; } }
+
+    .live-curve { animation: driftSlide 6s ease-in-out infinite; fill-opacity: 0.18; stroke-width: 2.8; }
+    .psi-alert  { animation: alertShow 6s infinite; }
+    .st1 { animation: pipe1 6s infinite; }
+    .st2 { animation: pipe2 6s infinite; }
+    .st3 { animation: pipe3 6s infinite; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .live-curve, .psi-alert, .st1, .st2, .st3 { animation: none; }
+    }
+  </style>
+
+  <rect x="1" y="1" width="958" height="338" rx="4" class="bg"/>
+  <rect x="1" y="1" width="310" height="5" fill="#051C2C"/>
+  <rect x="311" y="1" width="380" height="5" fill="#2251FF"/>
+  <rect x="691" y="1" width="268" height="5" fill="#00A9F4"/>
+
+  <text x="32" y="34" class="kicker">VISUAL INTUITION  |  COVARIATE DRIFT (PSI) &amp; SELF-HEALING ROLLOUT</text>
+  <text x="32" y="60" class="title">When Real-World Users Shift Away from Training Data — Automated MLOps Responds</text>
+  <line x1="32" y1="74" x2="928" y2="74" stroke="#E2E8F0" stroke-width="1"/>
+
+  <!-- LEFT PANEL: Sliding Bell Curves -->
+  <text x="32" y="100" class="panel">1. Population Stability Index (PSI) Drift Monitor</text>
+
+  <line x1="44" y1="268" x2="454" y2="268" stroke="#64748B" stroke-width="1.5"/>
+  <text x="164" y="288" text-anchor="middle" class="small">$50k (Train Mean)</text>
+  <text x="330" y="288" text-anchor="middle" class="small">$95k (Shifted Live Users) →</text>
+
+  <!-- Stationary Training Bell Curve -->
+  <path d="M 54 268 Q 164 95 274 268" fill="#051C2C" fill-opacity="0.10" stroke="#051C2C" stroke-width="2.5"/>
+  <text x="135" y="148" text-anchor="middle" class="box-txt">Training Data</text>
+
+  <!-- Sliding Live Production Bell Curve -->
+  <path d="M 60 268 Q 170 95 280 268" class="live-curve"/>
+
+  <!-- PSI Alert Pill -->
+  <g class="psi-alert">
+    <rect x="226" y="112" width="224" height="30" rx="15" fill="#FEF2F2" stroke="#DC2626" stroke-width="1.8"/>
+    <text x="338" y="131" text-anchor="middle" font-family="-apple-system, 'Segoe UI', sans-serif" font-size="11.5" font-weight="700" fill="#B91C1C">ALERT: PSI = 0.34 (&gt;= 0.25!)</text>
+  </g>
+
+  <text x="44" y="314" class="small">PSI &lt; 0.10 = Healthy  |  PSI &gt;= 0.25 = Trigger Retrain!</text>
+
+  <!-- Divider -->
+  <line x1="482" y1="88" x2="482" y2="320" stroke="#CBD5E1" stroke-width="1.5"/>
+
+  <!-- RIGHT PANEL: Progressive Rollout Pipeline -->
+  <text x="508" y="100" class="panel">2. Automated Safe Rollout (Zero Overnight Risk)</text>
+
+  <rect x="508" y="122" width="416" height="52" rx="4" class="st1"/>
+  <text x="526" y="145" class="box-txt">Step A: Retrain Challenger on Fresh Feast Window</text>
+  <text x="526" y="163" class="small">Point-in-time joins + MLflow PR-AUC gate</text>
+
+  <rect x="508" y="188" width="416" height="52" rx="4" class="st2"/>
+  <text x="526" y="211" class="box-txt">Step B: Shadow Mode (Mirror 100% Live Traffic)</text>
+  <text x="526" y="229" class="small">Verify latency &amp; memory silently — 0% user impact!</text>
+
+  <rect x="508" y="254" width="416" height="52" rx="4" class="st3"/>
+  <text x="526" y="277" class="box-txt">Step C: Canary (1% → 10% → 50%) &amp; A/B Promotion ✓</text>
+  <text x="526" y="295" class="small">Auto-rollback if 5xx errors or p99 latency spike</text>
+</svg>

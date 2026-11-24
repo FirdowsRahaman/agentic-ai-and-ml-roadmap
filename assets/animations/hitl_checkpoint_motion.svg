@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 340" width="100%" height="auto" role="img" aria-label="Animated Human-in-the-Loop durable state checkpointing saving to Postgres with zero RAM idle wait">
+  <style>
+    .bg { fill: #FFFFFF; stroke: #CBD5E1; stroke-width: 1.5; }
+    .kicker { font: 700 11px -apple-system, 'Segoe UI', Arial, sans-serif; fill: #2251FF; letter-spacing: 1.6px; }
+    .title { font: 700 20px Georgia, 'Times New Roman', serif; fill: #051C2C; }
+    .box-txt { font: 700 12.5px -apple-system, 'Segoe UI', Arial, sans-serif; fill: #051C2C; }
+    .white-txt { font: 700 12.5px -apple-system, 'Segoe UI', Arial, sans-serif; fill: #FFFFFF; }
+    .small { font: 600 11px -apple-system, 'Segoe UI', Arial, sans-serif; fill: #475569; }
+
+    /* Worker pod dims to 0% CPU during Stage 2-3 while waiting for human! */
+    @keyframes podSleep {
+      0%, 24%   { opacity: 1; }
+      28%, 68%  { opacity: 0.32; }
+      72%, 100% { opacity: 1; }
+    }
+    /* Human approval green badge lights up at 55%-85% */
+    @keyframes approveFlash {
+      0%, 50%   { fill: #F8FAFC; stroke: #94A3B8; }
+      55%, 88%  { fill: #DCFCE7; stroke: #16A34A; stroke-width: 2.5; }
+      100%      { fill: #F8FAFC; stroke: #94A3B8; }
+    }
+
+    .worker-pod { animation: podSleep 6s infinite; }
+    .human-card { animation: approveFlash 6s infinite; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .worker-pod, .human-card { animation: none; }
+    }
+  </style>
+
+  <rect x="1" y="1" width="958" height="338" rx="4" class="bg"/>
+  <rect x="1" y="1" width="310" height="5" fill="#051C2C"/>
+  <rect x="311" y="1" width="380" height="5" fill="#2251FF"/>
+  <rect x="691" y="1" width="268" height="5" fill="#00A9F4"/>
+
+  <text x="32" y="34" class="kicker">VISUAL INTUITION  |  THE VIDEO-GAME "SAVE SLOT" PATTERN (HITL)</text>
+  <text x="32" y="60" class="title">How LangGraph &amp; Google ADK Pause for 4 Hours Using Zero Server RAM</text>
+  <line x1="32" y1="74" x2="928" y2="74" stroke="#E2E8F0" stroke-width="1"/>
+
+  <!-- Step 1: Agent Proposes Risky Action -->
+  <rect x="32" y="104" width="196" height="62" rx="4" fill="#051C2C"/>
+  <text x="130" y="130" text-anchor="middle" class="white-txt">1. Agent Proposes</text>
+  <text x="130" y="150" text-anchor="middle" font-family="-apple-system, 'Segoe UI', sans-serif" font-size="11" fill="#38BDF8">issue_refund($500)</text>
+
+  <!-- Step 2: Interrupt Gate + Worker Sleeps -->
+  <g class="worker-pod">
+    <rect x="268" y="104" width="204" height="62" rx="4" fill="#EFF6FF" stroke="#2251FF" stroke-width="2"/>
+    <text x="370" y="129" text-anchor="middle" class="box-txt">2. interrupt_before()</text>
+    <text x="370" y="149" text-anchor="middle" class="small">Worker Exits → 0 MB RAM!</text>
+  </g>
+
+  <!-- Bottom Postgres Durable Save Slot -->
+  <rect x="268" y="216" width="204" height="62" rx="4" fill="#051C2C"/>
+  <text x="370" y="242" text-anchor="middle" class="white-txt">Postgres Checkpoint DB</text>
+  <text x="370" y="262" text-anchor="middle" font-family="-apple-system, 'Segoe UI', sans-serif" font-size="11" fill="#38BDF8">Saved: thread_id = "t_42"</text>
+
+  <!-- Step 3: Human Slack Approval -->
+  <rect x="512" y="216" width="196" height="62" rx="4" class="human-card"/>
+  <text x="610" y="242" text-anchor="middle" class="box-txt">3. Manager Approves</text>
+  <text x="610" y="262" text-anchor="middle" class="small">4 Hours Later in Slack ✓</text>
+
+  <!-- Step 4: Reload & Execute -->
+  <rect x="744" y="104" width="184" height="62" rx="4" fill="#DCFCE7" stroke="#16A34A" stroke-width="2"/>
+  <text x="836" y="130" text-anchor="middle" class="box-txt">4. Reload &amp; Execute</text>
+  <text x="836" y="150" text-anchor="middle" font-family="-apple-system, 'Segoe UI', sans-serif" font-size="11" font-weight="700" fill="#15803D">Refund Sent Safely!</text>
+
+  <!-- Connecting Guide Path: 1 -> 2 -> Postgres -> 3 -> 4 -->
+  <path id="hitlPath" d="M 228 135 L 268 135 L 370 166 L 370 216 L 512 247 L 708 247 L 836 166" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="5 4"/>
+
+  <!-- Animated State Orb Traveling Through Save Slot & Waking Up! -->
+  <circle r="8" fill="#2251FF" stroke="#FFFFFF" stroke-width="2">
+    <animateMotion dur="6s" repeatCount="indefinite" path="M 228 135 L 370 135 L 370 247 L 610 247 L 836 135"/>
+  </circle>
+
+  <text x="480" y="314" text-anchor="middle" class="small">Never call time.sleep() waiting for a human — save state to Postgres so any server pod can resume hours later!</text>
+</svg>

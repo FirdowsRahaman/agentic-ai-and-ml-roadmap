@@ -1,0 +1,123 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 340" width="100%" height="auto" role="img" aria-label="Animated comparison of NumPy shape broadcasting and AsyncIO concurrent API execution">
+  <style>
+    .bg { fill: #FFFFFF; stroke: #CBD5E1; stroke-width: 1.5; }
+    .kicker { font: 700 11px -apple-system, 'Segoe UI', Arial, sans-serif; fill: #2251FF; letter-spacing: 1.6px; }
+    .title { font: 700 20px Georgia, 'Times New Roman', serif; fill: #051C2C; }
+    .panel { font: 700 13.5px -apple-system, 'Segoe UI', Arial, sans-serif; fill: #051C2C; }
+    .small { font: 600 11px -apple-system, 'Segoe UI', Arial, sans-serif; fill: #475569; }
+    .cell-txt { font: 700 11px 'Courier New', monospace; fill: #051C2C; }
+    .mean-txt { font: 700 11px 'Courier New', monospace; fill: #FFFFFF; }
+
+    /* Ghost mean row sweeps down across all 4 matrix rows simultaneously */
+    @keyframes broadcastSweep {
+      0%, 15%  { transform: translateY(0px); opacity: 0.95; }
+      35%      { transform: translateY(44px); opacity: 0.75; }
+      55%      { transform: translateY(78px); opacity: 0.75; }
+      75%      { transform: translateY(112px); opacity: 0.75; }
+      90%      { transform: translateY(146px); opacity: 0.85; }
+      100%     { transform: translateY(0px); opacity: 0.95; }
+    }
+
+    /* Sequential bars fill one after another across full 4s cycle */
+    @keyframes sync1 { 0% { width: 0px; } 22%, 100% { width: 68px; } }
+    @keyframes sync2 { 0%, 22% { width: 0px; } 45%, 100% { width: 68px; } }
+    @keyframes sync3 { 0%, 45% { width: 0px; } 68%, 100% { width: 68px; } }
+    @keyframes sync4 { 0%, 68% { width: 0px; } 90%, 100% { width: 68px; } }
+
+    /* Async bars ALL fill together in the first 22% (1.0s)! */
+    @keyframes asyncAll {
+      0%        { width: 0px; }
+      22%, 92%  { width: 280px; }
+      100%      { width: 0px; }
+    }
+
+    .ghost-row { animation: broadcastSweep 4.8s ease-in-out infinite; }
+    .sy1 { animation: sync1 4.8s linear infinite; }
+    .sy2 { animation: sync2 4.8s linear infinite; }
+    .sy3 { animation: sync3 4.8s linear infinite; }
+    .sy4 { animation: sync4 4.8s linear infinite; }
+    .as-bar { animation: asyncAll 4.8s ease-out infinite; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .ghost-row, .sy1, .sy2, .sy3, .sy4, .as-bar { animation: none; }
+    }
+  </style>
+
+  <rect x="1" y="1" width="958" height="338" rx="4" class="bg"/>
+  <rect x="1" y="1" width="310" height="5" fill="#051C2C"/>
+  <rect x="311" y="1" width="380" height="5" fill="#2251FF"/>
+  <rect x="691" y="1" width="268" height="5" fill="#00A9F4"/>
+
+  <text x="32" y="34" class="kicker">VISUAL INTUITION  |  VECTORIZED MEMORY &amp; ASYNC CONCURRENCY</text>
+  <text x="32" y="60" class="title">How NumPy Stretches Shapes Without Loops — And AsyncIO Runs 4 API Calls at Once</text>
+  <line x1="32" y1="74" x2="928" y2="74" stroke="#E2E8F0" stroke-width="1"/>
+
+  <!-- LEFT PANEL: NumPy Broadcasting -->
+  <text x="32" y="100" class="panel">1. NumPy Broadcasting: X (4, 3) - mean (3,) → Zero Python Loops</text>
+
+  <!-- Stationary 4x3 Matrix X -->
+  <text x="32" y="172" class="small">Row 0</text>
+  <text x="32" y="206" class="small">Row 1</text>
+  <text x="32" y="240" class="small">Row 2</text>
+  <text x="32" y="274" class="small">Row 3</text>
+
+  <!-- Row 0..3 Cells -->
+  <g fill="#F8FAFC" stroke="#94A3B8" stroke-width="1.2">
+    <rect x="86" y="154" width="84" height="26" rx="2"/><rect x="176" y="154" width="84" height="26" rx="2"/><rect x="266" y="154" width="84" height="26" rx="2"/>
+    <rect x="86" y="188" width="84" height="26" rx="2"/><rect x="176" y="188" width="84" height="26" rx="2"/><rect x="266" y="188" width="84" height="26" rx="2"/>
+    <rect x="86" y="222" width="84" height="26" rx="2"/><rect x="176" y="222" width="84" height="26" rx="2"/><rect x="266" y="222" width="84" height="26" rx="2"/>
+    <rect x="86" y="256" width="84" height="26" rx="2"/><rect x="176" y="256" width="84" height="26" rx="2"/><rect x="266" y="256" width="84" height="26" rx="2"/>
+  </g>
+  <text x="128" y="171" text-anchor="middle" class="cell-txt">10.0</text><text x="218" y="171" text-anchor="middle" class="cell-txt">200</text><text x="308" y="171" text-anchor="middle" class="cell-txt">0.5</text>
+  <text x="128" y="205" text-anchor="middle" class="cell-txt">12.0</text><text x="218" y="205" text-anchor="middle" class="cell-txt">180</text><text x="308" y="205" text-anchor="middle" class="cell-txt">0.8</text>
+  <text x="128" y="239" text-anchor="middle" class="cell-txt">9.0</text><text x="218" y="239" text-anchor="middle" class="cell-txt">220</text><text x="308" y="239" text-anchor="middle" class="cell-txt">0.3</text>
+  <text x="128" y="273" text-anchor="middle" class="cell-txt">15.0</text><text x="218" y="273" text-anchor="middle" class="cell-txt">250</text><text x="308" y="273" text-anchor="middle" class="cell-txt">0.9</text>
+
+  <!-- Animated Broadcast Mean Row (3,) -->
+  <text x="32" y="128" font-family="-apple-system, 'Segoe UI', sans-serif" font-size="11" font-weight="700" fill="#2251FF">mean</text>
+  <g class="ghost-row">
+    <rect x="86" y="110" width="84" height="26" rx="2" fill="#2251FF" fill-opacity="0.88"/>
+    <rect x="176" y="110" width="84" height="26" rx="2" fill="#2251FF" fill-opacity="0.88"/>
+    <rect x="266" y="110" width="84" height="26" rx="2" fill="#2251FF" fill-opacity="0.88"/>
+    <text x="128" y="127" text-anchor="middle" class="mean-txt">- 11.5</text>
+    <text x="218" y="127" text-anchor="middle" class="mean-txt">- 212</text>
+    <text x="308" y="127" text-anchor="middle" class="mean-txt">- 0.6</text>
+  </g>
+  <text x="364" y="216" class="small">1D row</text>
+  <text x="364" y="232" class="small">stretches!</text>
+
+  <text x="86" y="310" class="small">C/SIMD stretches (3,) across all 4 rows with zero memory copies.</text>
+
+  <!-- Divider -->
+  <line x1="468" y1="88" x2="468" y2="320" stroke="#CBD5E1" stroke-width="1.5"/>
+
+  <!-- RIGHT PANEL: Sync vs AsyncIO -->
+  <text x="494" y="100" class="panel">2. Sync Loop (4.0s Wait) vs. asyncio.gather() (1.0s Total!)</text>
+
+  <!-- Sync Blocking Track -->
+  <text x="494" y="132" font-family="-apple-system, 'Segoe UI', sans-serif" font-size="11.5" font-weight="700" fill="#B91C1C">Sync Loop (Waits 1-by-1 → 4.0s):</text>
+  <rect x="494" y="142" width="290" height="22" rx="3" fill="#FEF2F2" stroke="#FCA5A5"/>
+  <rect x="496" y="144" width="68" height="18" rx="2" fill="#DC2626" class="sy1"/>
+  <rect x="568" y="144" width="68" height="18" rx="2" fill="#DC2626" class="sy2"/>
+  <rect x="640" y="144" width="68" height="18" rx="2" fill="#DC2626" class="sy3"/>
+  <rect x="712" y="144" width="68" height="18" rx="2" fill="#DC2626" class="sy4"/>
+  <text x="796" y="157" class="small">Slow (4×1s)</text>
+
+  <!-- Async Concurrent Track -->
+  <text x="494" y="192" font-family="-apple-system, 'Segoe UI', sans-serif" font-size="11.5" font-weight="700" fill="#15803D">asyncio.gather() (All 4 Burners On Together → 1.0s!):</text>
+
+  <text x="494" y="216" class="small">API #1</text>
+  <rect x="546" y="203" width="284" height="16" rx="2" fill="#F1F5F9"/><rect x="548" y="205" width="280" height="12" rx="2" fill="#051C2C" class="as-bar"/>
+
+  <text x="494" y="240" class="small">API #2</text>
+  <rect x="546" y="227" width="284" height="16" rx="2" fill="#F1F5F9"/><rect x="548" y="229" width="280" height="12" rx="2" fill="#2251FF" class="as-bar"/>
+
+  <text x="494" y="264" class="small">API #3</text>
+  <rect x="546" y="251" width="284" height="16" rx="2" fill="#F1F5F9"/><rect x="548" y="253" width="280" height="12" rx="2" fill="#00A9F4" class="as-bar"/>
+
+  <text x="494" y="288" class="small">API #4</text>
+  <rect x="546" y="275" width="284" height="16" rx="2" fill="#F1F5F9"/><rect x="548" y="277" width="280" height="12" rx="2" fill="#16A34A" class="as-bar"/>
+
+  <text x="840" y="250" font-family="-apple-system, 'Segoe UI', sans-serif" font-size="11.5" font-weight="700" fill="#15803D">Done in 1s!</text>
+  <text x="494" y="314" class="small">Essential when fetching 10 LLM completions or Qdrant chunks concurrently.</text>
+</svg>

@@ -167,6 +167,10 @@ Reading order status is harmless—but what happens when your agent wants to **i
   2. Slack/UI pings a human reviewer with the proposed action.
   3. Hours later, when the human clicks **Approve**, the server reloads `thread_id` from Postgres and resumes from that exact step!
 
+<p align="center">
+  <img src="../../assets/animations/hitl_checkpoint_motion.svg" width="100%" alt="Animated Human-in-the-Loop durable state checkpointing saving to Postgres with zero RAM idle wait" />
+</p>
+
 ---
 
 ## Mini Hands-On Lab (15-Minute Exercise)

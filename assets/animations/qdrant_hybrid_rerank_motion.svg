@@ -1,0 +1,99 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 340" width="100%" height="auto" role="img" aria-label="Animated Qdrant Filterable Hybrid RAG funnel with Reciprocal Rank Fusion and Qwen3 Cross-Encoder Reranking">
+  <style>
+    .bg { fill: #FFFFFF; stroke: #CBD5E1; stroke-width: 1.5; }
+    .kicker { font: 700 11px -apple-system, 'Segoe UI', Arial, sans-serif; fill: #2251FF; letter-spacing: 1.6px; }
+    .title { font: 700 19.5px Georgia, 'Times New Roman', serif; fill: #051C2C; }
+    .box-title { font: 700 12.5px -apple-system, 'Segoe UI', Arial, sans-serif; fill: #051C2C; }
+    .white-title { font: 700 12.5px -apple-system, 'Segoe UI', Arial, sans-serif; fill: #FFFFFF; }
+    .small { font: 600 10.5px -apple-system, 'Segoe UI', Arial, sans-serif; fill: #475569; }
+
+    /* Rank #14 exact SKU match gets promoted up to #1 by Cross-Encoder! */
+    @keyframes promoteCard {
+      0%, 25%   { transform: translateY(52px); }
+      55%, 88%  { transform: translateY(0px); }
+      100%      { transform: translateY(52px); }
+    }
+    @keyframes demoteNoise {
+      0%, 25%   { transform: translateY(0px); opacity: 1; }
+      55%, 88%  { transform: translateY(52px); opacity: 0.45; }
+      100%      { transform: translateY(0px); opacity: 1; }
+    }
+
+    .winner-doc { animation: promoteCard 5s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
+    .noisy-doc  { animation: demoteNoise 5s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .winner-doc, .noisy-doc { animation: none; }
+    }
+  </style>
+
+  <rect x="1" y="1" width="958" height="338" rx="4" class="bg"/>
+  <rect x="1" y="1" width="310" height="5" fill="#051C2C"/>
+  <rect x="311" y="1" width="380" height="5" fill="#2251FF"/>
+  <rect x="691" y="1" width="268" height="5" fill="#00A9F4"/>
+
+  <text x="32" y="34" class="kicker">VISUAL INTUITION  |  MULTI-STAGE PRODUCTION RAG FUNNEL</text>
+  <text x="32" y="60" class="title">How Qdrant Hybrid Search + Qwen3-Reranker Narrow 1M Chunks to the Exact Top-5</text>
+  <line x1="32" y1="74" x2="928" y2="74" stroke="#E2E8F0" stroke-width="1"/>
+
+  <!-- STAGE 1: Dual Query Streams -->
+  <rect x="28" y="102" width="188" height="58" rx="4" fill="#EFF6FF" stroke="#2251FF" stroke-width="1.5"/>
+  <text x="122" y="125" text-anchor="middle" class="box-title">1a. Dense Embedding</text>
+  <text x="122" y="144" text-anchor="middle" class="small">Qwen3-Embedding (Meaning)</text>
+
+  <rect x="28" y="186" width="188" height="58" rx="4" fill="#ECFEFF" stroke="#00838F" stroke-width="1.5"/>
+  <text x="122" y="209" text-anchor="middle" class="box-title">1b. Sparse BM25</text>
+  <text x="122" y="228" text-anchor="middle" class="small">Exact SKU / ERR_409 Match</text>
+
+  <!-- Paths into Qdrant -->
+  <path d="M 216 131 L 266 160" fill="none" stroke="#2251FF" stroke-width="2"/>
+  <path d="M 216 215 L 266 184" fill="none" stroke="#00838F" stroke-width="2"/>
+  <circle r="5" fill="#2251FF"><animateMotion dur="2.2s" repeatCount="indefinite" path="M 216 131 L 266 160"/></circle>
+  <circle r="5" fill="#00A9F4"><animateMotion dur="2.2s" repeatCount="indefinite" path="M 216 215 L 266 184"/></circle>
+
+  <!-- STAGE 2: Qdrant Filterable HNSW + RRF -->
+  <rect x="266" y="102" width="222" height="142" rx="5" fill="#051C2C"/>
+  <text x="377" y="128" text-anchor="middle" class="white-title">2. Qdrant Hybrid Engine</text>
+  <text x="377" y="148" text-anchor="middle" font-family="-apple-system, 'Segoe UI', sans-serif" font-size="11" fill="#38BDF8">Filterable HNSW + Fusion.RRF</text>
+
+  <rect x="284" y="162" width="186" height="28" rx="3" fill="#DCFCE7"/>
+  <text x="377" y="180" text-anchor="middle" font-family="-apple-system, 'Segoe UI', sans-serif" font-size="10.5" font-weight="700" fill="#15803D">ACL Filter: tenant = "acme" ✓</text>
+
+  <rect x="284" y="198" width="186" height="28" rx="3" fill="#FEE2E2"/>
+  <text x="377" y="216" text-anchor="middle" font-family="-apple-system, 'Segoe UI', sans-serif" font-size="10.5" font-weight="700" fill="#B91C1C">Other Tenants Blocked ✕</text>
+
+  <!-- Arrow Qdrant -> Reranker (Top 50) -->
+  <line x1="488" y1="173" x2="538" y2="173" stroke="#051C2C" stroke-width="2"/>
+  <text x="513" y="163" text-anchor="middle" class="small">Top 50</text>
+  <circle r="5" fill="#051C2C"><animateMotion dur="2.2s" repeatCount="indefinite" path="M 488 173 L 538 173"/></circle>
+
+  <!-- STAGE 3: Cross-Encoder Reranker Promoting Exact Match -->
+  <rect x="538" y="102" width="236" height="142" rx="5" fill="#F8FAFC" stroke="#2251FF" stroke-width="2"/>
+  <text x="656" y="124" text-anchor="middle" class="box-title">3. Cross-Encoder Reranker</text>
+  <text x="656" y="141" text-anchor="middle" class="small">Qwen3-Reranker / Cohere 4</text>
+
+  <!-- Animated Re-Ordering Slots inside Reranker -->
+  <g class="winner-doc">
+    <rect x="554" y="152" width="204" height="32" rx="3" fill="#DCFCE7" stroke="#16A34A" stroke-width="1.5"/>
+    <text x="656" y="172" text-anchor="middle" font-family="-apple-system, 'Segoe UI', sans-serif" font-size="10.5" font-weight="700" fill="#15803D">★ Promoted #1: Policy POL-409</text>
+  </g>
+  <g class="noisy-doc">
+    <rect x="554" y="152" width="204" height="32" rx="3" fill="#F1F5F9" stroke="#94A3B8"/>
+    <text x="656" y="172" text-anchor="middle" class="small">Demoted #38: Vague FAQ Intro</text>
+  </g>
+
+  <!-- Arrow Reranker -> Final Top 5 -->
+  <line x1="774" y1="173" x2="812" y2="173" stroke="#16A34A" stroke-width="2.5"/>
+  <text x="793" y="163" text-anchor="middle" font-family="-apple-system, 'Segoe UI', sans-serif" font-size="10.5" font-weight="700" fill="#15803D">Top 5</text>
+
+  <!-- STAGE 4: Clean Grounded LLM Context -->
+  <rect x="812" y="102" width="120" height="142" rx="5" fill="#DCFCE7" stroke="#16A34A" stroke-width="2"/>
+  <text x="872" y="146" text-anchor="middle" class="box-title">4. LLM</text>
+  <text x="872" y="166" text-anchor="middle" class="box-title">Context</text>
+  <text x="872" y="190" text-anchor="middle" class="small">High Signal</text>
+  <text x="872" y="208" text-anchor="middle" class="small">Cited Answer</text>
+
+  <!-- Bottom Summary Strip -->
+  <rect x="28" y="270" width="904" height="44" rx="3" fill="#051C2C"/>
+  <text x="480" y="297" text-anchor="middle" font-family="-apple-system, 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#F8FAFC">1,000,000 Chunks  →  Qdrant Hybrid RRF (Top 50 in ~8ms)  →  Cross-Encoder Reranker (Top 5)  →  Zero "Lost-in-the-Middle" Noise!</text>
+</svg>

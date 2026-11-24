@@ -95,28 +95,9 @@ Linear models draw straight boundaries—so they struggle when risk depends on n
   - **`Random Forest` (Bagging = Parallel Voting):** Asks **100 independent doctors** (each given a slightly shuffled set of patient charts and columns) at the same time and takes a majority vote—canceling out individual blind spots.
   - **`XGBoost` / `LightGBM` (Boosting = Relay Team Fixing Mistakes):** Doctor #1 makes initial guesses; Doctor #2 studies **only the patients Doctor #1 got wrong**; Doctor #3 studies **the leftover mistakes of #1 + #2**, and so on for 200+ small steps!
 
-```mermaid
-flowchart LR
-    subgraph BAG["Bagging: Random Forest (Parallel -> Reduces Variance)"]
-        direction TB
-        B1["Tree 1 (Bootstrap Slice A)"]
-        B2["Tree 2 (Bootstrap Slice B)"]
-        B3["Tree 3 (Bootstrap Slice C)"]
-        VOTE["Average / Majority Vote"]
-        B1 & B2 & B3 --> VOTE
-    end
-
-    subgraph BOOST["Boosting: XGBoost / LightGBM (Sequential -> Reduces Bias)"]
-        direction LR
-        T1["Shallow Tree 1"] -->|"Residual Errors e1"| T2["Shallow Tree 2"] -->|"Residual Errors e2"| T3["Shallow Tree 3"] --> SUM["Weighted Additive Sum"]
-    end
-
-    classDef bag fill:#E0F2FE,stroke:#0284C7,stroke-width:1.5px,color:#0369A1;
-    classDef boost fill:#FEF3C7,stroke:#D97706,stroke-width:1.5px,color:#92400E;
-
-    class B1,B2,B3,VOTE bag;
-    class T1,T2,T3,SUM boost;
-```
+<p align="center">
+  <img src="../../assets/animations/bagging_vs_boosting_motion.svg" width="100%" alt="Animated comparison of Random Forest parallel bagging vs XGBoost sequential residual boosting" />
+</p>
 
 | Dimension | Single Decision Tree | Random Forest (Bagging) | Gradient Boosting (`XGBoost` / `LightGBM` / `CatBoost`) |
 |---|---|---|---|

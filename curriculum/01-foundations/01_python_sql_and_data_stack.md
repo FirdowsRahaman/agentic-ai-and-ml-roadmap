@@ -233,6 +233,10 @@ Once your data pipeline is clean, shipping it as a reliable AI service relies on
 3. **`async` / `await` (Kitchen Multitasking for Network Calls):** Waiting for an LLM API is like waiting for water to boil. Synchronous code stares at Pot #1 for 1 second, then Pot #2 for 1 second (`10 pots = 10s`). **`asyncio.gather()`** turns on all 10 burners at once so all 10 finish in **`~1s` total**!
 4. **`pytest` (Automated Code Checker):** Runs small `assert` checks automatically on every code save so bugs get caught in 1 second.
 
+<p align="center">
+  <img src="../../assets/animations/numpy_async_motion.svg" width="100%" alt="Animated comparison of NumPy shape broadcasting and AsyncIO concurrent API execution" />
+</p>
+
 ```python
 import asyncio
 from pydantic import BaseModel, Field, ValidationError
