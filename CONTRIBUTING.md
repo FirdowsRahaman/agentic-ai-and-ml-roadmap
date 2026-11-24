@@ -19,7 +19,7 @@ Thank you for helping improve this open-source learning path for aspiring AI/ML 
 
 ```bash
 # 1. Run starter kit unit tests
-pytest projects/starter-local-rag-agent projects/starter-local-mlops
+pytest projects/intermediate/starter-local-rag-agent projects/intermediate/starter-local-mlops
 
 # 2. Preview optional MkDocs documentation site locally
 pip install mkdocs-material

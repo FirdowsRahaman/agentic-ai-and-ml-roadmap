@@ -1,6 +1,6 @@
 # Real-World AI/ML Portfolio Projects (Local & Cloud Blueprints + Starter Kits)
 
-[← Back to Roadmap](../README.md) | [End-to-End Lifecycle Playbook →](./end_to_end_lifecycle_playbook.md) | [Starter 1: Local RAG + SQL Agent →](./starter-local-rag-agent/README.md) | [Starter 2: Local MLOps →](./starter-local-mlops/README.md)
+[← Back to Roadmap](../README.md) | [End-to-End Lifecycle Playbook →](./end_to_end_lifecycle_playbook.md) | [Starter 1: Local RAG + SQL Agent →](./intermediate/starter-local-rag-agent/README.md) | [Starter 2: Local MLOps →](./intermediate/starter-local-mlops/README.md)
 
 ---
 
@@ -21,7 +21,7 @@ This curated collection is divided into two tracks: plus **2 runnable starter ki
 ## Local Project 1: Private Air-Gapped Desktop RAG & Multi-Tool Agent
 > **Key Skills:** Ollama, Qwen 3.5 / Gemma 3 / Llama 4, Qdrant (Embedded Hybrid Search), DuckDB (SQL), LangGraph  
 > **Hardware:** Any 8GB-16GB RAM laptop or Apple Silicon / RTX GPU (\$0 API Cost)  
-> **Runnable Starter Code:** **[Open `starter-local-rag-agent/` →](./starter-local-rag-agent/README.md)**
+> **Runnable Starter Code:** **[Open `starter-local-rag-agent/` →](./intermediate/starter-local-rag-agent/README.md)**
 
 ### The Problem
 Law firms, healthcare clinics, and defense researchers face strict privacy regulations (HIPAA/GDPR). They cannot upload confidential documents or tabular records to public cloud APIs. They need an **offline, air-gapped AI copilot** running locally on consumer hardware.
@@ -91,7 +91,7 @@ flowchart LR
 
 ## Local Project 3: Autograd Engine & Character-Level Transformer from Scratch
 > **Key Skills:** Pure Python, NumPy, Reverse-Mode Autodiff, Scaled Dot-Product Attention, `AdamW`  
-> **Hardware:** Any laptop CPU (\$0 Cloud Cost) | **Companion Lab:** [Open Attention Notebook](../notebooks/03_mini_transformer_attention.ipynb)
+> **Hardware:** Any laptop CPU (\$0 Cloud Cost) | **Companion Lab:** [Open Attention Notebook](../notebooks/deep-learning/03_mini_transformer_attention.ipynb)
 
 ### Implementation Architecture
 1. **Micro-Autograd Engine:** Scalar/tensor `Value` DAG node tracking `.data`, `.grad`, and topological `.backward()` chain-rule propagation.
@@ -102,7 +102,7 @@ flowchart LR
 ## Local Project 4: Full-Lifecycle Local MLOps Pipeline with MLflow, Optuna & Docker
 > **Key Skills:** Scikit-Learn / XGBoost, Optuna, MLflow, FastAPI, Non-Root Docker, PSI Drift, Pytest  
 > **Hardware:** Any laptop (\$0 Cloud Cost)  
-> **Runnable Starter Code:** **[Open `starter-local-mlops/` →](./starter-local-mlops/README.md)**
+> **Runnable Starter Code:** **[Open `starter-local-mlops/` →](./intermediate/starter-local-mlops/README.md)**
 
 ### Implementation Architecture
 1. **Leak-Free Training Pipeline:** `ColumnTransformer` + `GradientBoostingClassifier` tuned via Bayesian search, logging `PR-AUC`, `F1`, and artifacts.
@@ -225,10 +225,10 @@ flowchart TD
 
 | Track | Project | Core Stack | Cloud Spend | Primary Differentiator |
 |---|---|---|---|---|
-| **Local** | **1. Air-Gapped RAG & SQL Copilot** ([Starter](./starter-local-rag-agent/README.md)) | Ollama, Qdrant Hybrid, DuckDB | **\$0** | Offline privacy + Qdrant RRF + DuckDB SQL routing |
+| **Local** | **1. Air-Gapped RAG & SQL Copilot** ([Starter](./intermediate/starter-local-rag-agent/README.md)) | Ollama, Qdrant Hybrid, DuckDB | **\$0** | Offline privacy + Qdrant RRF + DuckDB SQL routing |
 | **Local** | **2. Edge CV Multi-Object Tracker** | YOLO26, ONNX, ByteTrack, OpenCV | **\$0** | NMS-free 45+ FPS edge tracking & dwell analytics |
 | **Local** | **3. Autograd & Mini-Transformer** | Pure Python, NumPy | **\$0** | First-principles mastery of backprop & causal attention |
-| **Local** | **4. Full-Lifecycle Local MLOps** ([Starter](./starter-local-mlops/README.md)) | Scikit-Learn, FastAPI, Docker, PSI | **\$0** | End-to-end API, non-root Docker, PSI drift & Pytest |
+| **Local** | **4. Full-Lifecycle Local MLOps** ([Starter](./intermediate/starter-local-mlops/README.md)) | Scikit-Learn, FastAPI, Docker, PSI | **\$0** | End-to-end API, non-root Docker, PSI drift & Pytest |
 | **Cloud** | **5. Serverless AWS IDP Pipeline** | Bedrock, Textract, Comprehend | Pay-per-use | Layout table OCR + pre-LLM HIPAA/GDPR PII redaction |
 | **Cloud** | **6. GCP Video Semantic Search** | Vertex Multimodal, BigQuery HNSW | Pay-per-use | Sub-100ms vector search over video + Gemini grounding |
 | **Cloud** | **7. Google ADK + MCP Ops Copilot** | `google-adk`, FastMCP, Cloud Run | Pay-per-use | Hierarchical subagents + MCP tools + `HITL` gates |

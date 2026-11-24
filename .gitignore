@@ -1,13 +1,32 @@
+# Operating System
 .DS_Store
 Thumbs.db
-__pycache__/
+
+# Python & Packaging
 *.py[cod]
-.ipynb_checkpoints/
+__pycache__/
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Testing & Linters
 .pytest_cache/
-.venv/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual Environments
 venv/
+.venv/
+env/
 .env
+
+# Documentation Builds
 site/
-projects/starter-local-mlops/artifacts/
-qdrant_local/
-qdrant_db/
+.cache/
+
+# IDE
+.vscode/
+.idea/

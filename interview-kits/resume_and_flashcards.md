@@ -1,6 +1,6 @@
 # AI/ML & Agent Systems Resume Playbook, Take-Home Rubric & Quick Flashcards
 
-[← SQL & Coding Screenings](./sql_and_coding_screenings.md) | [Home](../README.md) | [Portfolio Projects →](../projects/README.md)
+[← SQL & Coding Screenings](./machine-learning/sql_and_coding_screenings.md) | [Home](../README.md) | [Portfolio Projects →](../projects/README.md)
 
 ---
 
@@ -94,4 +94,4 @@ Recruiters and hiring managers scan a fresher resume in **8-12 seconds**. Avoid 
 
 ---
 
-[← SQL & Coding Screenings](./sql_and_coding_screenings.md) | [Home](../README.md) | [Portfolio Projects →](../projects/README.md)
+[← SQL & Coding Screenings](./machine-learning/sql_and_coding_screenings.md) | [Home](../README.md) | [Portfolio Projects →](../projects/README.md)

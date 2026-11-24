@@ -1,6 +1,6 @@
 # End-to-End AI Product Lifecycle Playbook: Day-0 Idea to Live Flywheel
 
-[← Back to Portfolio Projects](./README.md) | [Home](../README.md) | [Starter 1: RAG + SQL Agent →](./starter-local-rag-agent/README.md) | [Starter 2: Local MLOps →](./starter-local-mlops/README.md)
+[← Back to Portfolio Projects](./README.md) | [Home](../README.md) | [Starter 1: RAG + SQL Agent →](./intermediate/starter-local-rag-agent/README.md) | [Starter 2: Local MLOps →](./intermediate/starter-local-mlops/README.md)
 
 ---
 
@@ -38,18 +38,18 @@ Real projects never begin with a clean Kaggle CSV:
 2. **150-Row Golden Dataset:** Curate 100 routine + 50 adversarial/edge-case queries labeled by two domain reviewers (verifying **Cohen's $\kappa \ge 0.80$** inter-annotator agreement). Wire this dataset into `pytest` / CI **before** iterating on models.
 
 ## Stage 3: Ship the Simplest Leak-Free Baseline First
-- **Tabular / Risk Track:** Chronological split -> `StandardScaler` + `LogisticRegression` / `TabPFN` / `LightGBM` calibrated with `CalibratedClassifierCV` + `SHAP` attributions ([Module 03](../curriculum/02-core-ml-and-dl/03_classical_ml_and_recsys.md)).
-- **GenAI / Agent Track:** Deterministic workflow router + single-call `BM25` + Flash/8B LLM with grammar-constrained `Pydantic` JSON output ([Module 06](../curriculum/03-modern-ai-and-genai/06_llms_finetuning_and_rag.md)).
+- **Tabular / Risk Track:** Chronological split -> `StandardScaler` + `LogisticRegression` / `TabPFN` / `LightGBM` calibrated with `CalibratedClassifierCV` + `SHAP` attributions ([Module 03](../curriculum/02-machine-learning/03_classical_ml_and_recsys.md)).
+- **GenAI / Agent Track:** Deterministic workflow router + single-call `BM25` + Flash/8B LLM with grammar-constrained `Pydantic` JSON output ([Module 06](../curriculum/04-generative-ai/06_llms_finetuning_and_rag.md)).
 
 ## Stage 4: Trace-Driven Error Analysis (Eval-Driven Development)
 Inspect 50-100 failed baseline spans in `Arize Phoenix` / `LangSmith` (`OpenTelemetry`) and categorize failures quantitatively:
 - *Missing SKU / Acronym?* -> Upgrade retrieval to **`Qdrant` Hybrid (`BM25` Sparse + Dense `HNSW` + `Fusion.RRF`)** + Contextual Retrieval headers.
 - *Right doc at Rank 18, ignored by LLM?* -> Add **`Qwen3-Reranker` / `ModernBERT` / `Cohere Rerank 4` (`Top 40 -> Top 5`)** and optimize **Context Engineering** prefix ordering.
 - *Consistent tone/DSL formatting gap or high frontier API spend?* -> Distill your frontier teacher's verified traces into an 8B **`QLoRA`** student served on **`vLLM`**.
-- *Multi-step dynamic tool recovery required?* -> Introduce a bounded **`LangGraph` / `Google ADK`** loop (`max_steps = 6`) connected via **`MCP`** (tools) and **`A2A`** (peer agents) with durable **`HITL` checkpoints** on state mutations ([Modules 07-09](../curriculum/04-agentic-ai/09_multi_agent_and_mcp.md)).
+- *Multi-step dynamic tool recovery required?* -> Introduce a bounded **`LangGraph` / `Google ADK`** loop (`max_steps = 6`) connected via **`MCP`** (tools) and **`A2A`** (peer agents) with durable **`HITL` checkpoints** on state mutations ([Modules 07-09](../curriculum/05-agentic-ai/09_multi_agent_and_mcp.md)).
 
 ## Stage 5: Full-Stack Streaming UX (`FastAPI` `SSE`), Non-Root `Docker` & CI Gate
-1. **Streaming UX:** Expose `/chat/stream` via `FastAPI` `StreamingResponse` (`text/event-stream`), emitting `status` frames (`"Searching Qdrant..."`), incremental `token` frames, and a final `trace_id` + verified `citation_ids` payload ([Module 11](../curriculum/05-production-and-practice/11_mlops_cloud_and_finops.md)).
+1. **Streaming UX:** Expose `/chat/stream` via `FastAPI` `StreamingResponse` (`text/event-stream`), emitting `status` frames (`"Searching Qdrant..."`), incremental `token` frames, and a final `trace_id` + verified `citation_ids` payload ([Module 11](../curriculum/06-production-ai/11_mlops_cloud_and_finops.md)).
 2. **Container & CI/CD Gate:** Package in a non-root `python:3.12-slim` `Dockerfile`; block GitHub Actions PR merges if `pytest` fails or Golden Set `RAGAS Faithfulness` / `PR-AUC` drops `>2%`.
 
 ## Stage 6: Progressive Rollout, Drift Tripwires & The Continuous Data Flywheel
