@@ -66,7 +66,7 @@ Research benchmarking LLM judges ([Zheng et al., NeurIPS 2023 — *MT-Bench*](ht
 ### 2. Observability, Prompt Injection & Red Teaming
 
 #### 2.1 Span-Level Observability & Distributed Tracing (`OpenTelemetry`)
-A single HTTP `200 OK` hides a 7-step agent trace. **Distributed Tracing** records hierarchical **Spans** under a root `trace_id` — logging exact prompts, tool JSON inputs/outputs, token counts, model latency (`TTFT`/`TPOT`), and error stack traces at every step so failures can be replayed deterministically.
+- **In Plain English (The Airplane Flight Recorder):** When an agent takes 14 seconds or gives a wrong refund answer, a basic server log saying `200 OK` tells you nothing. **`OpenTelemetry` Tracing** acts like a flight-recorder black box: every user click gets one **`trace_id`** broken into timed sub-bars called **`Spans`** (*Span 1: Router `120ms` -> Span 2: Qdrant Search `18ms` -> Span 3: SQL Tool `45ms` -> Span 4: LLM Reply `900ms`*), logging exact inputs, outputs, and token cost at every step.
 
 ---
 

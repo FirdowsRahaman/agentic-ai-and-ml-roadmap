@@ -94,9 +94,11 @@ def stream_batches(file_path: str, batch_size: int = 64) -> Iterator[list[str]]:
 
 ---
 
-### 2. Vectorized Computing with NumPy
+### 2. Vectorized Computing with `NumPy`
 
-#### 2.1 Why NumPy Is 30×–100× Faster & How Broadcasting Works
+> **What is `NumPy`?** Short for *Numerical Python*, `NumPy` is the foundational math library underneath almost every AI tool. Standard Python only knows single numbers and slow lists; `NumPy` gives Python fast **grids of numbers (`ndarray`)** so you can add or multiply a million numbers in one line of code—no `for` loops needed.
+
+#### 2.1 Why `NumPy` Is 30×–100× Faster & How Broadcasting Works
 - **In Plain English:** A Python `list` scatters numbers in separate boxes across memory and checks every item's type one by one. A **NumPy array** packs same-type numbers side-by-side in one solid strip of memory, letting your CPU multiply dozens of numbers in a single step.
 - **Broadcasting (Stretching Shapes Automatically):** When you subtract a 3-number average from a 4-row table `(4, 3) - (3,)`, NumPy automatically "stretches" that 3-number row across all 4 rows without duplicating memory.
 
@@ -127,12 +129,14 @@ print(X_scaled.shape)          # (4, 3)
 
 ---
 
-### 3. Tabular Wrangling with Modern Pandas (2.x / 3.0 Safe)
+### 3. Spreadsheet Data Cleaning with `Pandas`
 
-#### 3.1 Label vs. Positional Indexing (`loc`/`iloc`) & Copy-on-Write Imputation
-- `df.loc[row_label, col_label]` selects by **explicit labels** (inclusive slice end).
-- `df.iloc[row_pos, col_pos]` selects by **0-based integer positions** (exclusive slice end).
-- **Avoid deprecated `df['col'].fillna(..., inplace=True)`!** Pandas 2.x/3.0 enforces **Copy-on-Write (CoW)**, so chained `inplace=True` triggers warnings or fails. Always assign back explicitly (`df['col'] = df['col'].fillna(...)`).
+> **What is `Pandas`?** Think of `Pandas` as **programmable Excel inside Python**. Its main table object is called a **`DataFrame`** (rows and named columns), used to load CSV/SQL tables, fix messy text, and **impute** (*fill in missing blank cells*) before feeding clean numbers into an ML model.
+
+#### 3.1 Label vs. Position Lookup (`loc`/`iloc`) & Filling Missing Values Safely
+- **`df.loc[...]` (Lookup by Name):** Grabs rows/columns by their **label name** (like asking for `"spend"`). Slice ends are *included*.
+- **`df.iloc[...]` (Lookup by Row Number):** Grabs rows/columns by **0, 1, 2 position** (like Excel row numbers). Slice ends are *excluded*.
+- **Imputing (Filling Blank `NaN` Cells) Safely:** In Pandas 2.x/3.0, **Copy-on-Write** protects tables from accidental silent edits—so avoid old `df['col'].fillna(..., inplace=True)` code and always assign back cleanly (`df['col'] = df['col'].fillna(...)`).
 
 ```python
 import pandas as pd
@@ -154,12 +158,15 @@ print(df)
 
 ---
 
-### 4. SQL Foundations with Real Queries
+### 4. `SQL` Foundations with Real Queries
 
-#### 4.1 Relational Joins (`INNER` vs. `LEFT`) & Group Filtering (`WHERE` vs. `HAVING`)
-- **`WHERE`** filters individual rows *before* aggregation.
-- **`HAVING`** filters aggregated groups *after* `GROUP BY`.
-- **`LEFT JOIN`** preserves every entity in your base population (e.g., all registered users), filling `NULL` when an event table (e.g., `purchases`) has zero matches — critical so you don't accidentally drop churned/inactive users!
+> **What is `SQL`?** *Structured Query Language* is how you pull data out of company databases (`PostgreSQL`, `Snowflake`, `BigQuery`). Real company data rarely sits in a ready-made CSV on your laptop—you write `SQL` to filter and join millions of rows *inside the database* first so Python only receives the clean summary table.
+
+#### 4.1 Combining Tables (`INNER` vs. `LEFT JOIN`) & Filtering Groups (`WHERE` vs. `HAVING`)
+- **Real-World Analogy (`INNER` vs. `LEFT JOIN`):** Suppose Table A lists **all 1,000 registered app users** and Table B lists **orders placed this month**.
+  - **`INNER JOIN`** keeps *only* users who bought something—silently deleting all inactive users (ruining a churn model!).
+  - **`LEFT JOIN`** keeps **all 1,000 users** from Table A and puts `NULL` (blank) next to anyone with zero orders.
+- **`WHERE` vs. `HAVING`:** `WHERE` filters individual rows *before* grouping; `HAVING` filters summary totals *after* `GROUP BY`.
 
 ```sql
 -- Build a user-level churn feature table without dropping zero-purchase users
@@ -181,10 +188,12 @@ HAVING COUNT(o.order_id) >= 0;
 
 ## Tier 2: Production Architecture & Scale (Modern AI Engineering)
 
-### 5. Analytical SQL: CTEs & Window Functions
+### 5. Analytical `SQL`: `CTEs` (`WITH`) & Window Functions
 
-#### 5.1 Point-in-Time Feature Engineering with `LAG`, `AVG() OVER` & `ROW_NUMBER`
-Unlike `GROUP BY` (which collapses rows), **Window Functions** compute rankings, time deltas, and rolling statistics while preserving individual event rows — ideal for point-in-time transaction and clickstream features.
+#### 5.1 Computing Trends Without Losing Rows (`LAG`, `AVG() OVER` & `ROW_NUMBER`)
+- **New Terms in Plain English:**
+  - **`CTE` (`WITH temp_table AS (...)`):** Breaks a scary 40-line SQL query into clean, named step-by-step paragraphs you can read top-to-bottom.
+  - **Window Function (`OVER (...)`):** Regular `GROUP BY` squashes 10 user purchases into 1 summary row. A **Window Function** lets each purchase row "peek" at neighboring rows (like looking at the *previous* purchase via `LAG` or the *last 3 purchases* via `AVG() OVER`) **without squashing the rows together**!
 
 ```sql
 WITH ranked_tx AS (
@@ -216,12 +225,13 @@ WHERE rn = 1;
 
 ---
 
-### 6. Modern Python for AI Engineers: `uv`, `Pydantic`, `async/await` & `pytest`
+### 6. Modern Python Engineering Tools: `uv`, `Pydantic`, `async/await` & `pytest`
 
-#### 6.1 Reproducible Environments (`uv`), Schema Validation (`Pydantic`) & `asyncio` Concurrency
-1. **`uv` / Virtual Environments:** Modern AI repos pin reproducible environments via `pyproject.toml` and `uv.lock` (`uv sync`) rather than global `pip install`.
-2. **`Pydantic` Validation:** Enforces strict runtime type checking and JSON Schema serialization for API requests, feature vectors, and LLM structured outputs.
-3. **`async` / `await` Concurrency:** LLM calls and vector DB lookups are **network I/O-bound**. Running 10 RAG sub-queries sequentially at 800 ms each takes **8.0 seconds**; running them concurrently via `asyncio.gather()` takes **~800 ms**.
+#### 6.1 What Each Tool Does in Plain English
+1. **`uv` (Project Dependency Manager):** Like an ultra-fast `pip` + isolated sandbox (`venv`) in one tool—ensures project A's library versions never break project B (`uv sync`).
+2. **`Pydantic` (Automatic Data Bouncer):** Checks incoming JSON/API inputs at the door—if someone sends `"age": -5` or `"twenty"`, `Pydantic` blocks it immediately with a clear error before bad data crashes your model.
+3. **`async` / `await` (Kitchen Multitasking for Network Calls):** Waiting for an LLM API is like waiting for water to boil. Synchronous code stares at Pot #1 for 1 second, then Pot #2 for 1 second (`10 pots = 10s`). **`asyncio.gather()`** turns on all 10 burners at once so all 10 finish in **`~1s` total**!
+4. **`pytest` (Automated Code Checker):** Runs small `assert` checks automatically on every code save so bugs get caught in 1 second.
 
 ```python
 import asyncio

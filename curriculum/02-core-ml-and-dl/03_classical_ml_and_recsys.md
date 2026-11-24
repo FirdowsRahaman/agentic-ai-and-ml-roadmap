@@ -50,17 +50,19 @@ flowchart TD
 
 ---
 
-#### 1.2 Linear Regression (MSE) vs. Logistic Regression (Sigmoid + Log Loss)
-- **Linear Regression** predicts an unbounded continuous value $\hat{y} = \mathbf{w}^\top \mathbf{x} + b$, trained by minimizing **Mean Squared Error (MSE)**.
-- **Logistic Regression** passes that linear logit $z = \mathbf{w}^\top \mathbf{x} + b$ through the **Sigmoid** function $\sigma(z) = \frac{1}{1 + e^{-z}}$, squashing outputs into calibrated probabilities $P(y=1 \mid \mathbf{x}) \in (0, 1)$, trained by minimizing **Binary Cross-Entropy (Log Loss)**. Applying a decision threshold (e.g., $\tau = 0.5$ or a cost-optimal threshold) turns the probability into a class label.
+#### 1.2 Linear Regression vs. Logistic Regression (And What a `Logit` Is)
+- **Linear Regression (Predicting Any Number):** Draws the best-fitting line/plane $\hat{y} = \mathbf{w}^\top \mathbf{x} + b$ to predict continuous numbers (like house price `\$420,000` or tomorrow's temperature `31.5°C`), penalized by **Mean Squared Error (`MSE`)**.
+- **Logistic Regression (Predicting Probability `0%–100%`):** Takes that raw unbounded score $z = \mathbf{w}^\top \mathbf{x} + b$—called a **`logit`** (which can be `-50` or `+80`)—and passes it through an S-shaped **Sigmoid curve** $\sigma(z) = \frac{1}{1 + e^{-z}}$ that squashes any number smoothly between `0` and `1` (e.g., `0.87` = 87% chance of spam). Applying a cutoff (like `>= 0.50`) turns that probability into a Yes/No label!
 
 ---
 
-### 2. Feature Scaling, Encoding & Cross-Validation
+### 2. Feature Scaling, Encoding & `Scikit-Learn` Pipelines
 
-#### 2.1 Feature Scaling Rules & Leak-Free `ColumnTransformer` Pipelines
-- **Require Scaling (Distance- or Gradient-Based):** `Linear/Ridge/Lasso Regression`, `Logistic Regression`, `KNN`, `SVM`, `K-Means`, `PCA`, and `Neural Networks`. Without scaling, a `salary` column (`0–200,000`) completely dominates `age` (`18–80`) in Euclidean distances and gradient steps.
-- **Do NOT Require Scaling (Tree-Based):** `Decision Trees`, `Random Forest`, `XGBoost`, `LightGBM`, `CatBoost`. Trees split on monotonic threshold inequalities (`feature <= threshold`), which are invariant to monotonic rescaling!
+> **What is `Scikit-Learn` (`sklearn`)?** Python's gold-standard library for classic table-based ML. Every algorithm and data cleaner in `sklearn` follows one universal 2-step habit: **`.fit(X_train)`** (*learn averages/rules from training data ONLY*) and **`.transform(X_test)` / `.predict(X_test)`** (*apply those learned rules to new data*).
+
+#### 2.1 Which Models Need Feature Scaling—and Which Don't?
+- **Need Scaling (Distance- or Slope-Based Models):** `Linear/Logistic Regression`, `KNN`, `SVM`, `K-Means`, `PCA`, and `Neural Networks`. Without scaling, a `salary` column (`0–200,000`) completely dwarfs `age` (`18–80`) just because the numbers are 2,500× bigger!
+- **Do NOT Need Scaling (Tree-Based Models):** `Decision Trees`, `Random Forest`, `XGBoost`, `LightGBM`, `CatBoost`. Trees only ask simple yes/no threshold questions (`Is salary <= 50,000?`)—changing dollars to cents just moves the threshold to `5,000,000` without changing a single branch!
 
 ```python
 from sklearn.compose import ColumnTransformer
@@ -90,6 +92,10 @@ A single 80/20 split can get lucky or unlucky on small-to-medium datasets. **$K$
 ### 3. Trees, Bagging (Random Forest) vs. Boosting (`XGBoost` / `LightGBM`)
 
 #### 3.1 Bagging (`Random Forest`) vs. Gradient Boosting (`XGBoost`, `LightGBM`, `CatBoost`)
+- **In Plain English (The Doctor Panel Analogy):**
+  - **Single Decision Tree:** One doctor playing 20-questions—fast, easy to read, but easily memorizes quirks in old patient files (**overfits**).
+  - **`Random Forest` (Bagging = Parallel Voting):** Asks **100 independent doctors** (each given a slightly shuffled set of patient charts and columns) at the same time and takes a majority vote—canceling out individual blind spots.
+  - **`XGBoost` / `LightGBM` (Boosting = Relay Team Fixing Mistakes):** Doctor #1 makes initial guesses; Doctor #2 studies **only the patients Doctor #1 got wrong**; Doctor #3 studies **the leftover mistakes of #1 + #2**, and so on for 200+ small steps!
 
 ```mermaid
 flowchart LR
@@ -171,6 +177,8 @@ flowchart LR
 ---
 
 ### 7. Two-Stage Recommendation & Ranking Architecture (Meta / Amazon / YouTube)
+
+> **What is `FAISS` / `ANN` (Approximate Nearest Neighbors)?** Checking a user's profile against 10 million products one-by-one takes seconds—way too slow! `ANN` libraries like Meta's **`FAISS`** organize vectors into neighborhood clusters/graphs (`HNSW`) so you jump straight to the 300 closest products in **under 10 milliseconds**.
 
 #### 7.1 Candidate Retrieval (`Two-Tower` + `FAISS`), `LambdaMART` Ranking & `NDCG@K`
 

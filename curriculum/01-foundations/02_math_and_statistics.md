@@ -26,19 +26,20 @@ flowchart LR
 
 ---
 
-## Tier 1: Core Foundations (Must-Know Foundations)
+## Tier 1: Core Foundations
 
 ### 1. Linear Algebra Intuition
 
-#### 1.1 Tensor Ranks, Dimensionality & Matrix Multiplication Shape Rules
+#### 1.1 What Is a Tensor? (Numbers, Lists, Tables & Cubes)
+- **In Plain English:** Don't let the word **"Tensor"** intimidate you—it is just the umbrella name for containers of numbers with different dimensions (`0D` single number, `1D` row, `2D` Excel-style table, `3D+` stack of tables):
 
-| Object | Rank | Typical Shape | Real-World ML Meaning |
+| Object | Rank | Typical Shape | Everyday Picture & AI Example |
 |---|---|---|---|
-| **Scalar** | 0D | `()` | A single loss value (`loss = 0.24`) or learning rate |
-| **Vector** | 1D | `(D,)` | One text embedding (`(768,)`) or one sample's features |
-| **Matrix** | 2D | `(N, D)` | Tabular dataset: `N` samples × `D` features |
-| **3D Tensor** | 3D | `(B, T, D)` | LLM batch: `Batch` × `Sequence Tokens` × `Hidden Dim` |
-| **4D Tensor** | 4D | `(B, C, H, W)` | PyTorch vision batch: `Batch` × `Channels` × `Height` × `Width` |
+| **Scalar** | 0D | `()` | A single number on a thermometer (`loss = 0.24`) |
+| **Vector** | 1D | `(D,)` | One row of stats for 1 house (`[sqft, rooms, age]`) or 1 word's embedding (`(768,)`) |
+| **Matrix** | 2D | `(N, D)` | An Excel spreadsheet: `N` rows (houses) × `D` columns (features) |
+| **3D Tensor** | 3D | `(B, T, D)` | A stack of `B` sentences, each `T` words long, each word having `D` numbers |
+| **4D Tensor** | 4D | `(B, C, H, W)` | A batch of `B` color photos (`3` RGB channels × `Height` × `Width`) |
 
 > **Matrix Multiplication Shape Rule:** Inner dimensions **must match**, and outer dimensions form the output:
 > $$(N \times D) \cdot (D \times H) \longrightarrow (N \times H)$$
@@ -74,12 +75,23 @@ print(f"Cosine Similarity: {cosine_similarity(short_doc, long_duplicate_doc):.3f
 
 ---
 
-### 2. Descriptive Statistics & Distributions
+### 2. Averages, Outliers & Real-World Speed Metrics
 
-#### 2.1 Central Tendency & Tail Latency Percentiles (`p50`, `p95`, `p99`)
-- **Mean:** Pulled heavily by extreme outliers. Suitable for symmetric, Gaussian-like errors.
-- **Median (`p50`):** Robust midpoint; mandatory when imputing skewed features like income, house prices, or transaction amounts.
-- **Tail Percentiles (`p95`, `p99`):** Standard in production ML SLAs! An average API latency of `80ms` can hide the fact that 1% of users wait `4,200ms` (`p99 = 4.2s`).
+#### 2.1 Mean vs. Median vs. Percentiles (`p50`, `p95`, `p99`)
+- **New Terms in Plain English:**
+  - **Outlier:** One extreme, unusual value far away from everyone else.
+  - **Impute:** Filling in missing blank cells in a dataset.
+  - **SLA (Service Level Agreement):** Your app's promised speed limit (e.g., *"99% of users get a reply in under 300ms"*).
+- **Story 1 — Mean vs. Median ("A Billionaire Walks Into a Café"):**
+  Imagine 9 students in a café each earning `\$30,000/year`. Both the **Mean** (average) and **Median** (the middle person when lined up from lowest to highest) are `\$30,000`. Now a billionaire (`\$1B/year`) walks in:
+  - The **Mean** jumps to **`~\$100 Million`**—making it look like everyone in the café owns a private jet!
+  - The **Median (`p50`)** stays **`\$30,000`**.
+  - *Rule of Thumb:* Always use **Median** (never Mean) when filling missing cells (**imputing**) for skewed money/count columns like salary, rent, or order spend.
+- **Story 2 — Percentiles (`p50`, `p95`, `p99` — "The Coffee Shop Line"):**
+  Suppose 100 people order coffee: 95 get their cup in **1 min**, 4 wait **2 mins**, and 1 person's espresso machine jams so they wait **45 mins**.
+  - **`p50` (50th percentile / Median):** `1 min` — what a typical user experiences.
+  - **`p95` (95th percentile):** `2 mins` — 95 out of 100 users waited `2 mins` or less.
+  - **`p99` (99th percentile — "Tail Latency"):** `45 mins` — the worst 1% experience. If your AI app has 1,000,000 daily requests, a slow `p99` means **10,000 frustrated users every single day**, even while your "average" speed looks great!
 
 ```python
 import numpy as np
@@ -92,10 +104,11 @@ print(f"p99 latency:    {np.percentile(latencies_ms, 99):.1f} ms")    # 3190.6 m
 
 ---
 
-#### 2.2 Dispersion Metrics & The Empirical Gaussian Rule (68–95–99.7)
-- **Variance ($\sigma^2$):** Average squared deviation from the mean.
-- **Standard Deviation ($\sigma$):** $\sqrt{\sigma^2}$ — expressed in the **same units** as the original feature.
-- **Normal Distribution ($\mathcal{N}(\mu, \sigma^2)$):** Symmetric bell curve obeying the **68–95–99.7 empirical rule** within $1\sigma, 2\sigma, 3\sigma$ of the mean $\mu$.
+#### 2.2 Spread (`Variance` & `Std Dev`) & The Bell Curve (`Normal / Gaussian Distribution`)
+- **In Plain English:** Two classes can both have an average exam score of `75`. If Class A scored `[74, 75, 76]` and Class B scored `[30, 75, 100]`, how do we measure that Class B is wildly spread out?
+  - **Variance ($\sigma^2$):** Average of squared distances from the mean (squaring stops `-10` and `+10` from canceling out, but turns `"cm"` into awkward `"square cm"`).
+  - **Standard Deviation ($\sigma = \sqrt{\sigma^2}$):** Takes the square root so the spread is back in **normal everyday units** (`cm`, `dollars`, `ms`).
+  - **Normal ("Gaussian") Bell Curve:** Symmetric curve where most values cluster near the middle: **68%** fall within `±1` std dev, **95%** within `±2`, and **99.7%** within `±3`.
 
 ```python
 import numpy as np
@@ -153,11 +166,10 @@ print(f"Actual probability of having the disease: {posterior:.1%}")  # Only 9.0%
 
 ### 4. Central Limit Theorem (CLT), p-values & Confidence Intervals
 
-#### 4.1 Sampling Distributions, Confidence Intervals & Practical vs. Statistical Significance
-Real user metrics (like revenue per session or click counts) are heavily skewed, **not** normally distributed. The **Central Limit Theorem** guarantees that the **distribution of sample means** across $N$ independent users converges to a **Normal Distribution** $\mathcal{N}(\mu, \sigma^2 / N)$ as $N$ grows large — allowing us to compute Z-scores, **95% Confidence Intervals** ($\bar{x} \pm 1.96 \frac{s}{\sqrt{N}}$), and **$p$-values** in A/B experiments.
-
-- **Correct definition of a $p$-value:** Assuming the Null Hypothesis $H_0$ is true (no real difference between Model A and Model B), the $p$-value is the probability of observing a difference at least as extreme as our experiment purely by random chance.
-- **$p < 0.05$ does NOT guarantee business value:** With 50 million users, a `0.01%` lift can have $p = 0.0001$ (statistically significant) yet fail to justify GPU serving costs (**practical significance / effect size**).
+#### 4.1 Why `A/B` Tests Work (`Central Limit Theorem`, `p-values` & Business Impact)
+- **In Plain English:** User spending is super lopsided (most users spend `\$0`, a few spend `\$500`)—not a neat bell curve at all! Yet if you take the *average* spend of 10,000 random users repeatedly, the **Central Limit Theorem (`CLT`)** proves those *averages* magically form a clean **Normal Bell Curve**—letting us calculate error bars (**Confidence Intervals**) and **`p-values`** when testing Model B against Model A!
+- **What a `p-value` Really Means:** *"If Model B is actually NO better than Model A, how likely is it that pure luck produced a gap this big?"* When `p < 0.05` (less than a 1-in-20 fluke), we call the win **statistically significant**.
+- **Statistical vs. Practical Significance:** With 50 million users, a tiny `+0.01%` click boost can score `p = 0.0001` (not a fluke!), yet earn `\$500` while costing `\$20,000` in extra GPUs—always check **real dollar ROI**, not just `p < 0.05`!
 
 ---
 

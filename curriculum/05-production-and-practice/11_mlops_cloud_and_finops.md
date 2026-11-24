@@ -33,6 +33,10 @@ flowchart LR
 
 ### 1. Safe Model Serialization & Serving via `FastAPI`
 
+> **Two Core Terms (`Serialization` & `FastAPI`):**
+> - **Serialization:** Saving a trained model from your computer's live RAM onto disk as a file so another server can load it tomorrow without retraining.
+> - **`FastAPI`:** Python's standard web framework for wrapping a trained model behind a live URL (`POST /predict`) so mobile apps, websites, or teammates can send JSON inputs and get predictions back in milliseconds.
+
 #### 1.1 Safe Model Serialization (`safetensors`, `ONNX`) & Startup-Loaded `FastAPI` Services
 - **Security Trap (`pickle` / `torch.load` default):** `pickle` executes arbitrary Python bytecode during deserialization — loading an untrusted `.pkl` file can compromise your production server!
 - **`safetensors` (Hugging Face / PyTorch standard):** Zero-copy, memory-mapped tensor format that stores **pure weights + JSON header** with **zero arbitrary code execution** and 2x–4x faster GPU loading.
@@ -74,6 +78,11 @@ def predict_churn(payload: ChurnFeatures) -> dict[str, float | bool]:
 ---
 
 ### 2. Containerization (`Docker`) & Experiment/Data Versioning (`MLflow` + `DVC`)
+
+> **Three Everyday MLOps Tools in Plain English:**
+> - **`Docker` (Sealed Shipping Container):** Solves *"It worked on my laptop, why did it crash on the server?"* by packing your code + exact Python version + system libraries into one portable **Image** (blueprint) that runs identically anywhere as a **Container** (live process).
+> - **`DVC` ("Git for Giant Datasets"):** `Git` chokes if you commit a 50 GB dataset; `DVC` keeps heavy files in S3/cloud storage while saving a tiny 5-line ID card (`.dvc`) inside Git so you always know *which exact dataset* trained *which model*.
+> - **`MLflow` (Automated Lab Notebook):** Automatically records every training run's settings (`learning_rate`), test scores (`PR-AUC`), and saved model file so you never lose track of which experiment won.
 
 #### 2.1 Layered Container Caching & Non-Root `Docker` Hardening
 - **Image:** Immutable layered filesystem blueprint. **Container:** Isolated running process instantiated from an image.

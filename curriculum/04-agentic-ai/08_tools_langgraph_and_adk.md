@@ -38,6 +38,8 @@ flowchart LR
 
 ### 1. Function Calling Mechanics & Schema Engineering
 
+> **What is a `JSON Schema`?** Think of it as an **order-form template** you hand to the LLM: *"If you want to call `get_weather_forecast`, you MUST fill out `city` (text) and `unit` (either `'celsius'` or `'fahrenheit'`), and nothing else."*
+
 #### 1.1 The Function Calling Lifecycle & Strict JSON Schema Contracts
 1. **Declaration:** Your client sends tool definitions (JSON Schemas) in the request payload.
 2. **Selection:** The model emits a structured `tool_calls` object (`name` + `arguments` JSON) instead of plain text.
@@ -77,6 +79,8 @@ WEATHER_TOOL_SCHEMA = {
 ---
 
 ### 2. Stateful Cyclical Orchestration with `LangGraph`
+
+> **What is `LangGraph`?** Regular data pipelines (`DAGs` — *Directed Acyclic Graphs*) are one-way conveyor belts that cannot loop back when a step fails. **`LangGraph`** lets you wire Python functions as stations (**`Nodes`**) on a subway map with loop-backs (**`Conditional Edges`**) sharing one central clipboard (**`State`**)—giving you total control over how many times an agent can retry.
 
 #### 2.1 Cyclical State Graphs, Reducers & Conditional Routing in `LangGraph`
 Classic ETL/Chain pipelines are **Directed Acyclic Graphs (DAGs)** — data flows strictly forward with no cycles. Agents require **controlled loops** (call tool -> inspect error -> retry with refined query -> terminate).

@@ -33,6 +33,8 @@ flowchart LR
 
 ### 1. Subword Tokenization, Lexical Baselines & Contextual Embeddings
 
+> **Two Foundational Terms (`Token` vs. `Embedding`):** Computers cannot multiply raw letters. First, a **Tokenizer** chops text into common word-pieces called **Tokens** and looks up each piece's ID number (`"playing" -> ["play", "ing"] -> [1402, 289]`). Next, an **Embedding table** turns each ID into a list of ~768+ GPS coordinates (`[0.14, -0.62, ...]`) so words with similar meanings sit right next to each other in space!
+
 #### 1.1 Subword Byte-Pair Encoding (`BPE`) vs. Lexical Weighting (`TF-IDF` / `BM25`)
 > **2026 Scope Note:** Legacy preprocessing pipelines (manual regex stemming, stopword stripping, `CountVectorizer` Bag-of-Words, and static 2013 `Word2Vec` CBOW/Skip-gram tables) are obsolete in modern AI engineering. Focus on **subword tokenizers (`BPE`)** for neural models and **`TF-IDF` / `BM25`** for sparse hybrid search.
 
@@ -77,11 +79,19 @@ Why divide by $\sqrt{d_k}$? When head dimension $d_k$ is large (e.g., `64` or `1
 
 ### 3. Computer Vision: CNNs, ResNet & Transfer Learning
 
-#### 3.1 Spatial Convolutions, Residual Identity Highways & Transfer Learning
-Flattening a `1000×1000×3` image into a 1,000-unit dense layer creates **3 billion weights** in layer 1 alone while destroying 2D spatial locality. **CNNs** use small sliding kernels (local receptive fields + weight sharing) with spatial output size:
+#### 3.1 Spatial Convolutions (`CNNs`), Residual Skip Highways & Transfer Learning
+- **In Plain English (The Sliding Flashlight):** Connecting every pixel of a `1000×1000` color photo to 1,000 neurons creates **3 billion weights** in layer 1 alone! Instead, a **Convolutional Neural Network (`CNN`)** slides a tiny `3×3` "flashlight" (**kernel/filter**) across the image—reusing those exact 9 weights everywhere to spot edges in layer 1, textures in layer 2, and whole objects in deeper layers.
+
+<details>
+<summary><b>Deep Dive: Convolution Output Size Formula</b></summary>
+
 $$W_{\text{out}} = \left\lfloor \frac{W_{\text{in}} - K + 2P}{S} \right\rfloor + 1$$
 
-**ResNet Skip Connections (He et al., 2015):** Learn residual $\mathcal{F}(x)$ added to identity shortcut $x$:
+Where $K$ = kernel size (e.g., `3`), $P$ = zero-padding border (e.g., `1` keeps width unchanged when stride is `1`), and $S$ = stride step size.
+
+</details>
+
+**ResNet Skip Connections (He et al., 2015):** Learn a small correction $\mathcal{F}(x)$ added to the original input shortcut $x$:
 
 ```mermaid
 flowchart LR
@@ -147,7 +157,8 @@ optimizer = torch.optim.AdamW(model.fc.parameters(), lr=1e-3)
 ### 5. Audio & Speech AI (`Mel Spectrograms`, `Whisper` & Native Audio Models)
 
 #### 5.1 Log-Mel Spectrograms, `Whisper` ASR & Native Neural Audio Codecs
-1. **Waveform to Log-Mel Spectrogram:** Raw 16 kHz 1D audio waveforms are windowed via Short-Time Fourier Transform (STFT) into 2D **Log-Mel Spectrograms** (`80` or `128` Mel frequency bins × time frames, matching human pitch perception).
+- **In Plain English (Turning Sound Into a Picture):** How do you feed sound into a Transformer? First, slice the sound wave into tiny 25-millisecond windows and plot a **Log-Mel Spectrogram**—a "sheet-music heatmap" where **left-to-right is time**, **bottom-to-top is pitch (bass to treble)**, and **brightness is loudness**! Once sound is a 2D picture, vision/sequence Transformers can read it directly:
+1. **Waveform to Log-Mel Spectrogram:** Raw 16 kHz audio converted via Short-Time Fourier Transform (STFT) into `80` or `128` human-ear pitch bands (`Mel` bins).
 2. **`Whisper` Architecture (OpenAI):** Passes the Log-Mel spectrogram through 2 `1D Conv` layers + a **Transformer Encoder**, then decodes timestamps, language IDs, and transcribed/translated text autoregressively via a **Transformer Decoder**.
 3. **Native Multimodal Audio Tokens:** Frontier voice models (`Gemini Live`, `GPT-4o Realtime`) discretize audio directly into neural codec tokens (`SoundStream` / `EnCodec`), enabling low-latency speech-in, speech-out reasoning while preserving emotion, tone, and speaker prosody without a brittle `ASR -> Text LLM -> TTS` cascade.
 

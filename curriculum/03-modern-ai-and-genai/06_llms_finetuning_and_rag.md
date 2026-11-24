@@ -84,9 +84,11 @@ LLMs optimize next-token likelihood rather than factual truth, smoothly extrapol
 
 ---
 
-### 3. Document Chunking & RAG vs. Fine-Tuning
+### 3. Document Chunking & `RAG` vs. Fine-Tuning
 
-#### 3.1 Document Chunking Strategies
+> **What is `RAG` (Retrieval-Augmented Generation)?** Think of a closed-book exam vs. an **open-book exam**: instead of hoping an LLM memorized your company's 2026 refund PDF during training, `RAG` searches your private database for the 5 most relevant paragraphs first, pastes them into the prompt, and tells the LLM: *"Answer ONLY using these paragraphs and cite page numbers."*
+
+#### 3.1 Document Chunking Strategies (Slicing Long PDFs Cleanly)
 Poor chunking destroys retrieval quality before embeddings even run:
 1. **Fixed-Token with Overlap (e.g., `512` tokens, `64` overlap):** Simple baseline; risks slicing tables or clauses mid-sentence.
 2. **Recursive Character / Markdown-Header Splitting:** Splits hierarchically by headings (`#`, `##`), paragraphs (`\n\n`), then sentences.
@@ -126,6 +128,8 @@ Poor chunking destroys retrieval quality before embeddings even run:
 ---
 
 ### 5. Production Vector Databases & `Qdrant` Architecture
+
+> **What is a `Vector Database`?** A traditional SQL database searches for exact spelling (`WHERE text LIKE '%refund%'`)—missing `"money-back guarantee"` completely. A **Vector Database (`Qdrant`)** stores meaning vectors (`embeddings`) alongside normal metadata fields (`tenant_id`, `date`) so you can search by **meaning + keywords + security filters** in a few milliseconds.
 
 #### 5.1 Selecting the Right Vector Search Engine
 
@@ -221,6 +225,8 @@ flowchart TD
 ---
 
 ### 7. LLM Inference Optimization: `TTFT`, `TPOT`, `KV Cache` & `vLLM`
+
+> **What is the `KV Cache`?** Without a memory cache, typing word #500 of an essay would force the LLM to re-read and re-calculate math for words #1 through #499 from scratch every single step! The **`KV Cache`** saves past words' Key and Value vectors in GPU memory so each new word only calculates *itself*—making generation 10×+ faster, at the cost of growing GPU RAM as chats get longer.
 
 #### 7.1 Prefill (`TTFT`) vs. Decode (`TPOT`) & Why `vLLM` Exists
 - **Two Phases of Every LLM Reply:**

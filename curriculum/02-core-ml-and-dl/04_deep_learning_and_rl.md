@@ -74,17 +74,24 @@ print(f"Neuron output: {out:.2f}")  # 0.96 -> active!
 
 ---
 
-### 2. Loss Functions, Backpropagation & PyTorch Idioms
+### 2. Loss Functions, Backpropagation & `PyTorch` Idioms
 
-#### 2.1 Numerically Stable Loss Functions (`MSE`, `BCEWithLogitsLoss`, `CrossEntropyLoss`)
-- **Regression:** `nn.MSELoss()` (penalizes large outliers quadratically) or `nn.HuberLoss()` (robust to outliers).
-- **Binary Classification:** `nn.BCEWithLogitsLoss()` — takes **raw unnormalized logits** (fuses Sigmoid + log numerically stably; never apply `nn.Sigmoid()` manually before `BCELoss`!).
-- **Multi-Class Classification / Next-Token Prediction:** `nn.CrossEntropyLoss()` — takes **raw logits** of shape `(B, C)` and integer targets `(B,)` (fuses `LogSoftmax` + `NLLLoss`).
+> **What is `PyTorch` (`torch`)?** Think of `PyTorch` as **`NumPy` with two superpowers**: (1) its arrays (`torch.Tensor`) run 50×+ faster on GPUs, and (2) its **`Autograd`** engine secretly records every math operation during the forward pass so calling `loss.backward()` computes every weight's error slope automatically!
+
+#### 2.1 Choosing the Right `PyTorch` Loss Function (And Why Raw `Logits` Matter)
+- **What is a `Logit`?** The raw, unscaled score coming out of your final linear layer (`-12.4`, `+0.3`, `+8.9`) *before* `Sigmoid` or `Softmax` turns it into a `0%–100%` probability.
+- **Regression (Predicting Continuous Numbers):** `nn.MSELoss()` (heavily punishes big misses) or `nn.HuberLoss()` (gentler on extreme outliers).
+- **Binary Classification (`Yes/No`):** `nn.BCEWithLogitsLoss()` — pass **raw logits** directly (it combines `Sigmoid + Log` internally so numbers never round off to `log(0) = -inf`!).
+- **Multi-Class / Next-Token Prediction:** `nn.CrossEntropyLoss()` — pass **raw logits** `(B, C)` and class IDs `(B,)`.
 
 ---
 
-#### 2.2 Canonical PyTorch Training & Validation Loop
-If `N = 10,000` training samples and `batch_size = 100`, then **1 Epoch** (one full pass over the dataset) equals **`100` Iterations** (100 gradient updates).
+#### 2.2 `Epoch` vs. `Batch` vs. `Iteration` & The Standard `PyTorch` Loop
+- **Flashcard Analogy:** Suppose you have **10,000 flashcards** and study **100 cards at a time**:
+  - **`Batch Size = 100`:** How many cards you read before updating your memory.
+  - **`1 Iteration`:** Studying 1 batch of 100 cards + doing 1 weight update.
+  - **`1 Epoch`:** Finishing the entire 10,000-card deck once (`10,000 / 100 = 100 Iterations`).
+  - **`Dropout`:** Randomly muting 20% of neurons during practice so no single neuron becomes a lazy crutch (must be turned OFF during real exams via `model.eval()`!).
 
 ```python
 import torch
