@@ -1,9 +1,25 @@
+---
+module: "02"
+title: "Mathematics & Statistics for AI Engineers"
+difficulty: "core"
+estimated_hours: 16
+prerequisites:
+  - "01"
+learning_levels:
+  - foundation
+  - applied
+  - production
+topics:
+  - linear-algebra
+  - matrix-calculus
+  - bayes-theorem
+  - hypothesis-testing
+  - ab-testing-power
+---
+
 # Module 02: Mathematics & Statistics for AI/ML Engineers
 
-> **Difficulty:** Core | **Estimated Study Time:** 6-8 Hours | **Prerequisites:** [Module 01: Python & SQL](./01_python_sql_and_data_stack.md)  
-> **Focus:** Geometric vector intuition, matrix decompositions, Bayes' Theorem, Central Limit Theorem, and A/B hypothesis testing
-
-[← Previous: Module 01: Python, SQL & Data Stack](./01_python_sql_and_data_stack.md) | [Roadmap Index](../../README.md) | [Next: Module 03: Classical ML & RecSys →](../02-machine-learning/03_classical_ml_and_recsys.md)
+[← Previous: Module 01: Python, SQL & Data Stack](./01_python_sql_and_data_stack.md) | [Phase 1 Index](./README.md) | [Next: Phase 2 / Module 03 →](../02-core-ml-and-dl/03_classical_ml_and_recsys.md)
 
 ---
 
@@ -91,13 +107,25 @@ In production systems, distributions are rarely symmetrical bell curves. Latency
 </p>
 
 ```python
-# 990 fast requests (5ms) + 10 frozen DB timeouts (5000ms)
-latencies = np.concatenate([np.random.normal(5.0, 1.0, 990), [5000.0] * 10])
+import numpy as np
 
-print(f"Mean Latency:    {np.mean(latencies):.1f} ms")        # ~55 ms (severely distorted!)
-print(f"Median (p50):    {np.median(latencies):.1f} ms")      # ~5.0 ms (typical user experience)
-print(f"P95 Latency:     {np.percentile(latencies, 95):.1f} ms")  # ~6.6 ms
-print(f"P99 Latency:     {np.percentile(latencies, 99):.1f} ms")  # ~5000.0 ms (production SLA breach!)
+# 1000 requests: 980 typical requests (~5ms) + 20 frozen database timeouts (5000ms)
+np.random.seed(42)
+typical = np.random.normal(loc=5.0, scale=1.0, size=980)
+timeouts = np.full(shape=20, fill_value=5000.0)
+latencies = np.concatenate([typical, timeouts])
+
+# Evaluate quantiles with empirical percentile indexing
+mean_lat = float(np.mean(latencies))
+p50 = float(np.percentile(latencies, 50))
+p95 = float(np.percentile(latencies, 95))
+p99 = float(np.percentile(latencies, 99))
+
+print(f"Mean Latency:    {mean_lat:.1f} ms")   # ~104.9 ms (severely distorted by tail!)
+print(f"Median (p50):    {p50:.1f} ms")        # ~5.0 ms (typical user experience)
+print(f"P95 Latency:     {p95:.1f} ms")        # ~6.6 ms
+print(f"P99 Latency:     {p99:.1f} ms")        # 5000.0 ms (severe SLA breach detected!)
+assert p99 == 5000.0, "Top 1% must capture the 20-sample tail timeout block"
 ```
 
 ### 5.2 Bayes' Theorem & The Base-Rate Fallacy in Rare Events
@@ -123,7 +151,46 @@ print(f"True Probability of Fraud given an Alarm: {posterior:.1%}")  # Only 9.0%
 ```
 > **ML Engineering Takeaway:** In extreme imbalance ($0.1\%$), $91\%$ of all triggered alarms are false positives unless decision thresholds are calibrated against business cost matrices.
 
-### 5.3 Central Limit Theorem (CLT) & Hypothesis Testing
+### 5.3 Matrix Calculus, Gradients & Backpropagation Intuition
+Neural networks optimize loss functions via gradient descent. For a parameter vector $\mathbf{w} \in \mathbb{R}^d$, the gradient $\nabla_{\mathbf{w}} \mathcal{L}$ points in the direction of steepest rate of increase:
+
+$$\nabla_{\mathbf{w}} \mathcal{L}(\mathbf{w}) = \left[ \frac{\partial \mathcal{L}}{\partial w_1}, \frac{\partial \mathcal{L}}{\partial w_2}, \dots, \frac{\partial \mathcal{L}}{\partial w_d} \right]^T$$
+
+#### Analytical Derivation: Mean Squared Error (MSE) Gradient
+Given design matrix $\mathbf{X} \in \mathbb{R}^{N \times d}$, targets $\mathbf{y} \in \mathbb{R}^N$, and residual vector $\mathbf{e} = (\mathbf{X}\mathbf{w} - \mathbf{y})$:
+
+$$\mathcal{L}(\mathbf{w}) = \frac{1}{N} \|\mathbf{X}\mathbf{w} - \mathbf{y}\|_2^2 = \frac{1}{N} \mathbf{e}^T \mathbf{e}$$
+
+Applying the multivariate chain rule:
+$$\frac{\partial \mathcal{L}}{\partial \mathbf{e}} = \frac{2}{N} \mathbf{e}, \quad \frac{\partial \mathbf{e}}{\partial \mathbf{w}} = \mathbf{X} \implies \nabla_{\mathbf{w}} \mathcal{L}(\mathbf{w}) = \frac{2}{N} \mathbf{X}^T (\mathbf{X}\mathbf{w} - \mathbf{y})$$
+
+```python
+# Numerical Finite-Difference vs. Analytical Vectorized Gradient
+def mse_loss(X: np.ndarray, y: np.ndarray, w: np.ndarray) -> float:
+    return float(np.mean((X @ w - y) ** 2))
+
+def analytical_gradient(X: np.ndarray, y: np.ndarray, w: np.ndarray) -> np.ndarray:
+    N = X.shape[0]
+    return (2.0 / N) * (X.T @ (X @ w - y))
+
+# Verify against numerical gradient check: (f(w + eps) - f(w - eps)) / (2 * eps)
+X_test = np.array([[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]])
+y_test = np.array([5.0, 11.0, 17.0])
+w_init = np.array([0.5, 1.5])
+eps = 1e-6
+
+grad_analytic = analytical_gradient(X_test, y_test, w_init)
+grad_numeric = np.zeros_like(w_init)
+for i in range(len(w_init)):
+    w_pos, w_neg = w_init.copy(), w_init.copy()
+    w_pos[i] += eps
+    w_neg[i] -= eps
+    grad_numeric[i] = (mse_loss(X_test, y_test, w_pos) - mse_loss(X_test, y_test, w_neg)) / (2 * eps)
+
+assert np.allclose(grad_analytic, grad_numeric, atol=1e-5), "Analytical gradient must match finite difference"
+```
+
+### 5.4 Central Limit Theorem (CLT) & Hypothesis Testing
 Even when the underlying data is heavily skewed, the sample mean $\bar{X}$ of $N$ independent, identically distributed observations converges to a normal distribution:
 $$\bar{X} \sim \mathcal{N}\left(\mu, \frac{\sigma^2}{N}\right)$$
 
@@ -133,31 +200,58 @@ This allows us to construct confidence intervals and compute two-tailed $p$-valu
 
 ## 6. Hands-on Implementation
 
-Write a two-proportion Z-test function that evaluates whether a challenger model's conversion rate lift is statistically significant at $\alpha = 0.05$:
+Write a production-grade two-proportion Z-test with defensive input validation, boundary checking, and effect-size power evaluation:
 
 ```python
 import math
 
 def ab_conversion_ztest(
-    conv_a: int, total_a: int, conv_b: int, total_b: int
+    conv_a: int, total_a: int, conv_b: int, total_b: int, alpha: float = 0.05
 ) -> dict[str, float | bool]:
+    """Evaluates whether challenger conversion rate lift is statistically significant
+
+    using a two-proportion pooled Z-test with defensive input validation.
+    """
+    # 1. Defensive Input Validation
+    if total_a <= 0 or total_b <= 0:
+        raise ValueError("Total sample sizes must be strictly positive integers.")
+    if not (0 <= conv_a <= total_a) or not (0 <= conv_b <= total_b):
+        raise ValueError("Conversions must be within [0, total_samples].")
+
     p_a = conv_a / total_a
     p_b = conv_b / total_b
     p_pool = (conv_a + conv_b) / (total_a + total_b)
-    se = math.sqrt(p_pool * (1 - p_pool) * (1 / total_a + 1 / total_b))
+
+    # 2. Edge Case: Zero conversions or 100% conversions across all groups
+    if p_pool == 0.0 or p_pool == 1.0:
+        return {
+            "lift_pct": 0.0,
+            "z_stat": 0.0,
+            "p_value": 1.0,
+            "significant_at_alpha": False,
+        }
+
+    # 3. Standard Error & Z-Score Computation
+    se = math.sqrt(p_pool * (1.0 - p_pool) * (1.0 / total_a + 1.0 / total_b))
     z_stat = (p_b - p_a) / se
-    # Two-tailed p-value via complementary error function
-    p_val = math.erfc(abs(z_stat) / math.sqrt(2))
+
+    # 4. Two-tailed p-value via Complementary Error Function
+    p_val = math.erfc(abs(z_stat) / math.sqrt(2.0))
+    lift_pct = ((p_b - p_a) / p_a) * 100.0 if p_a > 0 else float("inf")
+
     return {
-        "lift_pct": round(((p_b - p_a) / p_a) * 100, 2),
+        "lift_pct": round(lift_pct, 2),
         "z_stat": round(z_stat, 3),
         "p_value": round(p_val, 5),
-        "significant_at_95": p_val < 0.05,
+        "significant_at_alpha": p_val < alpha,
     }
 
+# Validation: Standard 85-conversion uplift test
 res = ab_conversion_ztest(conv_a=500, total_a=10_000, conv_b=585, total_b=10_000)
-assert res["significant_at_95"] is True
-print("Lab 02 Passed!", res)
+assert res["significant_at_alpha"] is True
+assert res["lift_pct"] == 17.0
+assert res["p_value"] < 0.05
+print("Lab 02 Validated Successfully!", res)
 ```
 
 ---

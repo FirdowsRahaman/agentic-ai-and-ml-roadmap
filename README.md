@@ -10,7 +10,7 @@
 [![Python: 3.11+](https://img.shields.io/badge/Python-3.11%20%7C%203.12%20%7C%203.13-3776AB.svg?logo=python&logoColor=white)](https://www.python.org/)
 [![Validation: Passing](https://img.shields.io/badge/CI%2FCD-Passing-brightgreen.svg)](https://github.com/FirdowsRahaman/agentic-ai-and-ml-roadmap/actions/workflows/ci-verify.yml)
 [![Docs: MkDocs](https://img.shields.io/badge/Docs-MkDocs%20Material-526CFE.svg?logo=materialformkdocs&logoColor=white)](docs/index.md)
-[![Curriculum Modules](https://img.shields.io/badge/Curriculum-13%20Modules-8A2BE2.svg)](ROADMAP.md)
+[![Curriculum: 18 Units · 5 Phases](https://img.shields.io/badge/Curriculum-18%20Units%20%7C%205%20Phases-8A2BE2.svg)](ROADMAP.md)
 [![GitHub Stars](https://img.shields.io/github/stars/FirdowsRahaman/agentic-ai-and-ml-roadmap?style=flat&color=yellow)](https://github.com/FirdowsRahaman/agentic-ai-and-ml-roadmap)
 [![GitHub Forks](https://img.shields.io/github/forks/FirdowsRahaman/agentic-ai-and-ml-roadmap?style=flat&color=blue)](https://github.com/FirdowsRahaman/agentic-ai-and-ml-roadmap/network/members)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
@@ -27,7 +27,7 @@ A disciplined, production-first engineering curriculum designed to build reliabl
 
 <br/>
 
-[Explore Roadmap](./ROADMAP.md) • [Getting Started](./docs/getting-started.md) • [Learning Paths](./docs/learning-paths.md) • [Portfolio Projects](./projects/README.md) • [Interview Kits](./interview-kits/README.md)
+[Explore Roadmap](./ROADMAP.md) • [Diagnostic Assessment](./docs/assessment-guide.md) • [Getting Started](./docs/getting-started.md) • [Learning Paths](./docs/learning-paths.md) • [Portfolio Projects](./projects/README.md) • [Interview Kits](./interview-kits/README.md)
 
 </div>
 
@@ -35,6 +35,7 @@ A disciplined, production-first engineering curriculum designed to build reliabl
 
 ## <img src="assets/icons/toc.svg" width="22" height="22" align="absmiddle" /> Table of Contents <a id="table-of-contents"></a>
 
+- <img src="assets/icons/target.svg" width="16" height="16" align="absmiddle" /> [Diagnostic Assessment & Entry Routes](#diagnostic-assessment)
 - <img src="assets/icons/compass.svg" width="16" height="16" align="absmiddle" /> [Who This Roadmap Is For](#who-this-roadmap-is-for)
 - <img src="assets/icons/target.svg" width="16" height="16" align="absmiddle" /> [What You Will Build & Master](#what-you-will-build--master)
 - <img src="assets/icons/roadmap.svg" width="16" height="16" align="absmiddle" /> [High-Level Learning Roadmap](#high-level-learning-roadmap)
@@ -43,6 +44,18 @@ A disciplined, production-first engineering curriculum designed to build reliabl
 - <img src="assets/icons/rocket.svg" width="16" height="16" align="absmiddle" /> [How to Get Started in 3 Steps](#how-to-get-started-in-3-steps)
 - <img src="assets/icons/contribute.svg" width="16" height="16" align="absmiddle" /> [Contributing](#contributing)
 - <img src="assets/icons/license.svg" width="16" height="16" align="absmiddle" /> [License](#license)
+
+---
+
+## <img src="assets/icons/target.svg" width="22" height="22" align="absmiddle" /> Diagnostic Assessment & Entry Routes <a id="diagnostic-assessment"></a>
+
+The curriculum accommodates both aspiring AI developers and experienced software engineers via a self-assessment evaluation:
+- **Beginner / Guided Journey (22–28 Weeks):** Complete sequence starting with Python foundations, linear algebra, and SQL.
+- **Experienced Developer Route (12–16 Weeks):** Diagnostic bypass of foundations to enter directly at Core ML (03), PyTorch (04A), or LLM Architecture (06A).
+
+> 🧭 **[Take the 25-Point Diagnostic Assessment in docs/assessment-guide.md →](./docs/assessment-guide.md)**
+
+[<img src="assets/icons/arrow-up.svg" width="14" height="14" align="absmiddle" /> Back to Top](#table-of-contents)
 
 ---
 
@@ -70,29 +83,15 @@ A disciplined, production-first engineering curriculum designed to build reliabl
 
 ## <img src="assets/icons/roadmap.svg" width="22" height="22" align="absmiddle" /> High-Level Learning Roadmap <a id="high-level-learning-roadmap"></a>
 
-The curriculum is structured into 6 progressive tiers. Each module contains measurable learning objectives, production code, failure modes, and hands-on exercises:
+The curriculum is structured into **5 progressive phases** across **18 specialized learning units**:
 
-```mermaid
-flowchart TD
-    T1["1. Engineering Foundations<br/>(Core: Python 3.12, Vectorized NumPy, Modern SQL, Linear Algebra & Probability)"]
-    T2["2. Classical Machine Learning<br/>(Core: Leak-Free Preprocessing, Ensembles, Imbalance, Two-Tower RecSys)"]
-    T3["3. Deep Learning & Neural Systems<br/>(Intermediate: PyTorch Loops, Autograd Backprop, Normalization & Optimization)"]
-    T4["4. Generative AI & Foundation Models<br/>(Intermediate: Transformers, LoRA/DPO, Qdrant Hybrid RAG & vLLM PagedAttention)"]
-    T5["5. Autonomous Agents & MCP Protocols<br/>(Advanced: ReAct Loops, Cyclical LangGraph, FastMCP Servers & Safety Guardrails)"]
-    T6["6. Production AI Engineering & MLOps<br/>(Advanced: FastAPI Serving, PSI Drift, HITL Governance & Cloud FinOps)"]
+<div align="center">
+  <img src="assets/diagrams/prerequisite_dependency_graph.svg" alt="Curriculum Roadmap Architecture" width="100%" />
+</div>
 
-    T1 --> T2 --> T3 --> T4 --> T5 --> T6
+<br/>
 
-    classDef c fill:#E0F2FE,stroke:#0284C7,stroke-width:1.5px,color:#0369A1;
-    classDef i fill:#EDE9FE,stroke:#7C3AED,stroke-width:1.5px,color:#4C1D95;
-    classDef a fill:#FEF3C7,stroke:#D97706,stroke-width:1.5px,color:#92400E;
-
-    class T1,T2 c;
-    class T3,T4 i;
-    class T5,T6 a;
-```
-
-> 📖 **[View the Complete Module-by-Module Sequence & Prerequisite Graph in ROADMAP.md →](./ROADMAP.md)**
+> 📖 **[View the Complete 18-Unit Module Sequence & Dependency Graph in ROADMAP.md →](./ROADMAP.md)**
 
 [<img src="assets/icons/arrow-up.svg" width="14" height="14" align="absmiddle" /> Back to Top](#table-of-contents)
 
@@ -102,7 +101,8 @@ flowchart TD
 
 | Resource | Purpose | Direct Link |
 |---|---|---|
-| <img src="assets/icons/roadmap.svg" width="16" height="16" align="absmiddle" /> **Curriculum Roadmap** | Detailed breakdown of all 13 modules across 6 tiers | [ROADMAP.md](./ROADMAP.md) |
+| <img src="assets/icons/roadmap.svg" width="16" height="16" align="absmiddle" /> **Curriculum Roadmap** | Detailed breakdown of all 18 units across 5 phases | [ROADMAP.md](./ROADMAP.md) |
+| <img src="assets/icons/target.svg" width="16" height="16" align="absmiddle" /> **Diagnostic Assessment** | 25-point evaluation determining your optimal entry route | [docs/assessment-guide.md](./docs/assessment-guide.md) |
 | <img src="assets/icons/compass.svg" width="16" height="16" align="absmiddle" /> **Learning Paths** | Personalized tracks (Foundations, GenAI, Agents, MLOps) | [docs/learning-paths.md](./docs/learning-paths.md) |
 | <img src="assets/icons/layers.svg" width="16" height="16" align="absmiddle" /> **Prerequisites Guide** | Self-assessment checklist and math/programming refresher | [docs/prerequisites.md](./docs/prerequisites.md) |
 | <img src="assets/icons/apps.svg" width="16" height="16" align="absmiddle" /> **Portfolio Projects** | 10 real-world project blueprints (4 local, 6 enterprise cloud) | [projects/README.md](./projects/README.md) |

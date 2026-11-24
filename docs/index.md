@@ -17,10 +17,11 @@ flowchart LR
     class A,B,C,D,E btn;
 ```
 
+- <img src="assets/icons/target.svg" width="16" height="16" align="absmiddle" /> **[Diagnostic Assessment](./assessment-guide.md):** 25-point evaluation determining your entry route (Beginner vs. Experienced Developer).
 - <img src="assets/icons/rocket.svg" width="16" height="16" align="absmiddle" /> **[Getting Started](./getting-started.md):** Set up your local environment, install dependencies, and run your first lab.
 - <img src="assets/icons/compass.svg" width="16" height="16" align="absmiddle" /> **[Learning Paths](./learning-paths.md):** Choose a persona-specific path (Foundations, Applied ML, or Agent Engineer).
 - <img src="assets/icons/layers.svg" width="16" height="16" align="absmiddle" /> **[Prerequisites Guide](./prerequisites.md):** Assess your background and bridge knowledge gaps.
-- <img src="assets/icons/roadmap.svg" width="16" height="16" align="absmiddle" /> **[Curriculum Index](../ROADMAP.md):** Explore all 13 modules across the 6 engineering tiers.
+- <img src="assets/icons/roadmap.svg" width="16" height="16" align="absmiddle" /> **[Curriculum Index](../ROADMAP.md):** Explore all 18 learning units across the 5 engineering phases.
 - <img src="assets/icons/index.svg" width="16" height="16" align="absmiddle" /> **[Technical Glossary](./glossary.md):** Precise definitions of production AI, MLOps, and agentic terminology.
 - <img src="assets/icons/toc.svg" width="16" height="16" align="absmiddle" /> **[FAQ](./faq.md):** Answers to common architectural and learning questions.
 

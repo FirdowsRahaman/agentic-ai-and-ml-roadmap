@@ -1,9 +1,25 @@
+---
+module: "01"
+title: "Python, Software Engineering, SQL & Modern Data Stack"
+difficulty: "core"
+estimated_hours: 14
+prerequisites:
+  - "none"
+learning_levels:
+  - foundation
+  - applied
+  - production
+topics:
+  - python-fundamentals
+  - numpy-vectorization
+  - pandas-cow
+  - sql-window-functions
+  - async-pydantic
+---
+
 # Module 01: Python, SQL & Modern Data Engineering Stack
 
-> **Difficulty:** Core | **Estimated Study Time:** 6-8 Hours | **Prerequisites:** Basic programming familiarity | **Lab:** [Run Interactive Notebook](../../notebooks/foundations/01_numpy_pandas_sql_lab.ipynb) | **[Open in Colab](https://colab.research.google.com/github/FirdowsRahaman/agentic-ai-and-ml-roadmap/blob/main/notebooks/foundations/01_numpy_pandas_sql_lab.ipynb)**
-> **Focus:** Vectorized arrays, SQL window functions, analytical joins, and async Python
-
-[← Back to Roadmap](../../README.md) | [Next: Module 02: Math & Statistics →](./02_math_and_statistics.md)
+[← Back to Portal](../../README.md) | [Phase 1 Index](./README.md) | [Next: Module 02: Math & Statistics →](./02_math_and_statistics.md)
 
 ---
 
@@ -85,18 +101,40 @@ items2.extend([3, 4])  # [1, 2, 3, 4]
 ```
 
 ### 4.4 Lazy Batch Streaming with Python Generators (`yield`)
-When processing a 50 GB training dataset on a 16 GB workstation, reading the whole file into a `list` triggers an Out-Of-Memory (OOM) crash. Generators evaluate lazily: they compute one element, yield it to the caller, and suspend their execution frame until the next batch is requested:
+When processing a 50 GB training dataset on a 16 GB workstation, reading the whole file into a `list` triggers an Out-Of-Memory (OOM) crash. Generators evaluate lazily: they consume input streams line-by-line or chunk-by-chunk, yield batches to the caller, and suspend their execution frame until the next batch is requested:
 
 ```python
-from typing import Generator
+import io
+import json
+from collections.abc import Iterable, Iterator
+from itertools import islice
 
-def stream_training_batches(records: list[dict], batch_size: int = 64) -> Generator[list[dict], None, None]:
-    for i in range(0, len(records), batch_size):
-        yield records[i : i + batch_size]  # Pauses here until caller asks for next batch
+def stream_batches_from_source(
+    stream: Iterable[str], batch_size: int = 64
+) -> Iterator[list[dict]]:
+    """Genuine streaming generator that reads an open file or stream lazily
 
-batches = stream_training_batches(records=[{"feat": i} for i in range(1000)], batch_size=256)
+    in bounded chunks without loading the entire multi-gigabyte source into memory.
+    """
+    iterator = iter(stream)
+    while True:
+        # islice pulls at most batch_size lines from the iterator stream
+        chunk = list(islice(iterator, batch_size))
+        if not chunk:
+            break
+        # Yield deserialized records lazily per batch
+        yield [json.loads(line) for line in chunk if line.strip()]
+
+# Demonstration: Streaming a simulated 50GB line-delimited JSONL stream
+simulated_jsonl_stream = io.StringIO(
+    "\n".join(json.dumps({"user_id": f"u_{i}", "feature_vec": [i * 0.1, i * 0.2]}) for i in range(1000))
+)
+
+batches = stream_batches_from_source(simulated_jsonl_stream, batch_size=256)
 first_batch = next(batches)
 assert len(first_batch) == 256
+assert first_batch[0]["user_id"] == "u_0"
+assert len(next(batches)) == 256  # Lazily pulls the second batch without rewinding
 ```
 
 ---
@@ -146,26 +184,38 @@ subset["log_spend"] = np.log(subset["spend"])
 assert "log_spend" not in df.columns  # Original DataFrame remains completely pristine!
 ```
 
-### 5.3 Advanced Analytical SQL: CTEs & Window Functions
-In production feature stores, raw transactional data must be aggregated and deduplicated using SQL window functions before being fed into ML models:
+### 5.3 Advanced Analytical SQL: Schema, CTEs & Window Functions
+In production feature stores, raw transactional data must be aggregated and deduplicated using SQL window functions before being fed into ML models. 
+
+Below is the complete source schema definition and feature extraction query:
 
 ```sql
+-- 1. Source Feature Store Table Definition
+CREATE TABLE transactions (
+    tx_id VARCHAR(64) PRIMARY KEY,
+    user_id VARCHAR(32) NOT NULL,
+    amount_usd NUMERIC(10, 2) NOT NULL,
+    created_at TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP NOT NULL
+);
+
+-- 2. Analytical Window Query with CTE
 WITH ranked_transactions AS (
     SELECT
         user_id,
         tx_id,
         amount_usd,
         created_at,
-        -- Analytical lag: previous transaction amount for drift analysis
+        -- Analytical lag: previous transaction amount for velocity drift analysis
         LAG(amount_usd, 1, 0.0) OVER (
             PARTITION BY user_id ORDER BY created_at ASC
         ) AS prev_amount,
-        -- Rolling 3-transaction average amount
+        -- Rolling 3-transaction average amount per user
         AVG(amount_usd) OVER (
             PARTITION BY user_id ORDER BY created_at ASC
             ROWS BETWEEN 2 PRECEDING AND CURRENT ROW
         ) AS rolling_3tx_avg,
-        -- Deduplicate retries: rank newest update first
+        -- Deduplicate retried transactions: keep the latest update
         ROW_NUMBER() OVER (
             PARTITION BY tx_id ORDER BY updated_at DESC
         ) AS rn

@@ -20,27 +20,37 @@ REQUIRED_ROOT_FILES = [
 
 REQUIRED_CURRICULUM_DIRS = [
     "curriculum/01-foundations",
-    "curriculum/02-machine-learning",
-    "curriculum/03-deep-learning",
-    "curriculum/04-generative-ai",
-    "curriculum/05-agentic-ai",
-    "curriculum/06-production-ai",
+    "curriculum/02-core-ml-and-dl",
+    "curriculum/03-modern-ai-and-genai",
+    "curriculum/04-agentic-ai",
+    "curriculum/05-production-and-practice",
+    "curriculum/05-production-and-practice/13_algorithms_and_patterns_from_scratch",
 ]
 
 EXPECTED_MODULES = [
+    # Phase 1: Foundations
     "curriculum/01-foundations/01_python_sql_and_data_stack.md",
     "curriculum/01-foundations/02_math_and_statistics.md",
-    "curriculum/02-machine-learning/03_classical_ml_and_recsys.md",
-    "curriculum/03-deep-learning/04_deep_learning_and_rl.md",
-    "curriculum/04-generative-ai/05_nlp_cv_and_multimodal.md",
-    "curriculum/04-generative-ai/06_llms_finetuning_and_rag.md",
-    "curriculum/05-agentic-ai/07_ai_agents_fundamentals.md",
-    "curriculum/05-agentic-ai/08_tools_langgraph_and_adk.md",
-    "curriculum/05-agentic-ai/09_multi_agent_and_mcp.md",
-    "curriculum/05-agentic-ai/10_agent_evals_and_safety.md",
-    "curriculum/06-production-ai/11_mlops_cloud_and_finops.md",
-    "curriculum/06-production-ai/12_system_troubleshooting_scenarios.md",
-    "curriculum/06-production-ai/13_algorithms_from_scratch.md",
+    # Phase 2: Core ML & Deep Learning
+    "curriculum/02-core-ml-and-dl/03_classical_ml_and_recsys.md",
+    "curriculum/02-core-ml-and-dl/04a_deep_learning_and_pytorch.md",
+    "curriculum/02-core-ml-and-dl/04b_advanced_dl_and_rl.md",
+    # Phase 3: Modern AI & GenAI
+    "curriculum/03-modern-ai-and-genai/05a_nlp_and_language_models.md",
+    "curriculum/03-modern-ai-and-genai/05b_computer_vision_and_multimodal.md",
+    "curriculum/03-modern-ai-and-genai/06a_llm_architecture_and_inference.md",
+    "curriculum/03-modern-ai-and-genai/06b_rag_engineering.md",
+    "curriculum/03-modern-ai-and-genai/06c_finetuning_and_serving.md",
+    # Phase 4: Agentic AI
+    "curriculum/04-agentic-ai/07_agent_fundamentals.md",
+    "curriculum/04-agentic-ai/08_agent_orchestration.md",
+    "curriculum/04-agentic-ai/09_multi_agent_mcp_a2a.md",
+    "curriculum/04-agentic-ai/10_agent_evaluation_and_safety.md",
+    # Phase 5: Production & Practice
+    "curriculum/05-production-and-practice/11_production_ai_engineering.md",
+    "curriculum/05-production-and-practice/12_incident_and_troubleshooting_labs.md",
+    "curriculum/05-production-and-practice/13_algorithms_and_patterns_from_scratch/13a_ml_algorithms.md",
+    "curriculum/05-production-and-practice/13_algorithms_and_patterns_from_scratch/13b_system_patterns.md",
 ]
 
 REQUIRED_NOTEBOOK_DIRS = [

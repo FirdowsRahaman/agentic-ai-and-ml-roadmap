@@ -47,30 +47,40 @@ plugins:
 
 nav:
   - Home: index.md
+  - Diagnostic Assessment: assessment-guide.md
   - Getting Started: getting-started.md
   - Roadmap: ROADMAP.md
   - Learning Paths: learning-paths.md
   - Prerequisites: prerequisites.md
   - Curriculum:
       - 1. Foundations:
+          - "Overview": curriculum/01-foundations/README.md
           - "01: Python, SQL & Data Stack": curriculum/01-foundations/01_python_sql_and_data_stack.md
           - "02: Math & Statistics": curriculum/01-foundations/02_math_and_statistics.md
-      - 2. Classical Machine Learning:
-          - "03: Classical ML & RecSys": curriculum/02-machine-learning/03_classical_ml_and_recsys.md
-      - 3. Deep Learning & Systems:
-          - "04: Deep Learning & RL": curriculum/03-deep-learning/04_deep_learning_and_rl.md
-      - 4. Generative AI & RAG:
-          - "05: NLP, CV & Multimodal": curriculum/04-generative-ai/05_nlp_cv_and_multimodal.md
-          - "06: LLMs, Fine-Tuning & RAG": curriculum/04-generative-ai/06_llms_finetuning_and_rag.md
-      - 5. Autonomous Agents & MCP:
-          - "07: AI Agents Fundamentals": curriculum/05-agentic-ai/07_ai_agents_fundamentals.md
-          - "08: Tools, LangGraph & ADK": curriculum/05-agentic-ai/08_tools_langgraph_and_adk.md
-          - "09: Multi-Agent & MCP": curriculum/05-agentic-ai/09_multi_agent_and_mcp.md
-          - "10: Evals, Safety & FinOps": curriculum/05-agentic-ai/10_agent_evals_and_safety.md
-      - 6. Production AI & MLOps:
-          - "11: MLOps, Drift & FinOps": curriculum/06-production-ai/11_mlops_cloud_and_finops.md
-          - "12: Troubleshooting Scenarios": curriculum/06-production-ai/12_system_troubleshooting_scenarios.md
-          - "13: Algorithms from Scratch": curriculum/06-production-ai/13_algorithms_from_scratch.md
+      - 2. Core ML & Deep Learning:
+          - "Overview": curriculum/02-core-ml-and-dl/README.md
+          - "03: Classical ML & RecSys": curriculum/02-core-ml-and-dl/03_classical_ml_and_recsys.md
+          - "04A: Core Deep Learning & PyTorch": curriculum/02-core-ml-and-dl/04a_deep_learning_and_pytorch.md
+          - "04B: Advanced DL & RL": curriculum/02-core-ml-and-dl/04b_advanced_dl_and_rl.md
+      - 3. Modern AI & Generative AI:
+          - "Overview": curriculum/03-modern-ai-and-genai/README.md
+          - "05A: NLP & Language Models": curriculum/03-modern-ai-and-genai/05a_nlp_and_language_models.md
+          - "05B: Computer Vision & Multimodal": curriculum/03-modern-ai-and-genai/05b_computer_vision_and_multimodal.md
+          - "06A: LLM Architecture & Inference": curriculum/03-modern-ai-and-genai/06a_llm_architecture_and_inference.md
+          - "06B: RAG Engineering": curriculum/03-modern-ai-and-genai/06b_rag_engineering.md
+          - "06C: Fine-Tuning & Serving": curriculum/03-modern-ai-and-genai/06c_finetuning_and_serving.md
+      - 4. Agentic AI Engineering:
+          - "Overview": curriculum/04-agentic-ai/README.md
+          - "07: Agent Fundamentals": curriculum/04-agentic-ai/07_agent_fundamentals.md
+          - "08: Agent Orchestration": curriculum/04-agentic-ai/08_agent_orchestration.md
+          - "09: Multi-Agent Systems, MCP & A2A": curriculum/04-agentic-ai/09_multi_agent_mcp_a2a.md
+          - "10: Evals, Safety & FinOps": curriculum/04-agentic-ai/10_agent_evaluation_and_safety.md
+      - 5. Production & Practice:
+          - "Overview": curriculum/05-production-and-practice/README.md
+          - "11: Production AI Engineering": curriculum/05-production-and-practice/11_production_ai_engineering.md
+          - "12: Incident Troubleshooting Labs": curriculum/05-production-and-practice/12_incident_and_troubleshooting_labs.md
+          - "13A: ML Algorithms from Scratch": curriculum/05-production-and-practice/13_algorithms_and_patterns_from_scratch/13a_ml_algorithms.md
+          - "13B: AI Systems Patterns from Scratch": curriculum/05-production-and-practice/13_algorithms_and_patterns_from_scratch/13b_system_patterns.md
   - Portfolio Projects:
       - "Project Catalog Overview": projects/README.md
       - "End-to-End Lifecycle Playbook": projects/end_to_end_lifecycle_playbook.md
