@@ -72,7 +72,7 @@ Classic **High-Variance Overfitting**. Fix in order of engineering ROI:
 
 ### Scenario 5: *"Your enterprise RAG bot answers confidently using facts that do not exist in the retrieved chunks."*
 **Diagnosis & Remediation:**
-1. **Retrieval Failure:** Pure cosine vector search missed exact policy/SKU strings -> switch to **Hybrid Search (`BM25 + Dense + RRF`)** + **Cross-Encoder Reranker (`Top 50 -> Top 5`)** to eliminate "Lost-in-the-Middle" noise.
+1. **Retrieval Failure:** Pure cosine vector search missed exact policy/SKU strings -> switch to **Hybrid Search (`Qdrant` `BM25 + Dense + RRF`)** + **Cross-Encoder Reranker (`Top 50 -> Top 5`)** to eliminate **"Lost-in-the-Middle"** long-context attention degradation ([Liu et al., TACL 2024](https://arxiv.org/abs/2307.03172)).
 2. **Generation Ungroundedness:** Enforce strict abstention system prompts + **Structured Citation Schema** requiring exact `chunk_id` quotes verified programmatically before display; gate releases on **`RAGAS Faithfulness >= 0.90`**.
 
 ---
@@ -97,7 +97,7 @@ Apply the 4-step VRAM rescue toolkit without changing mathematical batch dynamic
        optimizer.zero_grad(set_to_none=True)
    ```
 2. **Mixed Precision (`BF16`):** Halves activation & gradient memory while doubling Tensor Core throughput.
-3. **Activation (Gradient) Checkpointing:** Recomputes intermediate activations on backward pass (~20% extra compute for ~60% activation VRAM savings).
+3. **Activation (Gradient) Checkpointing:** Recomputes intermediate activations on the backward pass — reducing activation memory from $O(L)$ to $O(\sqrt{L})$ at the cost of one extra forward pass (~20%–33% compute overhead; [Chen et al., 2016](https://arxiv.org/abs/1604.06174)).
 4. **8-bit Adam (`bitsandbytes`) / `QLoRA` / `FSDP`** across multi-GPU nodes.
 
 ---

@@ -44,9 +44,10 @@ Two agent runs can call tools in slightly different orders and phrase summaries 
 ---
 
 #### 1.2 Debiasing `LLM-as-a-Judge` Evaluators & Standard Agent Benchmarks
+Research benchmarking LLM judges ([Zheng et al., NeurIPS 2023 — *MT-Bench*](https://arxiv.org/abs/2306.05685)) documented three systematic biases:
 - **Position Bias:** Judges favor whichever candidate answer appears first (`A` over `B`). *Fix:* Evaluate both `(A, B)` and `(B, A)` and require agreement.
-- **Verbosity Bias:** Judges reward longer,bullet-heavy answers even when padded with fluff. *Fix:* Score conciseness explicitly and use **binary pass/fail rubrics** (`0` or `1` per criterion) rather than noisy `1–10` scales.
-- **Self-Preference Bias:** A model family rates its own generations higher. *Fix:* Cross-family judging calibrated against a 100-example human-labeled golden set (Cohen's $\kappa > 0.8$).
+- **Verbosity Bias:** Judges reward longer, bullet-heavy answers even when padded with fluff. *Fix:* Score conciseness explicitly and use **binary pass/fail rubrics** (`0` or `1` per criterion) rather than noisy `1–10` scales.
+- **Self-Enhancement Bias:** A model family rates its own generations higher. *Fix:* Cross-family judging calibrated against a human-labeled golden set.
 - **Key Industry Agent Benchmarks:** **`SWE-bench Verified`** (real GitHub repository bug fixing), **`GAIA`** (multi-step tool reasoning), **`TAU-bench`** (customer-service policy + API compliance), and **`WebArena` / `OSWorld`**.
 
 ---
@@ -59,6 +60,7 @@ A single HTTP `200 OK` hides a 7-step agent trace. **Distributed Tracing** recor
 ---
 
 #### 2.2 Threat Modeling Direct vs. Indirect Prompt Injection & Red Teaming (`PyRIT` / `Garak`)
+Prompt Injection is ranked **`LLM01` (#1 risk)** in the [OWASP Top 10 for LLM Applications (2025)](https://genai.owasp.org/llmrisk/llm01-prompt-injection/), with Indirect Injection formalized by [Greshake et al. (2023)](https://arxiv.org/abs/2302.12173):
 
 | Attack Vector | How It Enters | Concrete Exploit Scenario | Primary Mitigations |
 |---|---|---|---|
@@ -134,8 +136,8 @@ class DeterministicGuardrail:
 #### 5.1 Session Budget Circuit Breakers, Model Cascading & Semantic Caching
 *(Note: Cloud GPU & cluster billing kill-switches are covered in [Module 11](../05-production-and-practice/11_mlops_cloud_and_finops.md); here we enforce **application-layer LLM token FinOps**):*
 1. **Per-Session Dollar & Token Budget Gate:** Meter `prompt_tokens + completion_tokens` on every span; abort gracefully if cumulative session spend crosses `\$0.25` or `max_iterations = 8`.
-2. **Model Cascading (Tiered Routing):** Route 80% of intent classification, summarization, and simple tool extraction to a fast `\$0.10/1M` Flash/8B model; escalate only complex multi-hop ambiguities to a frontier Pro/Reasoning model.
-3. **Prefix Caching + Redis Semantic Caching:** Reuse prefill KV caches on static system prompts/schemas (50–75% input discount) and serve repeat/paraphrased FAQs ($\cos \ge 0.96$) from Redis in `<15ms` at `\$0` token cost.
+2. **Model Cascading (Tiered Routing):** Route routine classification, summarization, and simple tool extraction to a fast Flash/8B model, escalating only complex ambiguities to a frontier reasoning model — cascading architectures cut LLM inference spend by **up to 80%–98%** without accuracy loss ([Chen et al., *FrugalGPT*, 2023](https://arxiv.org/abs/2305.05176)).
+3. **Prefix Caching + Redis Semantic Caching:** Reuse prefill KV caches on static system prompts/schemas (**50%–90% cached input discount** on [Anthropic Prompt Caching](https://docs.anthropic.com/en/docs/build-with-claude/prompt-caching) & [Google Gemini Context Caching](https://ai.google.dev/gemini-api/docs/caching)) and serve repeat FAQs ($\cos \ge 0.96$) from Redis at `\$0` token cost.
 
 ---
 

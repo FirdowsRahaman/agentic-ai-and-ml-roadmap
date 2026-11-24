@@ -6,9 +6,9 @@
 
 ---
 
-## Mental Model: Notebook Code Is Only 10% of Production ML
+## Mental Model: ML Modeling Code Is Only ~5%–10% of a Production System
 
-A model scoring `0.94 AUC` in a local Jupyter notebook delivers **zero business value** until it is safely serialized, containerized, versioned alongside its training data, served behind low-latency health-checked APIs, protected from Training-Serving Skew, monitored for statistical drift, and guarded against runaway GPU cloud bills.
+As Google researchers famously documented in *[Hidden Technical Debt in Machine Learning Systems](https://papers.nips.cc/paper_files/paper/2015/hash/86df7dcfd896fcaf2674f757a2463eba-Abstract.html)* (Sculley et al., NeurIPS 2015), core ML training code makes up **only a tiny fraction (~5%–10%)** of real-world ML infrastructure. A model scoring `0.94 AUC` in a local notebook delivers zero business value until surrounded by safe serialization, containerization, data/model versioning, feature stores, drift monitoring, and cloud FinOps guardrails.
 
 ```mermaid
 flowchart LR
@@ -132,7 +132,7 @@ CMD ["uvicorn", "src.app:app", "--host", "0.0.0.0", "--port", "8000"]
 #### 4.1 Detecting Covariate Shift (`PSI`, K-S) vs. Concept Drift
 - **Data / Covariate Drift ($P(X)$ shifts):** Input distribution changes (e.g., inflation shifts transaction amounts upward). Quantified via **Kolmogorov-Smirnov (K-S) test** or **PSI**:
   $$\text{PSI} = \sum_{i=1}^{B} (p_{\text{prod}, i} - p_{\text{train}, i}) \cdot \ln\left(\frac{p_{\text{prod}, i}}{p_{\text{train}, i}}\right)$$
-  - `PSI < 0.10`: Stable | `0.10 <= PSI < 0.25`: Investigate | **`PSI >= 0.25`: Significant drift -> trigger automated CI/CD retraining**.
+  - Standard credit-risk & MLOps thresholds (*Siddiqi, Credit Risk Scorecards*): `PSI < 0.10`: Stable | `0.10 <= PSI < 0.25`: Moderate shift (investigate) | **`PSI >= 0.25`: Significant shift -> trigger automated CI/CD retraining**.
 - **Concept Drift ($P(Y \mid X)$ shifts):** Input histograms look identical (`PSI < 0.05`), yet fraudsters changed tactics so precision collapses — detected via delayed ground-truth label monitoring and business KPIs.
 
 ---
@@ -145,7 +145,7 @@ CMD ["uvicorn", "src.app:app", "--host", "0.0.0.0", "--port", "8000"]
 ---
 
 #### 4.3 Preemptible Spot GPU Checkpointing & Automated Cloud Cost Kill-Switches
-1. **Spot / Preemptible GPUs + Emergency Checkpointing:** Rent spare cloud A100/H100 capacity at a **60–80% discount**. Save checkpoints to S3/GCS every $N$ steps and trap the cloud `SIGTERM` / 2-minute preemption notice to flush optimizer + model state cleanly so replacement nodes resume automatically.
+1. **Spot / Preemptible GPUs + Emergency Checkpointing:** Rent spare cloud GPU capacity at **up to 60%–91% discount** compared to On-Demand rates ([AWS EC2 Spot](https://aws.amazon.com/ec2/spot/); [Google Cloud Spot VMs](https://cloud.google.com/spot-vms)). Save checkpoints to S3/GCS every $N$ steps and trap the cloud `SIGTERM` preemption signal to flush optimizer + model state cleanly so replacement nodes resume automatically.
 2. **Automated Cloud Infrastructure Kill-Switches:**
    - Cap Kubernetes autoscalers (`maxReplicas`), enforce idle-GPU auto-shutdown (`GPU utilization < 5%` for 30 mins), and wire **AWS Budgets -> SNS -> Lambda** (or **GCP Billing Budgets -> Pub/Sub -> Cloud Function**) to automatically scale non-prod GPU groups to zero when spend crosses threshold.
 

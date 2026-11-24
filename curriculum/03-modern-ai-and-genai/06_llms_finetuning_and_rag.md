@@ -47,7 +47,7 @@ flowchart LR
 ### 2. Prompting, Structured Outputs & Hallucination Grounding
 
 #### 2.1 Constrained Decoding & Guaranteed JSON Schemas
-In production software, asking an LLM *"Please reply in valid JSON"* via plain text still fails 2–5% of the time with markdown wrappers or missing keys. Modern APIs and open-source engines (`Outlines`, `vLLM`) enforce **Grammar-Constrained Decoding** — masking invalid vocabulary tokens at every decoding step so outputs are **mathematically guaranteed** to conform to your `Pydantic` schema:
+In production software, asking an LLM *"Please reply in valid JSON"* via plain-text prompting frequently fails on complex schemas due to markdown wrappers, trailing commas, or missing keys. Modern APIs and open-source engines (`Outlines`, `vLLM`) enforce **Grammar-Constrained Decoding** — masking invalid vocabulary tokens at every decoding step to achieve **100% structural schema compliance** ([OpenAI Structured Outputs Report, 2024](https://openai.com/index/introducing-structured-outputs-in-the-api/); [Willard & Louf, 2023](https://arxiv.org/abs/2307.09702)):
 
 ```python
 from pydantic import BaseModel, Field
@@ -77,7 +77,7 @@ Poor chunking destroys retrieval quality before embeddings even run:
 1. **Fixed-Token with Overlap (e.g., `512` tokens, `64` overlap):** Simple baseline; risks slicing tables or clauses mid-sentence.
 2. **Recursive Character / Markdown-Header Splitting:** Splits hierarchically by headings (`#`, `##`), paragraphs (`\n\n`), then sentences.
 3. **Layout-Aware Parsing (`Docling`, `Marker`, AWS Textract):** Preserves multi-column PDFs, financial tables, and figures intact as structured Markdown/JSON.
-4. **Contextual Retrieval:** Prepends a 1-sentence document-level summary (e.g., *"From Acme Corp Q3 2026 10-Q filing:"*) to every chunk prior to embedding and sparse indexing, cutting retrieval misses by ~49%.
+4. **Contextual Retrieval:** Prepends a concise document-level summary (e.g., *"From Acme Corp Q3 2026 10-Q filing:"*) to every chunk prior to embedding and BM25 indexing — reducing top-20 chunk retrieval failure rates by **49%** (and **67%** when paired with reranking; [Anthropic Engineering, 2024](https://www.anthropic.com/news/contextual-retrieval)).
 
 ---
 
@@ -96,9 +96,9 @@ Poor chunking destroys retrieval quality before embeddings even run:
 ### 4. Post-Training (`SFT`, `LoRA`/`QLoRA`, `DPO`/`GRPO`) & Test-Time Compute
 
 #### 4.1 Parameter-Efficient Fine-Tuning & Alignment Mechanics
-1. **`LoRA` (Low-Rank Adaptation):** Freezes pretrained weight matrix $W_0 \in \mathbb{R}^{d \times k}$ and injects trainable low-rank adapters $\Delta W = B A$ where $A \in \mathbb{R}^{r \times k}, B \in \mathbb{R}^{d \times r}$ with rank $r \ll d$ (e.g., $r = 16$). Cuts trainable parameters by **99%+** and prevents catastrophic forgetting. **`QLoRA`** quantizes frozen $W_0$ to 4-bit `NF4` while training `BF16` LoRA adapters on a single 24 GB GPU.
-2. **Preference Alignment (`RLHF` vs. `DPO`):** **Direct Preference Optimization (`DPO`)** optimizes the policy directly on `(prompt, chosen, rejected)` preference pairs via a closed-form loss without maintaining a separate `PPO` reward model.
-3. **Reasoning Models (`GRPO` & Test-Time Compute):** Models like `o3`, `Gemini 2.5 Thinking`, and `DeepSeek-R1` train via **Reinforcement Learning with Verifiable Rewards (`GRPO`)** against code/math verifiers, spending dynamic **test-time thinking tokens** to backtrack and self-correct.
+1. **`LoRA` (Low-Rank Adaptation):** Freezes pretrained weight matrix $W_0 \in \mathbb{R}^{d \times k}$ and injects trainable low-rank adapters $\Delta W = B A$ where $A \in \mathbb{R}^{r \times k}, B \in \mathbb{R}^{d \times r}$ with rank $r \ll d$ (e.g., $r = 16$) — reducing trainable parameters by up to **10,000× (>99.9%)** and GPU memory by **3×** ([Hu et al., ICLR 2022](https://arxiv.org/abs/2106.09685)). **`QLoRA`** ([Dettmers et al., NeurIPS 2023](https://arxiv.org/abs/2305.14314)) quantizes frozen $W_0$ to 4-bit `NF4` while training `BF16` LoRA adapters on a single consumer/24 GB GPU.
+2. **Preference Alignment (`RLHF` vs. `DPO`):** **Direct Preference Optimization (`DPO`)** ([Rafailov et al., NeurIPS 2023](https://arxiv.org/abs/2305.18290)) optimizes the policy directly on `(prompt, chosen, rejected)` preference pairs via a closed-form loss without maintaining a separate `PPO` reward model.
+3. **Reasoning Models (`GRPO` & Test-Time Compute):** Models like `o3`, `Gemini 2.5 Thinking`, and `DeepSeek-R1` train via **Reinforcement Learning with Verifiable Rewards (`GRPO`)** ([Shao et al., 2024](https://arxiv.org/abs/2402.03300); [DeepSeek-AI, 2025](https://arxiv.org/abs/2501.12948)) against code/math verifiers, spending dynamic **test-time thinking tokens** to backtrack and self-correct.
 
 ---
 
@@ -119,8 +119,8 @@ Poor chunking destroys retrieval quality before embeddings even run:
 1. **Solving the Metadata Filtering Trap (`Filterable HNSW`):**
    - *Naive Post-Filtering* runs ANN `Top-K` first and drops unauthorized/mismatched tenant docs afterward — often returning **0 results** when a tenant owns `<1%` of the index!
    - *Naive Pre-Filtering* masks out nodes in an `HNSW` graph, severing graph edges and ruining recall.
-   - **`Qdrant` Filterable HNSW** builds additional payload-indexed subgraph links directly inside `HNSW` (and switches automatically to exact/indexed scan at tiny filter cardinality), guaranteeing `<10ms` filtered recall for multi-tenant ACLs (`tenant_id`, `role`, `date_range`).
-2. **Binary & Scalar Quantization:** Compresses `FP32` vectors to `INT8` (**4× less RAM**) or 1-bit **Binary Quantization** (**32× less RAM** on high-dimensional embeddings $\ge 1024$d), oversampling candidates in RAM and rescoring the top hits from disk with ~99% original accuracy.
+   - **`Qdrant` Filterable HNSW** ([Qdrant Architecture Guide](https://qdrant.tech/articles/filtrable-hnsw/)) builds additional payload-indexed subgraph links directly inside `HNSW` (and switches automatically to exact/indexed scan at tiny filter cardinality), guaranteeing low-latency filtered recall for multi-tenant ACLs (`tenant_id`, `role`, `date_range`).
+2. **Binary & Scalar Quantization:** Compresses `FP32` vectors to `INT8` (**4× less RAM**) or 1-bit **Binary Quantization** (**32× less RAM** and up to **40× faster retrieval** on high-dimensional embeddings $\ge 1024$d; [Qdrant Quantization Docs](https://qdrant.tech/documentation/concepts/quantization/)), oversampling candidates in RAM and rescoring top hits from disk.
 3. **Single-Call Hybrid Search (`Prefetch` + Server-Side `RRF`):**
 
 ```python
@@ -202,7 +202,7 @@ flowchart TD
 #### 7.1 Prefill vs. Decode Bottlenecks & `PagedAttention`
 - **`TTFT` (Time-To-First-Token — Prefill):** Processes all prompt tokens in parallel; **compute-bound**. Accelerated via **Prefix / Prompt Caching**.
 - **`TPOT` (Time-Per-Output-Token — Decode):** Emits 1 token per step; **memory-bandwidth bound** (streams weights + KV cache from HBM every token). Accelerated via **Quantization (`FP8`/`AWQ`)** and **Speculative Decoding**.
-- **`PagedAttention` (`vLLM`) & Continuous Batching:** Stores `KV Cache` in non-contiguous fixed-size memory pages (eliminating 60%+ contiguous VRAM waste) and swaps finished requests at token granularity, increasing GPU concurrency **2x–4x**.
+- **`PagedAttention` (`vLLM`) & Continuous Batching:** Traditional contiguous KV-cache pre-allocation wastes **60%–80% of GPU memory** on internal/external fragmentation; `PagedAttention` stores `KV Cache` in non-contiguous fixed-size memory pages (cutting waste to **`<4%`**) and swaps finished requests at token granularity, increasing serving throughput **2×–4×** ([Kwon et al., SOSP 2023](https://arxiv.org/abs/2309.06180)).
 
 ---
 

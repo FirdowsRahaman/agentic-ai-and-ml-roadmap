@@ -72,7 +72,7 @@ WEATHER_TOOL_SCHEMA = {
     },
 }
 ```
-> **Schema Design Rule:** Tool `description` strings are **system prompts in disguise** — explicitly stating *when* and *when NOT* to call a tool + setting `"strict": True` and `"additionalProperties": False` eliminates 90%+ of tool hallucinations.
+> **Schema Design Rule:** Tool `description` strings act as **system prompts** — explicitly stating *when* and *when NOT* to call a tool + setting `"strict": True` and `"additionalProperties": False` enforces **100% structural argument compliance** via constrained decoding ([OpenAI Structured Outputs, 2024](https://openai.com/index/introducing-structured-outputs-in-the-api/)).
 
 ---
 

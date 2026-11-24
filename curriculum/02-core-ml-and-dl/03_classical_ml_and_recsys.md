@@ -8,7 +8,7 @@
 
 ## Mental Model: Choosing the Right Classical Paradigm
 
-Despite the rise of LLMs, **70%+ of enterprise revenue-generating ML** (fraud scoring, credit underwriting, churn prediction, dynamic pricing, ad CTR, and feed ranking) still runs on **tabular models, tree ensembles, and two-stage recommendation engines** due to sub-10ms latency and tabular inductive bias.
+Despite the rise of LLMs, **non-generative analytical AI and classical ML account for \$11.0T–\$17.7T (~75%+) of total projected global AI economic value** compared to \$2.6T–\$4.4T from generative AI use cases ([McKinsey Global Institute, *"The Economic Potential of Generative AI"*, 2023](https://www.mckinsey.com/capabilities/mckinsey-digital/our-insights/the-economic-potential-of-generative-ai-the-next-productivity-frontier)). Across structured tabular workloads (fraud scoring, credit underwriting, churn, dynamic pricing, and feed ranking), gradient-boosted decision trees still consistently outperform deep neural networks ([Grinsztajn et al., NeurIPS 2022](https://arxiv.org/abs/2207.08815)) while meeting sub-10ms latency SLAs.
 
 ```mermaid
 flowchart TD
@@ -113,8 +113,8 @@ flowchart LR
 | **Error Reduced** | High variance (overfits easily) | **Reduces Variance** via averaging | **Reduces Bias** (and controls variance via `learning_rate` + L1/L2 regularization) |
 | **Tabular SOTA?** | Baseline interpretability only | Strong out-of-the-box baseline | **Industry standard** for tabular competitions & production |
 
-- **`XGBoost`:** Depth-wise tree growth with exact/approx regularized objective + native missing-value routing.
-- **`LightGBM`:** Leaf-wise tree growth + histogram binning — **5x–10x faster** and lower memory on millions of rows.
+- **`XGBoost`** ([Chen & Guestrin, KDD 2016](https://arxiv.org/abs/1603.02754)): Depth-wise tree growth with exact/approximate second-order regularized objective + sparsity-aware missing-value routing.
+- **`LightGBM`** ([Ke et al., NeurIPS 2017](https://proceedings.neurips.cc/paper/2017/hash/6449f44a102fde848669bdd9eb6b76fa-Abstract.html)): Leaf-wise tree growth + histogram binning + GOSS/EFB — achieving **up to 20× faster training** and substantially lower memory on large datasets.
 - **`CatBoost`:** Ordered target statistics for high-cardinality categorical columns with minimal tuning.
 
 ---
