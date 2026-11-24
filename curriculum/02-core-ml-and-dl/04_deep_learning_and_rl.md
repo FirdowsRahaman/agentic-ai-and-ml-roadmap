@@ -38,14 +38,19 @@ flowchart LR
 ### 1. Neurons, Layers & Non-Linearity
 
 #### 1.1 How a Neuron Works & Why Activations Make Deep Learning Possible
-- **Step 1 — Inside One Neuron ("Should I Go Outside for a Run?"):**
-  Suppose you check 3 clues: `Sunshine = 0.5`, `Energy = 0.8`, `Friend Joining = 0.2`. A neuron does three simple things:
-  1. **Multiplies by `Weights` (*how much you care*):** `0.5×0.4 + 0.8×0.6 + 0.2×0.9 = 0.86`.
-  2. **Adds a `Bias` (*your starting baseline mood*):** `0.86 + 0.10 = 0.96`.
-  3. **Passes through an `Activation Switch` (`ReLU`):** If the total is negative (say `-4.0` because it's pouring rain), `ReLU` flips it **completely OFF to `0.0`**; if positive (`0.96`), it lets the signal pass forward!
-- **Step 2 — Why That Switch Changes Everything ("Rigid Ruler vs. Hinged Wire"):**
-  - **Without Activation Functions:** Suppose Layer 1 computes `2x + 1` and Layer 2 computes `3 × (Layer 1) + 2`. Plugging Layer 1 into Layer 2 just gives `3(2x + 1) + 2 = 6x + 5`—**still one rigid straight ruler!** Even **100 layers** without activations collapse into **one single straight line** that can never wrap around a circle of data points, recognize a face, or understand language.
-  - **With Activation Functions (`ReLU` / `GELU`):** Every activation adds a **bendable hinge** to the line! Stack 3 hinged neurons and you can fold a triangle; stack thousands and the network can bend around *any* complex shape in photos, audio, or human text.
+- **Step 1 — Inside One Neuron (Real Example: A Credit-Card Fraud Detector Neuron):**
+  Suppose a single neuron inspects **3 real yes/no signals** (`1` = Yes, `0` = No) on a card swipe:
+  - `abroad_swipe` (`Weight = +4.0` — strong red flag)
+  - `swipe_at_3am` (`Weight = +2.0` — moderate red flag)
+  - `face_id_matched` (`Weight = -5.0` — **negative weight** acts as a safety brake!)
+  - **`Bias = -2.0`** — built-in starting threshold so routine daytime swipes stay quiet instead of causing false alarms.
+  - **Now watch `ReLU` (`max(0, total)`) act as a noise gate on two swipes:**
+    1. *Safe Tourist (Abroad = `1`, 3 AM = `0`, FaceID = `1`):* `(1×4) + (0×2) + (1×-5) - 2 = -3.0` -> **`ReLU` clips `-3.0` to `0.0` (Neuron stays completely SILENT!)**
+    2. *Stolen Card (Abroad = `1`, 3 AM = `1`, FaceID = `0`):* `(1×4) + (1×2) + (0×-5) - 2 = +4.0` -> **`ReLU` passes `+4.0` forward (Neuron FIRES an alarm!)**
+
+- **Step 2 — Why That `ReLU` Switch Makes Deep Networks Possible (Two Reasons):**
+  1. **Stops Safe Signals from Erasing Real Alarms:** Imagine Neuron A spots a stolen card abroad (`+4.0`), while Neuron B checks *"Did they buy 20 gift cards?"* and scores `-10.0` (super safe). Without `ReLU`, adding them raw (`+4.0 + (-10.0) = -6.0`) lets one normal check **drown out a real theft**! Clipping negatives at `0.0` (`+4.0 + 0.0 = +4.0`) keeps independent detectors from canceling each other out.
+  2. **Adds Bendable "Hinges" Instead of One Rigid Ruler:** Mathematically, stacking straight-line formulas without switches just collapses back into one line: if Layer 1 is `2x + 1` and Layer 2 is `3 × (Layer 1) + 2`, you just get `6x + 5`—giving a 100-layer network zero advantage over 1 layer! Every `ReLU` / `GELU` switch adds a **hinge** so layers can fold and wrap around complex boundaries:
 
 <p align="center">
   <img src="../../assets/animations/activation_hinge_motion.svg" width="100%" alt="Animated comparison showing why neural networks without activation functions are stuck as a rigid straight line while ReLU and GELU activations add hinges to wrap complex shapes" />
@@ -61,18 +66,21 @@ Without a non-linear activation $\phi(\cdot)$ between layers, consecutive linear
 ```python
 import numpy as np
 
-def relu_neuron(inputs: np.ndarray, weights: np.ndarray, bias: float) -> float:
-    pre_activation = float(np.dot(inputs, weights) + bias)
-    return max(0.0, pre_activation)  # The hinge! Clips negatives to 0.0
+def fraud_neuron_relu(signals: np.ndarray, weights: np.ndarray, bias: float) -> float:
+    raw_score = float(np.dot(signals, weights) + bias)
+    return max(0.0, raw_score)  # ReLU gate: silences negative scores to 0.0!
 
-x = np.array([0.5, 0.8, 0.2])
-w = np.array([0.4, 0.6, 0.9])
-b = 0.1
-# 0.5*0.4 + 0.8*0.6 + 0.2*0.9 + 0.1 = 0.20 + 0.48 + 0.18 + 0.10 = 0.96
-out = relu_neuron(x, w, b)
-assert np.isclose(out, 0.96)
-assert relu_neuron(np.array([-2.0, -1.0, 0.0]), w, b) == 0.0  # Negative score -> switched OFF!
-print(f"Neuron output: {out:.2f}")  # 0.96 -> active!
+# [abroad_swipe, swipe_at_3am, face_id_matched]
+weights = np.array([4.0, 2.0, -5.0])
+bias = -2.0
+
+safe_tourist = np.array([1.0, 0.0, 1.0])   # Raw = 4 + 0 - 5 - 2 = -3.0 -> clipped to 0.0
+stolen_card  = np.array([1.0, 1.0, 0.0])   # Raw = 4 + 2 + 0 - 2 = +4.0 -> fires 4.0!
+
+assert fraud_neuron_relu(safe_tourist, weights, bias) == 0.0
+assert fraud_neuron_relu(stolen_card, weights, bias) == 4.0
+print("Safe Tourist Output:", fraud_neuron_relu(safe_tourist, weights, bias))  # 0.0 (Silent)
+print("Stolen Card Output: ", fraud_neuron_relu(stolen_card, weights, bias))   # 4.0 (Alert!)
 ```
 
 #### 1.2 Modern Activation Functions (`ReLU`, `GELU`, `SwiGLU`, `Softmax`)
