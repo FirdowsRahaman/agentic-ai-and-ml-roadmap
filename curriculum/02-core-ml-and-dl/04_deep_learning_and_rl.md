@@ -27,6 +27,10 @@ flowchart LR
     class STEP opt;
 ```
 
+<p align="center">
+  <img src="../../assets/animations/gradient_descent_motion.svg" width="100%" alt="Animated Gradient Descent rolling down a loss curve synchronized with the 4-step PyTorch training loop" />
+</p>
+
 ---
 
 ## Tier 1: Core Foundations (Neurons, Activations, Losses & PyTorch Loop)

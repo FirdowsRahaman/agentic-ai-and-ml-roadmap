@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 320" width="100%" height="auto" role="img" aria-label="Animated comparison of Traditional GPU KV-Cache Memory Waste vs vLLM PagedAttention">
+  <style>
+    .bg { fill: #FFFFFF; stroke: #CBD5E1; stroke-width: 1.5; }
+    .kicker { font: 700 11px -apple-system, 'Segoe UI', Arial, sans-serif; fill: #2251FF; letter-spacing: 1.6px; }
+    .title { font: 700 20px Georgia, 'Times New Roman', serif; fill: #051C2C; }
+    .panel-title { font: 700 13.5px -apple-system, 'Segoe UI', Arial, sans-serif; fill: #051C2C; }
+    .small { font: 600 11.5px -apple-system, 'Segoe UI', Arial, sans-serif; fill: #475569; }
+    .page-txt { font: 700 11px -apple-system, 'Segoe UI', Arial, sans-serif; fill: #FFFFFF; }
+
+    @keyframes pageAppear1 { 0%, 15% { opacity: 0.15; } 25%, 90% { opacity: 1; } 100% { opacity: 0.15; } }
+    @keyframes pageAppear2 { 0%, 35% { opacity: 0.15; } 45%, 90% { opacity: 1; } 100% { opacity: 0.15; } }
+    @keyframes pageAppear3 { 0%, 55% { opacity: 0.15; } 65%, 90% { opacity: 1; } 100% { opacity: 0.15; } }
+
+    .p1 { animation: pageAppear1 4.5s infinite; }
+    .p2 { animation: pageAppear2 4.5s infinite; }
+    .p3 { animation: pageAppear3 4.5s infinite; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .p1, .p2, .p3 { animation: none; opacity: 1; }
+    }
+  </style>
+
+  <rect x="1" y="1" width="958" height="318" rx="4" class="bg"/>
+  <rect x="1" y="1" width="310" height="5" fill="#051C2C"/>
+  <rect x="311" y="1" width="380" height="5" fill="#2251FF"/>
+  <rect x="691" y="1" width="268" height="5" fill="#00A9F4"/>
+
+  <text x="32" y="34" class="kicker">VISUAL INTUITION  |  GPU MEMORY &amp; vLLM PAGEDATTENTION</text>
+  <text x="32" y="60" class="title">The "12-Seat Restaurant Table" Problem: Why vLLM Serves 2×–4× More Users</text>
+  <line x1="32" y1="74" x2="928" y2="74" stroke="#E2E8F0" stroke-width="1"/>
+
+  <!-- LEFT: Naive Contiguous Allocation -->
+  <text x="32" y="102" class="panel-title">Naive GPU Serving (Reserves Max Seats Upfront → 70% Wasted RAM)</text>
+
+  <!-- User A Row -->
+  <text x="32" y="136" class="small">User A:</text>
+  <rect x="92" y="118" width="64" height="26" rx="2" fill="#051C2C"/>
+  <rect x="160" y="118" width="270" height="26" rx="2" fill="#FEE2E2" stroke="#EF4444" stroke-dasharray="4 3"/>
+  <text x="295" y="135" text-anchor="middle" font-family="-apple-system, 'Segoe UI', sans-serif" font-size="11" font-weight="700" fill="#B91C1C">Empty Reserved VRAM (Wasted!)</text>
+
+  <!-- User B Row -->
+  <text x="32" y="176" class="small">User B:</text>
+  <rect x="92" y="158" width="96" height="26" rx="2" fill="#2251FF"/>
+  <rect x="192" y="158" width="238" height="26" rx="2" fill="#FEE2E2" stroke="#EF4444" stroke-dasharray="4 3"/>
+  <text x="311" y="175" text-anchor="middle" font-family="-apple-system, 'Segoe UI', sans-serif" font-size="11" font-weight="700" fill="#B91C1C">Empty Reserved VRAM (Wasted!)</text>
+
+  <!-- User C Blocked! -->
+  <rect x="92" y="202" width="338" height="32" rx="3" fill="#FEF2F2" stroke="#DC2626"/>
+  <text x="261" y="222" text-anchor="middle" font-family="-apple-system, 'Segoe UI', sans-serif" font-size="11.5" font-weight="700" fill="#B91C1C">User C &amp; User D → BLOCKED (Out of Memory!)</text>
+
+  <!-- Center Divider -->
+  <line x1="468" y1="88" x2="468" y2="262" stroke="#CBD5E1" stroke-width="1.5"/>
+
+  <!-- RIGHT: vLLM PagedAttention -->
+  <text x="496" y="102" class="panel-title">vLLM PagedAttention (Allocates Tiny Pages On-Demand → &lt;4% Waste)</text>
+
+  <text x="496" y="136" class="small">Shared GPU Page Pool (4 Users Fit Easily on the Exact Same GPU!):</text>
+
+  <!-- Packed Non-Contiguous Pages Grid -->
+  <g transform="translate(496, 150)">
+    <rect x="0"   y="0" width="66" height="34" rx="3" fill="#051C2C"/><text x="33" y="21" text-anchor="middle" class="page-txt">User A1</text>
+    <rect x="72"  y="0" width="66" height="34" rx="3" fill="#2251FF"/><text x="105" y="21" text-anchor="middle" class="page-txt">User B1</text>
+    <rect x="144" y="0" width="66" height="34" rx="3" fill="#00838F"/><text x="177" y="21" text-anchor="middle" class="page-txt">User C1</text>
+    <rect x="216" y="0" width="66" height="34" rx="3" fill="#051C2C" class="p1"/><text x="249" y="21" text-anchor="middle" class="page-txt p1">User A2</text>
+    <rect x="288" y="0" width="66" height="34" rx="3" fill="#16A34A" class="p1"/><text x="321" y="21" text-anchor="middle" class="page-txt p1">User D1</text>
+    <rect x="360" y="0" width="66" height="34" rx="3" fill="#2251FF" class="p2"/><text x="393" y="21" text-anchor="middle" class="page-txt p2">User B2</text>
+
+    <rect x="0"   y="42" width="66" height="34" rx="3" fill="#00838F" class="p2"/><text x="33" y="63" text-anchor="middle" class="page-txt p2">User C2</text>
+    <rect x="72"  y="42" width="66" height="34" rx="3" fill="#16A34A" class="p3"/><text x="105" y="63" text-anchor="middle" class="page-txt p3">User D2</text>
+    <rect x="144" y="42" width="66" height="34" rx="3" fill="#2251FF" class="p3"/><text x="177" y="63" text-anchor="middle" class="page-txt p3">User B3</text>
+    <rect x="216" y="42" width="210" height="34" rx="3" fill="#DCFCE7" stroke="#16A34A"/>
+    <text x="321" y="63" text-anchor="middle" font-family="-apple-system, 'Segoe UI', sans-serif" font-size="11.5" font-weight="700" fill="#15803D">Free Pages Ready for New Users!</text>
+  </g>
+
+  <!-- Bottom Banner -->
+  <rect x="32" y="270" width="896" height="34" rx="3" fill="#051C2C"/>
+  <text x="480" y="292" text-anchor="middle" font-family="-apple-system, 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#F8FAFC">Pages are handed out 1 block at a time as tokens stream in — and freed the instant a user's reply finishes!</text>
+</svg>

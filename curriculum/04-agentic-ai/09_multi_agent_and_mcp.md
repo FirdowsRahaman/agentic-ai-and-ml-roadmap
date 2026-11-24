@@ -133,6 +133,10 @@ def fetch_order_summary(order_id: str) -> dict[str, str | float]:
 #### 3.1 Complementary Protocols: Vertical Tooling (`MCP`) vs. Horizontal Federation (`A2A`)
 In modern enterprise architectures, agents built on different stacks (e.g., a `LangGraph` Billing Agent in Finance and a `Google ADK` Inventory Agent in Supply Chain) must collaborate without sharing internal prompts, memory, or database credentials. The **[Agent2Agent (`A2A`) Protocol](https://github.com/a2aproject/A2A)** (introduced by Google and governed by the Linux Foundation) pairs directly with `MCP`:
 
+<p align="center">
+  <img src="../../assets/animations/agent_mcp_a2a_motion.svg" width="100%" alt="Animated architecture comparing Vertical MCP Tool calls and Horizontal A2A Agent-to-Agent collaboration" />
+</p>
+
 | Dimension | `MCP` (Model Context Protocol) | `A2A` (Agent-to-Agent Protocol) |
 |---|---|---|
 | **Integration Axis** | **Vertical (`Agent ↔ Tools, DBs & Resources`)** | **Horizontal (`Client Agent ↔ Remote Peer Agent`)** |

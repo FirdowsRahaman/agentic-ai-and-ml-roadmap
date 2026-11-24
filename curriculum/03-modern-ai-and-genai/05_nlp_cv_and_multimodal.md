@@ -56,6 +56,10 @@ flowchart LR
 - **Causal Masking (No Peeking Ahead):** During training, an LLM reads the whole sentence at once for speed, so we grey out future words (`-inf`) to stop word #3 from cheating by peeking at word #4.
 - **`RoPE` (Word Order):** Since pure attention treats a sentence like an unordered bag, **Rotary Positional Embeddings (`RoPE`)** slightly rotate each word's Query/Key angle by its position (`1st, 2nd, 3rd...`) so the model feels exact word distance.
 
+<p align="center">
+  <img src="../../assets/animations/self_attention_qkv_motion.svg" width="100%" alt="Animated Transformer Self-Attention showing Query, Key, Value matching and Causal Masking" />
+</p>
+
 <details>
 <summary><b>Deep Dive: Attention Equation & Why We Divide by $\sqrt{d_k}$</b></summary>
 

@@ -234,6 +234,10 @@ flowchart TD
   2. **`TPOT` (Time-Per-Output-Token — Typing the Reply):** Emits 1 word at a time; bottlenecked by **shipping giant weight matrices from GPU RAM into compute cores for every single word** (*memory-bandwidth bound*). Speed up with **Quantization** or **Speculative Decoding**.
 - **Why `vLLM` (`PagedAttention`) Multiplies Throughput 2×–4×:** Imagine a restaurant blocking off a 12-seat table for every solo diner *"just in case 11 friends show up later"*—most seats sit empty! Standard GPU serving wastes **60%–80% of VRAM** reserving contiguous chat-history (`KV Cache`) blocks the exact same way. **`vLLM`** hands out memory **one small page at a time** as a chat grows and frees seats the instant a reply finishes (**Continuous Batching**).
 
+<p align="center">
+  <img src="../../assets/animations/vllm_paged_attention_motion.svg" width="100%" alt="Animated comparison of Traditional GPU KV-Cache Memory Waste vs vLLM PagedAttention" />
+</p>
+
 <details>
 <summary><b>Deep Dive: OS-Style `PagedAttention` Block Tables & Citation</b></summary>
 

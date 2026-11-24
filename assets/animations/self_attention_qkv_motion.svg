@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 330" width="100%" height="auto" role="img" aria-label="Animated Transformer Self-Attention showing Query, Key, Value matching and Causal Masking">
+  <style>
+    .bg { fill: #FFFFFF; stroke: #CBD5E1; stroke-width: 1.5; }
+    .kicker { font: 700 11px -apple-system, 'Segoe UI', Arial, sans-serif; fill: #2251FF; letter-spacing: 1.6px; }
+    .title { font: 700 20px Georgia, 'Times New Roman', serif; fill: #051C2C; }
+    .tok-box { fill: #F8FAFC; stroke: #94A3B8; stroke-width: 1.5; }
+    .tok-query { fill: #EFF6FF; stroke: #2251FF; stroke-width: 2.5; }
+    .tok-masked { fill: #F1F5F9; stroke: #CBD5E1; stroke-width: 1.2; stroke-dasharray: 4 3; }
+    .tok-text { font: 700 14px 'Courier New', monospace; fill: #051C2C; }
+    .small { font: 600 11px -apple-system, 'Segoe UI', Arial, sans-serif; fill: #475569; }
+
+    @keyframes beamPulse {
+      0%, 100% { stroke-opacity: 0.25; stroke-width: 2; }
+      50%      { stroke-opacity: 1.0;  stroke-width: 5; }
+    }
+    @keyframes matchGlow {
+      0%, 100% { fill: #F8FAFC; stroke: #051C2C; }
+      50%      { fill: #DBEAFE; stroke: #2251FF; }
+    }
+    .strong-beam { animation: beamPulse 2.8s ease-in-out infinite; }
+    .matched-box { animation: matchGlow 2.8s ease-in-out infinite; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .strong-beam, .matched-box { animation: none; }
+    }
+  </style>
+
+  <rect x="1" y="1" width="958" height="328" rx="4" class="bg"/>
+  <rect x="1" y="1" width="310" height="5" fill="#051C2C"/>
+  <rect x="311" y="1" width="380" height="5" fill="#2251FF"/>
+  <rect x="691" y="1" width="268" height="5" fill="#00A9F4"/>
+
+  <text x="32" y="34" class="kicker">VISUAL INTUITION  |  TRANSFORMER SELF-ATTENTION &amp; CAUSAL MASK</text>
+  <text x="32" y="60" class="title">How Token "it" Uses Query × Key Matching to Resolve Meaning ("server")</text>
+  <line x1="32" y1="74" x2="928" y2="74" stroke="#E2E8F0" stroke-width="1"/>
+
+  <!-- Attention Arcs from "it" (x=470) back to past tokens -->
+  <!-- Strong match to "server" (x=185) -->
+  <path d="M 470 185 Q 327 82 185 185" fill="none" stroke="#2251FF" class="strong-beam"/>
+  <rect x="276" y="108" width="118" height="22" rx="11" fill="#2251FF"/>
+  <text x="335" y="123" text-anchor="middle" font-family="-apple-system, 'Segoe UI', sans-serif" font-size="11" font-weight="700" fill="#FFFFFF">Weight = 0.82</text>
+
+  <!-- Weak match to "crashed" (x=285) -->
+  <path d="M 470 185 Q 377 132 285 185" fill="none" stroke="#94A3B8" stroke-width="1.5" stroke-dasharray="3 3"/>
+  <text x="378" y="152" text-anchor="middle" class="small">0.11</text>
+
+  <!-- Blocked future arc to "RAM" (x=760) -->
+  <path d="M 470 185 Q 615 115 760 185" fill="none" stroke="#DC2626" stroke-width="1.5" stroke-dasharray="5 4" opacity="0.65"/>
+  <rect x="552" y="126" width="154" height="22" rx="4" fill="#FEF2F2" stroke="#DC2626" stroke-width="1"/>
+  <text x="629" y="141" text-anchor="middle" font-family="-apple-system, 'Segoe UI', sans-serif" font-size="10.5" font-weight="700" fill="#B91C1C">CAUSAL MASK (-inf)</text>
+
+  <!-- Token Row -->
+  <!-- Token 1: The -->
+  <rect x="52" y="188" width="76" height="42" rx="4" class="tok-box"/>
+  <text x="90" y="214" text-anchor="middle" class="tok-text">The</text>
+
+  <!-- Token 2: server (Matched Key + Value!) -->
+  <rect x="142" y="188" width="86" height="42" rx="4" class="tok-box matched-box"/>
+  <text x="185" y="214" text-anchor="middle" class="tok-text">server</text>
+  <text x="185" y="248" text-anchor="middle" font-family="-apple-system, 'Segoe UI', sans-serif" font-size="11" font-weight="700" fill="#2251FF">Key Match! Sends Value (V)</text>
+
+  <!-- Token 3: crashed -->
+  <rect x="242" y="188" width="86" height="42" rx="4" class="tok-box"/>
+  <text x="285" y="214" text-anchor="middle" class="tok-text">crashed</text>
+
+  <!-- Token 4: because -->
+  <rect x="342" y="188" width="86" height="42" rx="4" class="tok-box"/>
+  <text x="385" y="214" text-anchor="middle" class="tok-text">because</text>
+
+  <!-- Token 5: it (Active Query Token!) -->
+  <rect x="442" y="188" width="58" height="42" rx="4" class="tok-query"/>
+  <text x="471" y="214" text-anchor="middle" class="tok-text" fill="#1D4ED8">it</text>
+  <text x="471" y="248" text-anchor="middle" font-family="-apple-system, 'Segoe UI', sans-serif" font-size="11" font-weight="700" fill="#051C2C">Active Query (Q)</text>
+
+  <!-- Future Masked Tokens: ran | out | of | RAM -->
+  <rect x="530" y="188" width="68" height="42" rx="4" class="tok-masked"/>
+  <text x="564" y="214" text-anchor="middle" class="tok-text" opacity="0.4">ran</text>
+
+  <rect x="610" y="188" width="68" height="42" rx="4" class="tok-masked"/>
+  <text x="644" y="214" text-anchor="middle" class="tok-text" opacity="0.4">out</text>
+
+  <rect x="690" y="188" width="46" height="42" rx="4" class="tok-masked"/>
+  <text x="713" y="214" text-anchor="middle" class="tok-text" opacity="0.4">of</text>
+
+  <rect x="748" y="188" width="76" height="42" rx="4" class="tok-masked"/>
+  <text x="786" y="214" text-anchor="middle" class="tok-text" opacity="0.4">RAM</text>
+  <text x="680" y="248" text-anchor="middle" class="small">Future tokens hidden during training (no peeking ahead)</text>
+
+  <!-- Bottom Takeaway Strip -->
+  <rect x="32" y="274" width="896" height="36" rx="3" fill="#051C2C"/>
+  <text x="480" y="297" text-anchor="middle" font-family="-apple-system, 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#F8FAFC">Query (Q): "What noun am I?"   •   Key (K): "I am singular subject 'server'"   •   Value (V): Passes 'server' context into 'it'</text>
+</svg>

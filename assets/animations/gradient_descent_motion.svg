@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 320" width="100%" height="auto" role="img" aria-label="Animated Gradient Descent optimization rolling down a loss curve to minimum error">
+  <style>
+    .bg { fill: #FFFFFF; stroke: #CBD5E1; stroke-width: 1.5; }
+    .kicker { font: 700 11px -apple-system, 'Segoe UI', Arial, sans-serif; fill: #2251FF; letter-spacing: 1.6px; }
+    .title { font: 700 20px Georgia, 'Times New Roman', serif; fill: #051C2C; }
+    .label { font: 600 12px -apple-system, 'Segoe UI', Arial, sans-serif; fill: #0F172A; }
+    .small { font: 500 11.5px -apple-system, 'Segoe UI', Arial, sans-serif; fill: #475569; }
+    .step-box { fill: #F8FAFC; stroke: #CBD5E1; stroke-width: 1.2; }
+
+    @keyframes pulseStep1 { 0%, 24% { stroke: #2251FF; stroke-width: 2.5; fill: #EFF6FF; } 25%, 100% { stroke: #CBD5E1; stroke-width: 1.2; fill: #F8FAFC; } }
+    @keyframes pulseStep2 { 0%, 24% { stroke: #CBD5E1; } 25%, 49% { stroke: #2251FF; stroke-width: 2.5; fill: #EFF6FF; } 50%, 100% { stroke: #CBD5E1; } }
+    @keyframes pulseStep3 { 0%, 49% { stroke: #CBD5E1; } 50%, 74% { stroke: #2251FF; stroke-width: 2.5; fill: #EFF6FF; } 75%, 100% { stroke: #CBD5E1; } }
+    @keyframes pulseStep4 { 0%, 74% { stroke: #CBD5E1; } 75%, 100% { stroke: #16A34A; stroke-width: 2.5; fill: #DCFCE7; } }
+
+    .s1 { animation: pulseStep1 5s infinite; }
+    .s2 { animation: pulseStep2 5s infinite; }
+    .s3 { animation: pulseStep3 5s infinite; }
+    .s4 { animation: pulseStep4 5s infinite; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .s1, .s2, .s3, .s4 { animation: none; }
+    }
+  </style>
+
+  <rect x="1" y="1" width="958" height="318" rx="4" class="bg"/>
+  <rect x="1" y="1" width="310" height="5" fill="#051C2C"/>
+  <rect x="311" y="1" width="380" height="5" fill="#2251FF"/>
+  <rect x="691" y="1" width="268" height="5" fill="#00A9F4"/>
+
+  <text x="32" y="34" class="kicker">VISUAL INTUITION  |  HOW NEURAL NETWORKS LEARN</text>
+  <text x="32" y="60" class="title">Gradient Descent: Taking Downhill Steps Until Prediction Error Hits Bottom</text>
+  <line x1="32" y1="74" x2="928" y2="74" stroke="#E2E8F0" stroke-width="1"/>
+
+  <!-- Left Panel: Loss Valley Curve + Animated Rolling Ball -->
+  <line x1="60" y1="265" x2="430" y2="265" stroke="#64748B" stroke-width="1.5"/>
+  <line x1="60" y1="95" x2="60" y2="265" stroke="#64748B" stroke-width="1.5"/>
+  <text x="245" y="290" text-anchor="middle" class="small">Model Weight Value (w) →</text>
+  <text x="44" y="105" text-anchor="end" class="small">High</text>
+  <text x="44" y="120" text-anchor="end" class="small">Loss</text>
+
+  <!-- Parabolic Loss Curve -->
+  <path id="lossValley" d="M 85 110 Q 245 360 405 110" fill="none" stroke="#051C2C" stroke-width="3"/>
+
+  <!-- Goal Minimum Star/Dot at x=245, y=235 -->
+  <circle cx="245" cy="235" r="6" fill="#16A34A"/>
+  <text x="245" y="256" text-anchor="middle" font-family="-apple-system, 'Segoe UI', sans-serif" font-size="11" font-weight="700" fill="#15803D">Minimum Loss (Best Weights)</text>
+
+  <!-- Animated Ball Descending Left Slope to Minimum -->
+  <circle r="9" fill="#2251FF" stroke="#FFFFFF" stroke-width="2">
+    <animateMotion dur="5s" repeatCount="indefinite" path="M 85 110 Q 245 360 405 110" keyPoints="0;0.35;0.46;0.5;0.5" keyTimes="0;0.3;0.6;0.85;1" calcMode="spline" keySplines="0.4 0 0.2 1; 0.4 0 0.2 1; 0.4 0 0.2 1; 0 0 1 1"/>
+  </circle>
+
+  <!-- Right Panel: Synchronized 4-Step PyTorch Loop -->
+  <text x="485" y="104" class="label">Synchronized PyTorch Training Heartbeat:</text>
+
+  <rect x="485" y="118" width="435" height="38" rx="4" class="step-box s1"/>
+  <text x="502" y="142" class="label">1. Forward Pass:   logits = model(x_batch)  → Make a guess</text>
+
+  <rect x="485" y="164" width="435" height="38" rx="4" class="step-box s2"/>
+  <text x="502" y="188" class="label">2. Measure Loss:  loss = criterion(logits, y)  → How wrong?</text>
+
+  <rect x="485" y="210" width="435" height="38" rx="4" class="step-box s3"/>
+  <text x="502" y="234" class="label">3. Autograd Slope: loss.backward()  → Which way is downhill?</text>
+
+  <rect x="485" y="256" width="435" height="38" rx="4" class="step-box s4"/>
+  <text x="502" y="280" class="label">4. Nudge Weights: optimizer.step()  → Step toward minimum!</text>
+</svg>

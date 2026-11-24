@@ -93,6 +93,10 @@ print(f"Cosine Similarity: {cosine_similarity(short_doc, long_duplicate_doc):.3f
   - **`p95` (95th percentile):** `2 mins` — 95 out of 100 users waited `2 mins` or less.
   - **`p99` (99th percentile — "Tail Latency"):** `45 mins` — the worst 1% experience. If your AI app has 1,000,000 daily requests, a slow `p99` means **10,000 frustrated users every single day**, even while your "average" speed looks great!
 
+<p align="center">
+  <img src="../../assets/animations/mean_median_p99_motion.svg" width="100%" alt="Animated comparison of Mean vs Median under an extreme outlier and p50/p95/p99 tail latency" />
+</p>
+
 ```python
 import numpy as np
 
