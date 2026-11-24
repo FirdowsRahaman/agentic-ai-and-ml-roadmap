@@ -1,0 +1,70 @@
+site_name: AI/ML Fresher Roadmap
+site_description: Engineering-first roadmap from Python, SQL & Math to Advanced RAG, AI Agents, MCP & Production MLOps.
+repo_url: https://github.com/FirdowsRahaman/ai-ml-fresher-roadmap
+docs_dir: .
+
+theme:
+  name: material
+  palette:
+    - scheme: slate
+      primary: indigo
+      accent: cyan
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+    - scheme: default
+      primary: indigo
+      accent: cyan
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+  features:
+    - navigation.sections
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+
+markdown_extensions:
+  - tables
+  - admonition
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+
+nav:
+  - Home: README.md
+  - 1. Foundations:
+      - "01 — Python, SQL & Data Stack": curriculum/01-foundations/01_python_sql_and_data_stack.md
+      - "02 — Math & Statistics": curriculum/01-foundations/02_math_and_statistics.md
+  - 2. Core ML & DL:
+      - "03 — Classical ML & RecSys": curriculum/02-core-ml-and-dl/03_classical_ml_and_recsys.md
+      - "04 — Deep Learning & RL": curriculum/02-core-ml-and-dl/04_deep_learning_and_rl.md
+  - 3. GenAI & Multimodal:
+      - "05 — NLP, CV & Multimodal": curriculum/03-modern-ai-and-genai/05_nlp_cv_and_multimodal.md
+      - "06 — LLMs, Fine-Tuning & RAG": curriculum/03-modern-ai-and-genai/06_llms_finetuning_and_rag.md
+  - 4. Autonomous Agents:
+      - "07 — AI Agents Fundamentals": curriculum/04-agentic-ai/07_ai_agents_fundamentals.md
+      - "08 — Tools, LangGraph & ADK": curriculum/04-agentic-ai/08_tools_langgraph_and_adk.md
+      - "09 — Multi-Agent & MCP": curriculum/04-agentic-ai/09_multi_agent_and_mcp.md
+      - "10 — Evals, Safety & FinOps": curriculum/04-agentic-ai/10_agent_evals_and_safety.md
+  - 5. Production & Practice:
+      - "11 — MLOps, Drift & FinOps": curriculum/05-production-and-practice/11_mlops_cloud_and_finops.md
+      - "12 — Troubleshooting Scenarios": curriculum/05-production-and-practice/12_system_troubleshooting_scenarios.md
+      - "13 — Algorithms from Scratch": curriculum/05-production-and-practice/13_algorithms_from_scratch.md
+  - Portfolio Projects:
+      - "All 10 Blueprints": projects/README.md
+      - "Starter 1: Local RAG + SQL Agent": projects/starter-local-rag-agent/README.md
+      - "Starter 2: Local MLOps API": projects/starter-local-mlops/README.md
+  - Interview Kits:
+      - "System Design Framework": interview-kits/ml_system_design_framework.md
+      - "Classical ML & RecSys": interview-kits/classical_ml_questions.md
+      - "GenAI, RAG & Agents": interview-kits/genai_and_agents_questions.md
+      - "SQL & Coding Screenings": interview-kits/sql_and_coding_screenings.md
+      - "Resume Guide & Flashcards": interview-kits/resume_and_flashcards.md
+  - Resources: resources/recommended_resources.md
+  - Contributing: CONTRIBUTING.md
