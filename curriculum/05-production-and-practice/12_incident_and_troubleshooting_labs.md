@@ -47,7 +47,15 @@ flowchart TD
 
 ---
 
-## 2. Learning Objectives
+## 2. Audience
+
+- **Production AI On-Call Engineers & SREs** tasked with maintaining high availability and low P99 latencies for live inference services.
+- **ML Platform Engineers** designing automated circuit breakers, fallbacks, and root-cause post-mortems for catastrophic failures.
+- **Senior AI Practitioners** preparing for production incident triage, war-room leadership, and architectural disaster recovery.
+
+---
+
+## 3. Learning Objectives
 
 By the end of this module, you will be able to:
 - **Triage silent production failures** using structured diagnostic decision trees across classical ML, Deep Learning, and Generative AI systems.
@@ -58,13 +66,21 @@ By the end of this module, you will be able to:
 
 ---
 
-## 3. Prerequisites
+## 4. Prerequisites
 
 - **Full Curriculum Mastery:** Foundations, Classical ML, Deep Learning, Generative AI, Agents, and MLOps from [Modules 01 through 11](./11_production_ai_engineering.md).
 
 ---
 
-## 4. Core Concepts
+## 5. Learning Levels
+
+1. **Foundations (Level 1):** Incident triage methodology (Triage -> Mitigate -> Isolate -> Resolve -> Post-Mortem), P99 latency alerts.
+2. **Applied (Level 2):** Reproducing CUDA OOM fragmentation, dead-letter queue recovery, silent feature drift isolation.
+3. **Production (Level 3):** Automated canary rollbacks, multi-tenant rate-limit enforcement, post-mortem Blameless Root Cause Analysis (RCA).
+
+---
+
+## 6. Core Concepts
 
 ### 4.1 The 3 Classes of Silent Machine Learning Failures
 1. **Data Leakage & Skew:** The model had access to information during training that does not exist at inference time.
@@ -80,7 +96,7 @@ When an incident is reported:
 
 ---
 
-## 5. Technical Deep Dive: War-Room Scenarios
+## 7. Technical Deep Dive: War-Room Scenarios
 
 ### Scenario 1: High Test Accuracy, Zero Fraud Detection
 - **Symptom:** Fraud model achieves $99.8\%$ accuracy, but executive dashboard reports undetected fraud losses.
@@ -115,7 +131,7 @@ When an incident is reported:
 
 ---
 
-## 6. Hands-on Implementation
+## 8. Hands-on Implementation
 
 Implement an automated Data Leakage Diagnostic Scanner in Python that identifies suspicious correlations between features and targets:
 
@@ -156,7 +172,7 @@ print("Lab 12 Passed! Successfully identified target leakage feature:", flags)
 
 ---
 
-## 7. Practical Exercises
+## 9. Practical Exercises
 
 ### Exercise 1: Gradient Accumulation Implementation
 1. Write a PyTorch training loop that simulates an effective batch size of $128$ using a physical batch size of $16$ and gradient accumulation over $8$ steps.
@@ -167,7 +183,7 @@ print("Lab 12 Passed! Successfully identified target leakage feature:", flags)
 
 ---
 
-## 8. Mini Project
+## 10. Mini Project
 
 ### Production Incident Post-Mortem Generator
 Build an automated triage incident reporter:
@@ -177,7 +193,7 @@ Build an automated triage incident reporter:
 
 ---
 
-## 9. Advanced Topics
+## 11. Production Considerations
 
 - **Silent Floating-Point Underflow in Custom CUDA Kernels:** How subnormal numbers degrade half-precision FP16 operations without triggering explicit exceptions.
 - **Deadlock in Distributed Multi-GPU Training:** Diagnosing desynchronized ranks during barrier synchronization in PyTorch DDP.
@@ -185,7 +201,7 @@ Build an automated triage incident reporter:
 
 ---
 
-## 10. Common Mistakes & Gotchas
+## 12. Common Mistakes & Gotchas
 
 1. **Debugging Live Traffic Without Seed Isolation:** Attempting to debug non-deterministic model responses without pinning random seeds and temperature to 0.0.
 2. **Restarting Crashed Pods Without Preserving OOM Logs:** Allowing Kubernetes to restart crashed pods in a crash-loop without capturing memory snapshots.
@@ -193,7 +209,7 @@ Build an automated triage incident reporter:
 
 ---
 
-## 11. Interview Questions & System Design
+## 13. Interview Questions & System Design
 
 ### Q1: How do you systematically debug a model that performs well offline but fails in production?
 1. **Verify Feature Consistency:** Audit for training-serving skew by logging production inputs and comparing feature distribution statistics (mean, variance, PSI) against training distributions.
@@ -209,7 +225,7 @@ Build an automated triage incident reporter:
 
 ---
 
-## 12. Recommended Resources
+## 14. Recommended Resources
 
 - **Paper:** [Hidden Technical Debt in Machine Learning Systems](https://papers.nips.cc/paper_files/paper/2015/hash/86df7dcfd896fcaf2674f757a2463eba-Abstract.html) (Sculley et al., NeurIPS 2015).
 - **Playbook:** [End-to-End Lifecycle Playbook](../../projects/end_to_end_lifecycle_playbook.md).
@@ -217,7 +233,7 @@ Build an automated triage incident reporter:
 
 ---
 
-## 13. Completion Checklist
+## 15. Completion Checklist
 
 - [ ] Execute the war-room triage decision tree for common production ML failure modes.
 - [ ] Implement and verify an automated target leakage detection scanner.
@@ -227,4 +243,12 @@ Build an automated triage incident reporter:
 
 ---
 
-[← Previous: Module 11: MLOps, Cloud & FinOps](./11_production_ai_engineering.md) | [Home](../../README.md) | [Next: Module 13: Hands-On Algorithms from Scratch →](./13_algorithms_and_patterns_from_scratch/13a_ml_algorithms.md)
+## 16. Further Exploration
+
+- **Chaos Engineering for AI Systems:** Implement Chaos Mesh or Gremlin experiments to inject synthetic GPU network partitions and token latency spikes.
+- **Automated Incident Runbooks:** Design autonomous SRE agents that inspect Kubernetes pod logs and trigger automated pod restarts on OOMKilled events.
+- **Blameless Post-Mortem Templates:** Review Google SRE incident post-mortem retrospectives for multi-million dollar production outages.
+
+---
+
+[← Previous: Module 11](./11_production_ai_engineering.md) | [Phase 5 Index](./README.md) | [Roadmap](../../ROADMAP.md) | [Next: Module 13 →](./13_algorithms_and_patterns_from_scratch/README.md)

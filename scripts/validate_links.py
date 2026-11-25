@@ -24,7 +24,7 @@ def main() -> int:
     md_files: list[str] = []
     headings: dict[str, set[str]] = {}
 
-    ignore_dirs = {".git", ".pytest_cache", ".venv", "venv", "site", "__pycache__"}
+    ignore_dirs = {".git", ".pytest_cache", ".venv", "venv", "site", "__pycache__", ".docs_build"}
 
     for root, dirs, files in os.walk("."):
         dirs[:] = [d for d in dirs if d not in ignore_dirs]

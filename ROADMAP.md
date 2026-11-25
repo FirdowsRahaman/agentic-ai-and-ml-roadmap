@@ -116,8 +116,8 @@ Covers non-root Docker deployments, Population Stability Index drift tracking, r
 
 | Track | Target Audience | Weekly Commitment | Total Duration | Recommended Units |
 |---|---|---|---|---|
-| **Comprehensive Engineering Track** | Aspiring AI/ML Engineers & Complete Beginners | 10–12 Hours / Week | **22–28 Weeks** | All 18 Learning Units + Capstone |
-| **Guided Applied Track** | Developers seeking practical AI application skills | 8–10 Hours / Week | **16 Weeks** | Modules 01, 03, 04A, 05A, 06A, 06B, 07, 08, 11 |
+| **Comprehensive Engineering Track** | Aspiring AI/ML Engineers & Complete Beginners | 10–12 Hours / Week | **25–31 Weeks** | All 18 Learning Units (~302 total study hours) + Capstone |
+| **Guided Applied Track** | Developers seeking practical AI application skills | 8–10 Hours / Week | **16–20 Weeks** | Modules 01, 03, 04A, 05A, 06A, 06B, 07, 08, 11 |
 | **Accelerated Developer Track** | Experienced Backend / Software Engineers | 10–12 Hours / Week | **12–16 Weeks** | Diagnostic bypass of Phase 1; focus on 04A, 06A-C, 07-10, 11 |
 
 ---

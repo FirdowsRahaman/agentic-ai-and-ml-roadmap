@@ -29,16 +29,16 @@ topics:
 
 ## 1. Overview
 
-While Foundation Models possess broad parametric knowledge, they hallucinate, lack access to private enterprise data, and cannot be updated continuously without expensive retraining. **Retrieval-Augmented Generation (RAG)** provides external non-parametric memory, dynamically fetching verified source passages and grounding generation in factual reality.
+While Foundation Models possess broad parametric knowledge, they suffer from knowledge cutoffs, hallucinate unsupported claims, lack access to private enterprise data, and cannot be updated continuously without prohibitive retraining costs. **Retrieval-Augmented Generation (RAG)** provides external non-parametric memory, dynamically fetching verified source passages to ground generation in factual source text. While RAG significantly mitigates knowledge-cutoff and factual grounding hallucinations, it does not completely eliminate hallucinations (e.g., synthesis distortion, context neglect, or extrapolation errors must still be evaluated and guarded against).
 
-This unit teaches production RAG engineering: semantic chunking, Qdrant hybrid vector indexing, sparse BM25 fusion via Reciprocal Rank Fusion (RRF), cross-encoder reranking, and quantitative retrieval evaluation (Recall@K, MRR).
+This unit teaches production RAG engineering: semantic chunking, Qdrant hybrid vector indexing, sparse BM25 fusion via Reciprocal Rank Fusion (RRF) and Normalized Score Fusion, cross-encoder reranking, and quantitative retrieval evaluation (Recall@K, MRR).
 
 ---
 
 ## 2. Who Should Study This?
 
 - **Generative AI Engineers** building enterprise search and question-answering systems over proprietary documentation.
-- **Software Architects** designing high-precision retrieval pipelines that eliminate hallucinations.
+- **Software Architects** designing high-precision retrieval pipelines that minimize hallucination risk and enforce multi-tenant access control.
 - **Backend Developers** integrating vector databases (Qdrant, Milvus) with lexical full-text search.
 
 ---
@@ -96,9 +96,13 @@ Where $k$ is a smoothing constant (standard $k = 60$). RRF relies purely on rela
 
 ## 7. Technical Deep Dive
 
-### 7.1 Cross-Encoder Reranking
-- **Bi-Encoders (Embeddings):** Encode query and document independently ($u = f(q), v = f(d)$). Extremely fast ($O(1)$ vector lookup via ANN index), but misses fine-grained token-level cross-interactions.
-- **Cross-Encoders:** Feeds query and document concatenated together into a Transformer ($[CLS] \circ q \circ [SEP] \circ d$). Self-attention computes rich token-to-token cross-interactions, producing vastly more accurate relevance scores at the cost of higher latency.
+### 7.1 Cross-Encoder Reranking vs Bi-Encoders
+- **Bi-Encoders (Embeddings):** Encode query and document independently into fixed-dimensional vectors ($u = f(q), v = f(d)$). This enables logarithmic-time vector search (typically $O(\log N)$ in hierarchical graph indexes like HNSW, or sub-linear search across inverted file clusters in IVF), but lacks token-level cross-attention between query and candidate terms.
+- **Cross-Encoders:** Feeds query and document concatenated together into a Transformer ($[CLS] \circ q \circ [SEP] \circ d$). Full self-attention computes rich token-to-token cross-interactions, producing vastly more discriminative relevance scores. However, cross-encoders are computationally intensive and not universally superior in every setting: they introduce substantial latency overhead (15–50ms per batch), scale poorly with long documents, and can suffer from domain transfer drops if fine-tuned on divergent benchmarks.
+- **Score Fusion Strategies:** In addition to rank-based RRF, **Normalized Weighted Score Fusion** offers a tunable alternative:
+  $$\tilde{S}_{\text{dense}} = \frac{S_{\text{dense}} - \min(S_{\text{dense}})}{\max(S_{\text{dense}}) - \min(S_{\text{dense}})}, \quad \tilde{S}_{\text{sparse}} = \frac{S_{\text{sparse}} - \min(S_{\text{sparse}})}{\max(S_{\text{sparse}}) - \min(S_{\text{sparse}})}$$
+  $$S_{\text{hybrid}} = \alpha \tilde{S}_{\text{dense}} + (1 - \alpha) \tilde{S}_{\text{sparse}}$$
+  This preserves relative score confidence margins while normalizing disparate bounds.
 
 ---
 
@@ -163,23 +167,24 @@ Build a complete hybrid search pipeline using our runnable starter:
 
 ## 11. Production Considerations
 
-- **Chunk Size Trade-Offs:** Small chunks (128 tokens) produce precise retrieval but lack necessary surrounding context. Large chunks (1024 tokens) preserve context but dilute vector semantic focus. Standard production sweet spot: 256–512 tokens with 10–15% overlap.
-- **Metadata Filtering:** Always filter on categorical attributes (`tenant_id`, `created_year`, `access_tier`) inside the vector database index before ranking, rather than post-filtering.
+- **Chunk Size Trade-Offs:** There is no universal production chunk size. Optimal chunk size depends on the embedding model's receptive field, document information density, and the downstream generator's context window. Highly specific factual QA benefits from smaller chunks (128–256 tokens) paired with parent-document retrieval, while broad conceptual synthesis requires larger multi-paragraph chunks (512–1024 tokens) with 15–20% overlap.
+- **Pre-Filtering vs Post-Filtering:** The choice between pre- and post-filtering depends on the database engine, index type, and filter selectivity. Pre-filtering restricts the candidate search space before vector exploration, which is mandatory for multi-tenant isolation (`tenant_id`), but high-selectivity filters can cause graph connectivity traps in naive HNSW indexes (where the search gets stranded). Modern vector databases (e.g. Qdrant) use payload-aware filtered HNSW to preserve connectivity. Post-filtering retrieves top-$K$ candidates globally and removes non-matching items afterward, but collapses when filter selectivity is high (resulting in 0 returned candidates).
 
 ---
 
 ## 12. Common Mistakes & Gotchas
 
 1. **Relying Exclusively on Vector Search:** Pure vector retrieval fails on specific part numbers, dates, and strict technical identifiers.
-2. **Merging Raw BM25 Scores with Cosine Scores:** Adding raw scores directly is fatal because BM25 scores are unbounded $[0, \infty)$ while cosine is bounded $[-1, 1]$. Always use RRF or rank normalization.
+2. **Merging Raw BM25 Scores with Cosine Scores:** Adding raw scores directly is poorly calibrated because BM25 scores are unbounded $[0, \infty)$ while cosine is bounded $[-1, 1]$. Always use Reciprocal Rank Fusion (RRF) or normalized weighted score fusion.
+3. **Assuming RAG Eliminates All Hallucinations:** RAG prevents knowledge-cutoff hallucinations, but models can still misinterpret retrieved context, synthesize contradictory facts, or prioritize parametric memory over retrieved evidence.
 
 ---
 
 ## 13. Interview Questions & System Design
 
 1. **Q:** What is the difference between Bi-Encoder retrieval and Cross-Encoder reranking?  
-   **A:** Bi-encoders project queries and documents into vectors separately, enabling fast $O(1)$ nearest-neighbor search over millions of items. Cross-encoders process query and document together through full cross-attention, capturing deep token interactions; they are far more accurate but computationally expensive, making them ideal as a second-stage reranker over the top 50–100 candidates.
-2. **System Design:** Design an enterprise RAG system that indexes 5 million internal technical PDFs with multi-tenant data isolation and audit logging.
+   **A:** Bi-encoders project queries and documents into vectors separately, enabling logarithmic-time vector search ($O(\log N)$ via HNSW/IVF indexes) over millions of items. Cross-encoders process query and document concatenated together through full cross-attention, capturing deep token interactions; they are more discriminative but computationally expensive (15–50ms latency), making them suitable as a second-stage reranker over the top 50–100 candidates rather than a first-stage scanner.
+2. **System Design:** Design an enterprise RAG system that indexes 5 million internal technical PDFs with multi-tenant data isolation, payload-filtered HNSW indexing, and audit logging.
 
 ---
 

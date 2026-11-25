@@ -8,7 +8,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python: 3.11+](https://img.shields.io/badge/Python-3.11%20%7C%203.12%20%7C%203.13-3776AB.svg?logo=python&logoColor=white)](https://www.python.org/)
-[![Validation: Passing](https://img.shields.io/badge/CI%2FCD-Passing-brightgreen.svg)](https://github.com/FirdowsRahaman/agentic-ai-and-ml-roadmap/actions/workflows/ci-verify.yml)
+[![CI Validation](https://github.com/FirdowsRahaman/agentic-ai-and-ml-roadmap/actions/workflows/ci-verify.yml/badge.svg)](https://github.com/FirdowsRahaman/agentic-ai-and-ml-roadmap/actions/workflows/ci-verify.yml)
 [![Docs: MkDocs](https://img.shields.io/badge/Docs-MkDocs%20Material-526CFE.svg?logo=materialformkdocs&logoColor=white)](docs/index.md)
 [![Curriculum: 18 Units · 5 Phases](https://img.shields.io/badge/Curriculum-18%20Units%20%7C%205%20Phases-8A2BE2.svg)](ROADMAP.md)
 [![GitHub Stars](https://img.shields.io/github/stars/FirdowsRahaman/agentic-ai-and-ml-roadmap?style=flat&color=yellow)](https://github.com/FirdowsRahaman/agentic-ai-and-ml-roadmap)
@@ -50,7 +50,7 @@ A disciplined, production-first engineering curriculum designed to build reliabl
 ## <img src="assets/icons/target.svg" width="22" height="22" align="absmiddle" /> Diagnostic Assessment & Entry Routes <a id="diagnostic-assessment"></a>
 
 The curriculum accommodates both aspiring AI developers and experienced software engineers via a self-assessment evaluation:
-- **Beginner / Guided Journey (22–28 Weeks):** Complete sequence starting with Python foundations, linear algebra, and SQL.
+- **Beginner / Guided Journey (25–31 Weeks):** Complete sequence across all 18 learning units (~302 total study hours) starting with Python foundations, linear algebra, and SQL.
 - **Experienced Developer Route (12–16 Weeks):** Diagnostic bypass of foundations to enter directly at Core ML (03), PyTorch (04A), or LLM Architecture (06A).
 
 > 🧭 **[Take the 25-Point Diagnostic Assessment in docs/assessment-guide.md →](./docs/assessment-guide.md)**

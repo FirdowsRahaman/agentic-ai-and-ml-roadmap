@@ -4,8 +4,11 @@ title: "Fine-Tuning, Serving & LLMOps"
 difficulty: "advanced"
 estimated_hours: 16
 prerequisites:
-  - "04B"
-  - "06A"
+  mandatory:
+    - "04A"
+    - "06A"
+  recommended:
+    - "04B"
 learning_levels:
   - foundation
   - applied

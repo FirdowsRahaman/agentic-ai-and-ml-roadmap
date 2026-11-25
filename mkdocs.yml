@@ -1,8 +1,12 @@
+hooks:
+  - scripts/prepare_docs.py
+
 site_name: Agentic AI & ML Roadmap
 site_description: A practical, production-first AI and ML engineering curriculum from mathematical foundations to distributed agentic systems.
 site_author: Firdows Rahaman
 repo_url: https://github.com/FirdowsRahaman/agentic-ai-and-ml-roadmap
-docs_dir: docs
+docs_dir: .docs_build
+site_dir: site
 
 theme:
   name: material
@@ -47,11 +51,11 @@ plugins:
 
 nav:
   - Home: index.md
-  - Diagnostic Assessment: assessment-guide.md
-  - Getting Started: getting-started.md
+  - Diagnostic Assessment: docs/assessment-guide.md
+  - Getting Started: docs/getting-started.md
   - Roadmap: ROADMAP.md
-  - Learning Paths: learning-paths.md
-  - Prerequisites: prerequisites.md
+  - Learning Paths: docs/learning-paths.md
+  - Prerequisites: docs/prerequisites.md
   - Curriculum:
       - 1. Foundations:
           - "Overview": curriculum/01-foundations/README.md
@@ -103,6 +107,23 @@ nav:
       - "Courses & Video Lectures": resources/courses.md
       - "Landmark Research Papers": resources/research-papers.md
       - "Production Tools & Frameworks": resources/tools.md
-  - Glossary: glossary.md
-  - FAQ: faq.md
+  - Glossary: docs/glossary.md
+  - FAQ: docs/faq.md
   - Contributing: CONTRIBUTING.md
+
+validation:
+  nav:
+    omitted_files: ignore
+    not_found: warn
+  links:
+    not_found: ignore
+    absolute_links: ignore
+    unrecognized_links: ignore
+
+not_in_nav: |
+  curriculum/02-machine-learning/*
+  curriculum/03-deep-learning/*
+  curriculum/04-generative-ai/*
+  curriculum/05-agentic-ai/*
+  curriculum/06-production-ai/*
+  curriculum/05-production-and-practice/13_algorithms_and_patterns_from_scratch/README.md

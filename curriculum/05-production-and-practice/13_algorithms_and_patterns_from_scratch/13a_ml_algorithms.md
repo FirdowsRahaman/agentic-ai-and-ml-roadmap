@@ -72,35 +72,69 @@ By the end of this module, you will be able to:
 
 ## 6. Core Concepts & Practical Implementation
 
-### 6.1 Numerically Stable Softmax
-Direct evaluation of $e^{z_i} / \sum e^{z_j}$ overflows float64 when $z_i > 709$. Subtracting the maximum coordinate $\max(\mathbf{z})$ eliminates overflow while preserving mathematical equivalence:
+### 6.1 Numerically Stable Softmax & Log-Sum-Exp
+Direct evaluation of $e^{z_i} / \sum e^{z_j}$ overflows float64 when $z_i > 709$. Subtracting the maximum coordinate $\max(\mathbf{z})$ eliminates overflow while preserving mathematical equivalence. Furthermore, evaluating cross-entropy loss $\log \sum e^{z_j}$ requires the **Log-Sum-Exp** trick to prevent catastrophic underflow on extreme negative logits:
 
 ```python
 import numpy as np
 
 def stable_softmax(logits: np.ndarray) -> np.ndarray:
-    """Computes numerically stable softmax across the last dimension."""
-    shifted = logits - np.max(logits, axis=-1, keepdims=True)
+    """Computes numerically stable softmax across the last dimension with extreme value clipping."""
+    # Clip extreme logits to prevent extreme exponent underflow / overflow
+    clipped = np.clip(logits, -500.0, 500.0)
+    shifted = clipped - np.max(clipped, axis=-1, keepdims=True)
     exp_shifted = np.exp(shifted)
-    return exp_shifted / np.sum(exp_shifted, axis=-1, keepdims=True)
+    sum_exp = np.sum(exp_shifted, axis=-1, keepdims=True)
+    # Prevent division by zero if all exponents round to zero
+    return exp_shifted / np.maximum(sum_exp, 1e-12)
 
-# Test with extreme values that would overflow naive exp()
+def log_sum_exp(logits: np.ndarray) -> np.ndarray:
+    """Computes log(sum(exp(x))) in a numerically stable manner."""
+    max_val = np.max(logits, axis=-1, keepdims=True)
+    return max_val + np.log(np.sum(np.exp(logits - max_val), axis=-1, keepdims=True))
+
+def stable_sigmoid(z: np.ndarray) -> np.ndarray:
+    """Branching numerically stable sigmoid preventing overflow on large negative numbers."""
+    return np.where(
+        z >= 0,
+        1.0 / (1.0 + np.exp(-z)),
+        np.exp(z) / (1.0 + np.exp(z))
+    )
+
+# Edge case verification
 extreme_logits = np.array([1000.0, 1001.0, 1002.0])
 probs = stable_softmax(extreme_logits)
 assert np.allclose(np.sum(probs), 1.0)
-print("Stable Softmax Probabilities:", probs)
+assert np.isfinite(log_sum_exp(extreme_logits)).all()
+assert np.isclose(stable_sigmoid(np.array([-1000.0]))[0], 0.0)
+assert np.isclose(stable_sigmoid(np.array([1000.0]))[0], 1.0)
+print("Stable Softmax & Sigmoid Edge Cases Verified!")
 ```
 
-### 6.2 Top-K Cosine Retrieval via Partial Partition
-Sorting an entire database of $N$ embeddings costs $O(N \log N)$. In production search engines, `np.argpartition` identifies the top $K$ items in linear $O(N)$ time:
+### 6.2 Defensive Top-K Cosine Retrieval & Zero-Norm Handling
+Sorting an entire database of $N$ embeddings costs $O(N \log N)$. In production search engines, `np.argpartition` identifies the top $K$ items in linear $O(N)$ time. Crucially, defensive retrieval must handle **zero-norm edge cases** (e.g. empty or corrupted vector representations) without dividing by zero:
 
 ```python
 def top_k_cosine_search(
     query: np.ndarray, corpus: np.ndarray, k: int = 3
 ) -> tuple[np.ndarray, np.ndarray]:
-    """Finds top-K most similar corpus vectors in O(N + K log K) time."""
-    # Assume query and corpus are L2-normalized
-    sims = corpus @ query  # Vector-matrix dot products
+    """Finds top-K most similar corpus vectors in O(N + K log K) time with zero-norm guardrails."""
+    # Defensive check: query or corpus must not be empty
+    if len(corpus) == 0:
+        return np.array([], dtype=int), np.array([], dtype=float)
+    k = min(k, len(corpus))
+
+    # Defensive L2 normalization with eps to prevent division by zero
+    q_norm = np.linalg.norm(query)
+    if q_norm < 1e-9:
+        # Zero-norm query cannot have meaningful cosine similarities
+        return np.arange(k), np.zeros(k, dtype=float)
+
+    query_unit = query / q_norm
+    corpus_norms = np.linalg.norm(corpus, axis=1, keepdims=True)
+    corpus_unit = np.where(corpus_norms > 1e-9, corpus / np.maximum(corpus_norms, 1e-9), 0.0)
+
+    sims = corpus_unit @ query_unit  # Vector-matrix dot products
     
     # Partition top K elements (unsorted top-K partition)
     partitioned_indices = np.argpartition(sims, -k)[-k:]
@@ -108,13 +142,13 @@ def top_k_cosine_search(
     sorted_top_k = partitioned_indices[np.argsort(-sims[partitioned_indices])]
     return sorted_top_k, sims[sorted_top_k]
 
-# Validation
+# Validation with edge case zero-vector
 np.random.seed(42)
-corpus_vecs = np.random.randn(10000, 64)
-corpus_norm = corpus_vecs / np.linalg.norm(corpus_vecs, axis=1, keepdims=True)
-query_vec = corpus_norm[42]  # Query is identical to item 42
+corpus_vecs = np.random.randn(1000, 64)
+corpus_vecs[10] = 0.0  # Corrupted zero-norm vector
+query_vec = corpus_vecs[42]
 
-top_indices, top_scores = top_k_cosine_search(query_vec, corpus_norm, k=3)
+top_indices, top_scores = top_k_cosine_search(query_vec, corpus_vecs, k=3)
 assert top_indices[0] == 42
 assert np.isclose(top_scores[0], 1.0)
 print("Top-K Search Validated! Best Match Index:", top_indices[0])

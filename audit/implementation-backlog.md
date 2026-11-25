@@ -12,7 +12,7 @@ The **Agentic AI & ML Engineering Roadmap** is positioned as a practical, engine
 
 ### Dual Audience & Two Entry Routes
 The curriculum provides two distinct entry pathways through a standardized diagnostic assessment ([`docs/assessment-guide.md`](../docs/assessment-guide.md)) without requiring divergent, unmaintainable repository copies:
-1. **Beginner Route (Guided Journey, 22–28 Weeks):** Linear progression from Python basics, linear algebra geometry, and SQL through to deep learning and production agent deployment.
+1. **Beginner Route (Guided Journey, 25–31 Weeks):** Linear progression across all 18 learning units (~302 hours) from Python basics, linear algebra geometry, and SQL through to deep learning and production agent deployment.
 2. **Experienced Developer Route (Accelerated Track, 12–16 Weeks):** Diagnostic bypass of foundations directly into applied ML pipelines, LoRA fine-tuning, LangGraph state machines, FastMCP tool servers, and production MLOps.
 
 ---

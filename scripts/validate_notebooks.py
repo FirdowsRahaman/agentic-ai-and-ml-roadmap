@@ -1,37 +1,52 @@
 #!/usr/bin/env python3
-"""Validates Jupyter notebooks using isolated execution and timeout limits."""
+"""Validates Jupyter notebooks using nbformat and nbclient in isolated execution environments."""
 
 from __future__ import annotations
 
 import glob
-import json
 import os
 import sys
 import time
 
+try:
+    import nbformat
+    from nbclient import NotebookClient
+    from nbclient.exceptions import CellExecutionError, CellTimeoutError
+except ImportError:
+    print("❌ nbformat and nbclient are required to run notebook validation.")
+    print("Install them via: pip install nbformat nbclient ipykernel")
+    sys.exit(1)
 
-def execute_notebook(nb_path: str, timeout_seconds: int = 60) -> tuple[bool, str]:
-    """Executes code cells in an isolated namespace with elapsed time tracking."""
-    with open(nb_path, "r", encoding="utf-8") as f:
-        nb = json.load(f)
 
-    cells = nb.get("cells", [])
-    code_cells = [c for c in cells if c.get("cell_type") == "code"]
-
-    isolated_namespace: dict = {}
+def execute_notebook(nb_path: str, timeout_seconds: int = 120) -> tuple[bool, str]:
+    """Executes code cells in a separate disposable Jupyter kernel process with hard timeouts."""
     start_time = time.time()
+    try:
+        with open(nb_path, "r", encoding="utf-8") as f:
+            nb = nbformat.read(f, as_version=4)
 
-    for i, cell in enumerate(code_cells, start=1):
-        if time.time() - start_time > timeout_seconds:
-            return False, f"Execution timed out after {timeout_seconds}s at cell {i}"
+        code_cells = [c for c in nb.cells if c.get("cell_type") == "code"]
+        if not code_cells:
+            return True, "No code cells to execute"
 
-        source = "".join(cell.get("source", []))
-        try:
-            exec(compile(source, f"{nb_path}:cell_{i}", "exec"), isolated_namespace)
-        except Exception as exc:
-            return False, f"Exception in cell {i}: {type(exc).__name__}: {exc}"
+        # Execute notebook via isolated Jupyter kernel process with per-cell timeout
+        client = NotebookClient(
+            nb,
+            timeout=timeout_seconds,
+            kernel_name="python3",
+            record_timing=False,
+        )
+        client.execute()
 
-    return True, f"Successfully executed {len(code_cells)} code cells in {time.time() - start_time:.2f}s"
+        duration = time.time() - start_time
+        return True, f"Successfully executed {len(code_cells)} code cell(s) via isolated kernel in {duration:.2f}s"
+
+    except CellTimeoutError as timeout_err:
+        return False, f"Execution timed out ({timeout_seconds}s limit exceeded): {timeout_err}"
+    except CellExecutionError as exec_err:
+        return False, f"Cell execution failed: {exec_err}"
+    except Exception as exc:
+        return False, f"Unexpected error during execution: {type(exc).__name__}: {exc}"
 
 
 def main() -> int:
@@ -43,7 +58,7 @@ def main() -> int:
         print("❌ No notebooks found to validate!")
         return 1
 
-    print(f"Validating {len(notebooks)} Jupyter notebook(s) in isolated execution environments...")
+    print(f"Validating {len(notebooks)} Jupyter notebook(s) using nbclient in isolated kernel environments...")
     failed = False
 
     for nb in notebooks:
@@ -59,7 +74,7 @@ def main() -> int:
         print("Notebook validation FAILED!")
         return 1
 
-    print(f"Notebook validation PASSED! Verified {len(notebooks)} notebook(s).")
+    print(f"Notebook validation PASSED! Verified {len(notebooks)} notebook(s) successfully.")
     return 0
 
 

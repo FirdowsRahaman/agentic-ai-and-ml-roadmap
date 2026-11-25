@@ -4,8 +4,10 @@ title: "AI Agent Fundamentals & Architecture"
 difficulty: "intermediate"
 estimated_hours: 16
 prerequisites:
-  - "06A"
-  - "06B"
+  mandatory:
+    - "06A"
+  recommended:
+    - "06B"
 learning_levels:
   - foundation
   - applied
@@ -50,7 +52,15 @@ flowchart TD
 
 ---
 
-## 2. Learning Objectives
+## 2. Audience
+
+- **AI Application Engineers** transitioning from static prompt chaining into dynamic multi-step reasoning loops.
+- **Backend Developers** needing robust tool execution sandboxes, strict iteration limits, and context memory managers.
+- **System Architects** evaluating when to enforce deterministic workflows versus deploying autonomous ReAct agents.
+
+---
+
+## 3. Learning Objectives
 
 By the end of this module, you will be able to:
 - **Apply the Workflows vs. Agents decision framework**, selecting deterministic prompt chaining or autonomous loops based on task predictability.
@@ -61,14 +71,22 @@ By the end of this module, you will be able to:
 
 ---
 
-## 3. Prerequisites
+## 4. Prerequisites
 
 - **Structured LLM Generation:** Pydantic schemas, system prompts, and JSON outputs from [Module 06](../03-modern-ai-and-genai/06b_rag_engineering.md).
 - **Python AST & Exception Handling:** Standard Python control flow and `ast` library basics.
 
 ---
 
-## 4. Core Concepts
+## 5. Learning Levels
+
+1. **Foundations (Level 1):** Workflows vs Agents taxonomy, ReAct reasoning steps (Thought-Action-Observation), short-term sliding context buffers.
+2. **Applied (Level 2):** Bounded iteration execution loops, AST arithmetic sandbox, structured JSON schema tool definition.
+3. **Production (Level 3):** Strict token budget circuit breakers, tool timeouts, and state persistence across restarts.
+
+---
+
+## 6. Core Concepts
 
 ### 4.1 The 4-Tier Agentic Taxonomy
 1. **Single LLM Call:** Input $\to$ LLM $\to$ Output (Zero tool calls).
@@ -99,7 +117,7 @@ flowchart TD
 
 ---
 
-## 5. Technical Deep Dive
+## 7. Technical Deep Dive
 
 ### 5.1 Safe Execution: Sandboxed AST Evaluator vs. Insecure `eval()`
 Agents frequently need to perform arithmetic. Calling Python's raw `eval(expr)` exposes the host system to Remote Code Execution (`eval("__import__('os').system('rm -rf /')")`). A safe agent uses Abstract Syntax Tree parsing to whitelist safe mathematical operators:
@@ -174,7 +192,7 @@ class BoundedReActAgent:
 
 ---
 
-## 6. Hands-on Implementation
+## 8. Hands-on Implementation
 
 Verify the safe AST calculator against both legitimate mathematical expressions and malicious injection payloads:
 
@@ -192,7 +210,7 @@ print("Lab 07 Passed! AST sandbox safely isolated execution.")
 
 ---
 
-## 7. Practical Exercises
+## 9. Practical Exercises
 
 ### Exercise 1: Context Window Compaction Engine
 1. Implement a message buffer manager that tracks token count using `tiktoken` (or approximate character count).
@@ -204,7 +222,7 @@ Using Python's `asyncio` or `threading`:
 
 ---
 
-## 8. Mini Project
+## 10. Mini Project
 
 ### Autonomous Customer Support Tier-1 Triage Agent
 Construct a bounded triage agent equipped with three tools:
@@ -215,7 +233,7 @@ Construct a bounded triage agent equipped with three tools:
 
 ---
 
-## 9. Advanced Topics
+## 11. Production Considerations
 
 - **Plan-and-Solve Prompting:** Decoupling planning into an upfront decomposition step before executing individual actions, reducing compounding hallucination errors in multi-step reasoning.
 - **Reflexion & Self-Correction:** Providing historical execution feedback to the agent so it can self-diagnose past test failures and modify its strategy.
@@ -223,7 +241,7 @@ Construct a bounded triage agent equipped with three tools:
 
 ---
 
-## 10. Common Mistakes & Gotchas
+## 12. Common Mistakes & Gotchas
 
 1. **Unbounded Agent Loops:** Omitting strict iteration limits (`max_steps=5`), allowing an agent to loop endlessly when tools return unexpected errors, burning token budgets.
 2. **Using Python `eval()` for Tool Arithmetic:** Allowing prompt-injected strings to execute raw arbitrary Python commands on the application host.
@@ -231,7 +249,7 @@ Construct a bounded triage agent equipped with three tools:
 
 ---
 
-## 11. Interview Questions & System Design
+## 13. Interview Questions & System Design
 
 ### Q1: What are the primary failure modes of autonomous agent loops in production?
 1. **Infinite Looping / Hallucination Cycles:** Repeatedly calling the same tool with the same erroneous parameters when encountering an ambiguous response.
@@ -244,7 +262,7 @@ Choose a deterministic workflow whenever the sequence of operations is known in 
 
 ---
 
-## 12. Recommended Resources
+## 14. Recommended Resources
 
 - **Guide:** [Building Effective Agents](https://www.anthropic.com/research/building-effective-agents) (Anthropic, 2024).
 - **Landmark Paper:** [ReAct: Synergizing Reasoning and Acting in Language Models](https://arxiv.org/abs/2210.03629) (Yao et al., 2022).
@@ -252,7 +270,7 @@ Choose a deterministic workflow whenever the sequence of operations is known in 
 
 ---
 
-## 13. Completion Checklist
+## 15. Completion Checklist
 
 - [ ] Articulate the technical differences between single-turn calls, prompt chains, and autonomous ReAct loops.
 - [ ] Implement a safe AST-based arithmetic evaluator resistant to arbitrary code execution injections.
@@ -262,11 +280,11 @@ Choose a deterministic workflow whenever the sequence of operations is known in 
 
 ---
 
-[← Previous: Module 06: LLMs, Fine-Tuning & RAG](../03-modern-ai-and-genai/06b_rag_engineering.md) | [Home](../../README.md) | [Next: Module 08: Tools, LangGraph & Google ADK →](./08_agent_orchestration.md)
-
----
-
 ## 16. Further Exploration
 
 - Study emerging standards in autonomous agent protocols (W3C Agent Interoperability and decentralized A2A registries).
 - Explore sandboxed container execution via Docker and WebAssembly for secure tool invocation.
+
+---
+
+[← Previous](../03-modern-ai-and-genai/06c_finetuning_and_serving.md) | [Phase 4 Index](./README.md) | [Roadmap](../../ROADMAP.md) | [Next →](./08_agent_orchestration.md)

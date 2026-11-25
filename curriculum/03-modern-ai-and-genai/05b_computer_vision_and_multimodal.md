@@ -4,8 +4,10 @@ title: "Computer Vision & Multimodal AI"
 difficulty: "intermediate"
 estimated_hours: 16
 prerequisites:
-  - "04A"
-  - "05A"
+  mandatory:
+    - "04A"
+  recommended:
+    - "05A"
 learning_levels:
   - foundation
   - applied

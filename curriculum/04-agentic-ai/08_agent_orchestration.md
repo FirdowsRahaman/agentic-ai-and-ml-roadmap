@@ -52,7 +52,15 @@ flowchart LR
 
 ---
 
-## 2. Learning Objectives
+## 2. Audience
+
+- **Agent Engineers** designing multi-step, stateful agentic workflows requiring cycles, branching, and conditional routing.
+- **Backend Developers** integrating Human-in-the-Loop (HITL) approval gates and persistent state checkpointing.
+- **System Architects** orchestrating deterministic state machines with LangGraph and Google Agent Development Kit (ADK).
+
+---
+
+## 3. Learning Objectives
 
 By the end of this module, you will be able to:
 - **Design strict JSON Schema tool contracts** enforcing explicit parameter typing, enum constraints, and required fields.
@@ -63,14 +71,22 @@ By the end of this module, you will be able to:
 
 ---
 
-## 3. Prerequisites
+## 4. Prerequisites
 
 - **Agent Loops & ReAct:** Thought-action-observation cycles and memory management from [Module 07](./07_agent_fundamentals.md).
 - **Type Annotations & Schemas:** Python `TypedDict`, `dataclasses`, and `Pydantic` models from [Module 01](../01-foundations/01_python_sql_and_data_stack.md).
 
 ---
 
-## 4. Core Concepts
+## 5. Learning Levels
+
+1. **Foundations (Level 1):** JSON Schema function-calling contracts, directed acyclic workflows, basic state reducers.
+2. **Applied (Level 2):** Stateful cyclical LangGraph execution, router conditional edges, tool node compilation.
+3. **Production (Level 3):** Durable checkpointers (PostgreSQL/SQLite), asynchronous human approval interrupts, time-travel state rewind.
+
+---
+
+## 6. Core Concepts
 
 ### 4.1 Strict Function Calling Contract
 When defining tools for foundation models (OpenAI, Gemini, Anthropic), parameters must be specified as valid JSON Schema:
@@ -105,7 +121,7 @@ When defining tools for foundation models (OpenAI, Gemini, Anthropic), parameter
 
 ---
 
-## 5. Technical Deep Dive
+## 7. Technical Deep Dive
 
 ### 5.1 LangGraph State Machine Architecture
 LangGraph represents agent logic as a directed cyclical graph:
@@ -118,29 +134,47 @@ LangGraph represents agent logic as a directed cyclical graph:
 from typing import Annotated, Literal, TypedDict
 from langgraph.graph import StateGraph, START, END
 from langgraph.graph.message import add_messages
+from langchain_core.messages import BaseMessage, HumanMessage, AIMessage, ToolMessage
 
 class AgentState(TypedDict):
-    # 'add_messages' appends new messages to history instead of overwriting
-    messages: Annotated[list[dict], add_messages]
+    # 'add_messages' reducer appends new messages to history instead of overwriting
+    messages: Annotated[list[BaseMessage], add_messages]
     retry_count: int
 
 def call_model(state: AgentState) -> dict:
-    # Simulates model evaluation
-    last_msg = state["messages"][-1]["content"]
-    if "lookup" in last_msg.lower():
-        return {"messages": [{"role": "assistant", "tool_call": "lookup_user"}]}
-    return {"messages": [{"role": "assistant", "content": "Query resolved."}]}
+    last = state["messages"][-1]
+    content = getattr(last, "content", "")
+    # Check if a tool call was requested and has not yet executed
+    if "lookup" in str(content).lower() and not any(isinstance(m, ToolMessage) for m in state["messages"]):
+        return {
+            "messages": [
+                AIMessage(
+                    content="",
+                    tool_calls=[{"name": "lookup_user", "args": {"user_id": "usr_101"}, "id": "call_lookup_001"}]
+                )
+            ]
+        }
+    return {"messages": [AIMessage(content=f"Query resolved. {content}")]}
 
 def execute_tool(state: AgentState) -> dict:
-    return {"messages": [{"role": "tool", "content": "User balance: $450.00"}]}
+    last = state["messages"][-1]
+    tool_call = last.tool_calls[0]
+    return {
+        "messages": [
+            ToolMessage(
+                content="User balance: $450.00",
+                tool_call_id=tool_call["id"]
+            )
+        ]
+    }
 
 def router(state: AgentState) -> Literal["execute_tool", "__end__"]:
     last = state["messages"][-1]
-    if "tool_call" in last:
+    if getattr(last, "tool_calls", None):
         return "execute_tool"
     return END
 
-# Build graph
+# Build cyclical state machine
 builder = StateGraph(AgentState)
 builder.add_node("call_model", call_model)
 builder.add_node("execute_tool", execute_tool)
@@ -149,6 +183,15 @@ builder.add_edge(START, "call_model")
 builder.add_conditional_edges("call_model", router)
 builder.add_edge("execute_tool", "call_model")
 graph = builder.compile()
+
+# Execution example:
+if __name__ == "__main__":
+    result = graph.invoke({
+        "messages": [HumanMessage(content="Please lookup user balance")],
+        "retry_count": 0
+    })
+    for msg in result["messages"]:
+        print(f"[{msg.type}]: {msg.content}")
 ```
 
 ### 5.2 Human-in-the-Loop (HITL) Checkpoints & Pauses
@@ -164,7 +207,7 @@ In financial, enterprise, or medical workflows, destructive actions must never e
 
 ---
 
-## 6. Hands-on Implementation
+## 8. Hands-on Implementation
 
 Implement a deterministic mock cyclical router in Python verifying state transitions and loop termination:
 
@@ -196,7 +239,7 @@ print("Lab 08 Passed! Cyclical transitions validated.")
 
 ---
 
-## 7. Practical Exercises
+## 9. Practical Exercises
 
 ### Exercise 1: Building a Validated Pydantic Tool Converter
 1. Write a Python function `tool_to_json_schema(func)` that inspects a Python function's docstring and type hints and generates a compliant OpenAI/Gemini JSON Schema dictionary.
@@ -208,7 +251,7 @@ print("Lab 08 Passed! Cyclical transitions validated.")
 
 ---
 
-## 8. Mini Project
+## 10. Mini Project
 
 ### Google ADK Operations Support Copilot
 Scaffold a multi-tool customer operations agent:
@@ -222,7 +265,7 @@ Scaffold a multi-tool customer operations agent:
 
 ---
 
-## 9. Advanced Topics
+## 11. Production Considerations
 
 - **Time-Travel Debugging:** Replaying and editing previous state checkpoints in LangGraph to fork conversations and debug agent logic branches.
 - **Dynamic Few-Shot In-Context Tool Selection:** When an agent has 100+ tools, embedding tool schemas into a vector database and injecting only the top-5 most relevant tool definitions into the prompt.
@@ -230,7 +273,7 @@ Scaffold a multi-tool customer operations agent:
 
 ---
 
-## 10. Common Mistakes & Gotchas
+## 12. Common Mistakes & Gotchas
 
 1. **Letting Models Execute Code Unchecked:** Assuming the model executed an API call because it output `{"status": "success"}` in text. The model only outputs text; your runtime executes actions.
 2. **Overwriting Conversation State:** Using standard dictionary assignment instead of message reducers (`add_messages`), resulting in message history being truncated on every node step.
@@ -238,7 +281,7 @@ Scaffold a multi-tool customer operations agent:
 
 ---
 
-## 11. Interview Questions & System Design
+## 13. Interview Questions & System Design
 
 ### Q1: What is the architectural role of a Checkpointer in LangGraph?
 A Checkpointer saves the complete state of the graph (memory, messages, variables, and next edge transitions) at every super-step to a persistent datastore (PostgreSQL, SQLite, Redis). This enables three capabilities:
@@ -251,7 +294,7 @@ Google ADK structures systems using hierarchical supervisors and specialized wor
 
 ---
 
-## 12. Recommended Resources
+## 14. Recommended Resources
 
 - **Documentation:** [LangGraph Conceptual Guides](https://langchain-ai.github.io/langgraph/).
 - **Repository:** [Google Agent Development Kit (ADK) Python](https://github.com/google/adk-python).
@@ -259,7 +302,7 @@ Google ADK structures systems using hierarchical supervisors and specialized wor
 
 ---
 
-## 13. Completion Checklist
+## 15. Completion Checklist
 
 - [ ] Write a compliant JSON Schema specification for an arbitrary Python function.
 - [ ] Diagram a cyclical StateGraph with nodes, conditional edges, and reducers.
@@ -269,11 +312,11 @@ Google ADK structures systems using hierarchical supervisors and specialized wor
 
 ---
 
-[← Previous: Module 07: AI Agents Fundamentals](./07_agent_fundamentals.md) | [Home](../../README.md) | [Next: Module 09: Multi-Agent Systems & MCP →](./09_multi_agent_mcp_a2a.md)
-
----
-
 ## 16. Further Exploration
 
 - Study emerging standards in autonomous agent protocols (W3C Agent Interoperability and decentralized A2A registries).
 - Explore sandboxed container execution via Docker and WebAssembly for secure tool invocation.
+
+---
+
+[← Previous](./07_agent_fundamentals.md) | [Phase 4 Index](./README.md) | [Roadmap](../../ROADMAP.md) | [Next →](./09_multi_agent_mcp_a2a.md)

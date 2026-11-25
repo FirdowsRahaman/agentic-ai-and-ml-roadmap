@@ -15,28 +15,31 @@ Thank you for your interest in improving the **Agentic AI & ML Roadmap**! This r
 
 ## <img src="assets/icons/toc.svg" width="20" height="20" align="absmiddle" /> 2. Standard Curriculum Module Format
 
-All modules in `curriculum/` must adhere to the **13-Section Pedagogical Standard**:
+All modules in `curriculum/` must adhere to the **16-Section Pedagogical Standard**:
 
 ```markdown
 # Module XX: Module Name
 
-[Navigation bar]
+[← Previous](./...) | [Phase X Index](./README.md) | [Roadmap](../../ROADMAP.md) | [Next →](./...)
 
 ---
 
 ## 1. Overview
-## 2. Learning Objectives
-## 3. Prerequisites
-## 4. Core Concepts
-## 5. Technical Deep Dive
-## 6. Hands-on Implementation
-## 7. Practical Exercises
-## 8. Mini Project
-## 9. Advanced Topics
-## 10. Common Mistakes & Gotchas
-## 11. Interview Questions & System Design
-## 12. Recommended Resources
-## 13. Completion Checklist
+## 2. Audience
+## 3. Learning Objectives
+## 4. Prerequisites
+## 5. Learning Levels
+## 6. Core Concepts
+## 7. Technical Deep Dive
+## 8. Hands-on Implementation
+## 9. Practical Exercises
+## 10. Mini Project
+## 11. Production Considerations
+## 12. Common Mistakes & Gotchas
+## 13. Interview Questions & System Design
+## 14. Recommended Resources
+## 15. Completion Checklist
+## 16. Further Exploration
 ```
 
 ---

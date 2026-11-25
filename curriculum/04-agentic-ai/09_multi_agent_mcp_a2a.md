@@ -52,7 +52,15 @@ flowchart TD
 
 ---
 
-## 2. Learning Objectives
+## 2. Audience
+
+- **Multi-Agent System Architects** structuring hierarchical supervisor-worker topologies and decentralized collaborative swarms.
+- **Platform Engineers** implementing Model Context Protocol (MCP) JSON-RPC 2.0 servers to expose tools securely to AI clients.
+- **Enterprise Developers** designing cross-organization Agent-to-Agent (A2A) communication interfaces.
+
+---
+
+## 3. Learning Objectives
 
 By the end of this module, you will be able to:
 - **Analyze multi-agent topologies** (Supervisor, Hierarchical, Peer-to-Peer, Consensus), selecting optimal coordination patterns for complex engineering tasks.
@@ -63,14 +71,22 @@ By the end of this module, you will be able to:
 
 ---
 
-## 3. Prerequisites
+## 4. Prerequisites
 
 - **Function Calling & LangGraph:** Strict JSON schemas and cyclical state machines from [Module 08](./08_agent_orchestration.md).
 - **Asynchronous Python & Networking:** HTTP verbs, JSON serialization, and `asyncio` from [Module 01](../01-foundations/01_python_sql_and_data_stack.md).
 
 ---
 
-## 4. Core Concepts
+## 5. Learning Levels
+
+1. **Foundations (Level 1):** Multi-agent coordination topologies (hierarchical vs peer-to-peer), context window isolation.
+2. **Applied (Level 2):** FastMCP tool server implementation, JSON-RPC 2.0 protocol specifications, stdio vs SSE transport.
+3. **Production (Level 3):** Dynamic agent routing, distributed token budget management, A2A discovery registries.
+
+---
+
+## 6. Core Concepts
 
 ### 4.1 Multi-Agent Topologies
 1. **Supervisor Pattern (Hub-and-Spoke):** A central coordinator analyzes the user request, delegates sub-tasks to specialized worker agents, and synthesizes final results.
@@ -95,7 +111,7 @@ researcher_agent = {
 
 ---
 
-## 5. Technical Deep Dive
+## 7. Technical Deep Dive
 
 ### 5.1 Model Context Protocol (MCP) Specification
 MCP (introduced by Anthropic in late 2024 and standardized across the AI industry) establishes a clean client-host-server separation using JSON-RPC 2.0. Rather than hardcoding custom API wrappers for every database and SaaS provider, tool providers build standard MCP servers.
@@ -151,7 +167,7 @@ Connecting models to tools introduces prompt injection and data exfiltration ris
 
 ---
 
-## 6. Hands-on Implementation
+## 8. Hands-on Implementation
 
 Implement a minimal JSON-RPC 2.0 dispatcher simulating an MCP tool execution server:
 
@@ -203,7 +219,7 @@ print("Lab 09 Passed! JSON-RPC 2.0 MCP dispatcher verified.")
 
 ---
 
-## 7. Practical Exercises
+## 9. Practical Exercises
 
 ### Exercise 1: Hierarchical Multi-Agent Orchestration
 1. Implement a Supervisor agent using LangGraph that routes incoming queries to either a `MathSpecialist` or a `TextSpecialist`.
@@ -216,7 +232,7 @@ Using `FastMCP` or standard Python:
 
 ---
 
-## 8. Mini Project
+## 10. Mini Project
 
 ### Autonomous E-Commerce Copilot with FastMCP & Google ADK
 Build a multi-agent operations suite:
@@ -227,7 +243,7 @@ Build a multi-agent operations suite:
 
 ---
 
-## 9. Advanced Topics
+## 11. Production Considerations
 
 - **Streamable HTTP Transports (SSE):** Streaming MCP tool calls and intermediate progress updates over HTTP Server-Sent Events for remote cloud deployments.
 - **Dynamic MCP Discovery:** Configuring client agents to query an enterprise MCP registry and load server tools on-the-fly based on permissions.
@@ -235,7 +251,7 @@ Build a multi-agent operations suite:
 
 ---
 
-## 10. Common Mistakes & Gotchas
+## 12. Common Mistakes & Gotchas
 
 1. **Monolithic Agent Bloat:** Forcing 30 tools into one single agent, causing model reasoning degradation.
 2. **Ignoring JSON-RPC Error Formats:** Returning raw HTTP error codes instead of structured `{"jsonrpc": "2.0", "error": {...}}` responses, breaking client parsing.
@@ -243,7 +259,7 @@ Build a multi-agent operations suite:
 
 ---
 
-## 11. Interview Questions & System Design
+## 13. Interview Questions & System Design
 
 ### Q1: What problem does the Model Context Protocol (MCP) solve for enterprise AI?
 Before MCP, every developer wrote bespoke integration code to connect LLMs to databases, GitHub, or internal APIs. Each framework (LangChain, LlamaIndex, Semantic Kernel) had proprietary tool wrappers. MCP establishes an open, vendor-neutral standard using JSON-RPC 2.0. Any MCP-compliant tool server can immediately connect to any MCP client (Claude Desktop, Cursor, Antigravity, or custom agents) without modifying client code.
@@ -257,7 +273,7 @@ Context pollution is prevented through strict **context isolation**:
 
 ---
 
-## 12. Recommended Resources
+## 14. Recommended Resources
 
 - **Specification:** [Model Context Protocol (MCP) Official Documentation](https://modelcontextprotocol.io/).
 - **Repository:** [Model Context Protocol Python SDK](https://github.com/modelcontextprotocol/python-sdk).
@@ -265,7 +281,7 @@ Context pollution is prevented through strict **context isolation**:
 
 ---
 
-## 13. Completion Checklist
+## 15. Completion Checklist
 
 - [ ] Diagram the difference between Supervisor, Sequential, and Peer-to-Peer multi-agent topologies.
 - [ ] Implement subagent context isolation preventing tool intermediate traces from leaking into the parent.
@@ -275,11 +291,11 @@ Context pollution is prevented through strict **context isolation**:
 
 ---
 
-[← Previous: Module 08: Tools, LangGraph & ADK](./08_agent_orchestration.md) | [Home](../../README.md) | [Next: Module 10: Agent Evaluation, Safety & Governance →](./10_agent_evaluation_and_safety.md)
-
----
-
 ## 16. Further Exploration
 
 - Study emerging standards in autonomous agent protocols (W3C Agent Interoperability and decentralized A2A registries).
 - Explore sandboxed container execution via Docker and WebAssembly for secure tool invocation.
+
+---
+
+[← Previous](./08_agent_orchestration.md) | [Phase 4 Index](./README.md) | [Roadmap](../../ROADMAP.md) | [Next →](./10_agent_evaluation_and_safety.md)

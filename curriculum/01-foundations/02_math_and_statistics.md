@@ -2,329 +2,396 @@
 module: "02"
 title: "Mathematics & Statistics for AI Engineers"
 difficulty: "core"
-estimated_hours: 16
+estimated_hours: 18
 prerequisites:
-  - "01"
+  mandatory:
+    - "01"
+  recommended: ["basic-calculus-and-algebra"]
 learning_levels:
   - foundation
   - applied
   - production
 topics:
-  - linear-algebra
-  - matrix-calculus
-  - bayes-theorem
-  - hypothesis-testing
-  - ab-testing-power
+  - vector-spaces-and-norms
+  - matrix-transformations
+  - multivariate-calculus-and-chain-rule
+  - gradient-descent-optimizers
+  - probability-distributions
+  - bayes-theorem-and-calibration
+  - hypothesis-testing-and-power
+  - ab-testing-statistics
 ---
 
 # Module 02: Mathematics & Statistics for AI/ML Engineers
 
-[← Previous: Module 01: Python, SQL & Data Stack](./01_python_sql_and_data_stack.md) | [Phase 1 Index](./README.md) | [Next: Phase 2 / Module 03 →](../02-core-ml-and-dl/03_classical_ml_and_recsys.md)
+[← Previous: Module 01: Python, SQL & Data Stack](./01_python_sql_and_data_stack.md) | [Phase 1 Index](./README.md) | [Next: Module 03: Classical ML & RecSys →](../02-core-ml-and-dl/03_classical_ml_and_recsys.md)
 
 ---
 
 ## 1. Overview
 
-In [Module 01](./01_python_sql_and_data_stack.md), you turned messy database logs and CSVs into clean `NumPy` grids of numbers. Now, how does a machine turn those numbers into **semantic meaning, predictions, and calibrated business decisions**? Machine learning engineers rarely solve multi-page symbolic calculus by hand; instead, every mathematical concept maps directly to a concrete engineering primitive:
+In [Module 01](./01_python_sql_and_data_stack.md), you turned raw database logs and files into clean `NumPy` feature matrices. This module bridges pure numbers and machine intelligence: turning matrices into semantic geometry, gradients into self-improving neural weights, and probability into calibrated real-world decisions. Every mathematical formula here maps directly to an active software engineering primitive in modern machine learning.
 
 ```mermaid
 flowchart LR
-    LA["Linear Algebra (Vectors, Shapes, Dot Product)"] --> EMB["Embeddings, Attention & Dense Layers"]
-    CALC["Calculus (Gradients & Chain Rule)"] --> OPT["Backpropagation & Gradient Descent"]
-    PROB["Probability (Conditionals & Bayes)"] --> CLS["Logits, Calibration & Risk Scoring"]
-    STAT["Statistics (CLT, p-values, Distributions)"] --> EXP["Drift Detection & Online A/B Testing"]
+    LA["Linear Algebra (Vector Spaces, Norms, Projections)"] --> EMB["Embeddings & Transformer Attention"]
+    CALC["Calculus (Jacobians & Multivariate Chain Rule)"] --> OPT["Backpropagation & AdamW Optimization"]
+    PROB["Probability (Distributions & Bayes' Theorem)"] --> CAL["Calibrated Logits & Risk Thresholds"]
+    STAT["Statistics (CLT, Power, p-values & Z-Tests)"] --> AB["A/B Testing & Production Drift Monitors"]
 
     classDef math fill:#E0F2FE,stroke:#0284C7,stroke-width:2px,color:#0369A1;
     classDef ml fill:#DCFCE7,stroke:#16A34A,stroke-width:2px,color:#15803D;
 
     class LA,CALC,PROB,STAT math;
-    class EMB,OPT,CLS,EXP ml;
+    class EMB,OPT,CAL,AB ml;
 ```
 
 ---
 
-## 2. Learning Objectives
+## 2. Audience
+
+- **Software Engineers** seeking a rigorous, code-backed understanding of the linear algebra and calculus driving modern neural networks.
+- **Data Scientists & ML Practitioners** looking to connect theoretical statistics to production A/B testing, sample size planning, and power calculations.
+- **AI Engineers** who need to debug vanishing gradients, vector dimension mismatches, and false-positive traps in highly imbalanced production data.
+
+---
+
+## 3. Learning Objectives
 
 By the end of this module, you will be able to:
-- **Track tensor shapes rigorously** across linear layers and multi-head attention matrix multiplications (`(B, T, D) @ (B, D, T) -> (B, T, T)`).
-- **Evaluate vector similarity** using Dot Product vs. L2-normalized Cosine Similarity, identifying when document length biases semantic retrieval.
-- **Compute latency and error distributions** using median (p50), p95, and p99 percentiles to detect tail degradation hidden by arithmetic means.
-- **Formulate Bayesian posteriors** for extreme class imbalance ($< 0.1\%$ base rates) to avoid false-positive alarm traps in fraud detection and content moderation.
-- **Design and interpret online A/B hypothesis tests** using the Central Limit Theorem (CLT), two-proportion Z-tests, and two-tailed p-values.
+- **Operate on vector spaces and norms**: Compute $L_1$, $L_2$, and $L_\infty$ norms and construct orthogonal projections onto subspaces.
+- **Trace matrix linear transformations**: Understand geometric transformations (rotations, scalings, reflections) and track multi-dimensional tensor contractions.
+- **Differentiate multivariate functions**: Apply the multivariate chain rule across computational graphs to compute Jacobians and analytical gradients.
+- **Implement gradient descent optimizers**: Code Vanilla GD, Momentum, RMSprop, and AdamW from scratch in pure NumPy.
+- **Characterize probability distributions**: Select and parameterize Gaussian, Bernoulli, Categorical, Poisson, Beta, and Dirichlet distributions for ML tasks.
+- **Formulate Bayesian posteriors**: Calculate posterior probability under extreme class imbalance ($< 0.1\%$ base rates) to avoid false-alarm cascades.
+- **Apply confidence intervals and statistical power**: Calculate Wald and bootstrap percentile intervals, Cohen's $d$ effect sizes, and minimum sample sizes for A/B testing.
+- **Conduct rigorous hypothesis testing**: Verify assumptions (normality, independence, homoscedasticity) and execute two-proportion Z-tests with defensive error handling.
 
 ---
 
-## 3. Prerequisites
+## 4. Prerequisites
 
-- **Python & NumPy Basics:** Array creation, indexing, and element-wise operations from [Module 01](./01_python_sql_and_data_stack.md).
-- **Basic Algebra:** Exponentials, logarithms ($\ln x$), and geometric vectors.
+- **Mandatory:** Completion of [Module 01: Python, SQL & Data Stack](./01_python_sql_and_data_stack.md).
+- **Recommended:** Introductory high school single-variable derivatives ($\frac{d}{dx} x^2 = 2x$) and basic matrix arithmetic.
 
 ---
 
-## 4. Core Concepts
+## 5. Learning Levels
 
-### 4.1 What Is a Tensor? (Rank & Dimensions)
-A tensor is simply a generalized container for numbers with a designated rank (number of dimensions):
+1. **Foundations (Level 1):** Vector norms, dot products, matrix multiplication geometry, basic probability axioms.
+2. **Applied (Level 2):** Analytical MSE/Log-Loss gradient derivation, finite-difference verification, AdamW optimizer loop, central limit theorem.
+3. **Production (Level 3):** Statistical power planning for online experiments, defensive A/B testing under severe imbalance, bootstrap confidence intervals.
 
-| Object | Rank | Typical Shape | Engineering Example |
-|---|---|---|---|
-| **Scalar** | 0D | `()` | Loss metric or learning rate (`loss = 0.24`) |
-| **Vector** | 1D | `(D,)` | Single sample feature row or word embedding (`(768,)`) |
-| **Matrix** | 2D | `(N, D)` | Feature matrix: $N$ samples $\times$ $D$ input features |
-| **3D Tensor** | 3D | `(B, T, D)` | Batched sequences: $B$ batches $\times$ $T$ tokens $\times$ $D$ embedding dimensions |
-| **4D Tensor** | 4D | `(B, C, H, W)` | Batched images: $B$ images $\times$ $C$ color channels $\times$ Height $\times$ Width |
+---
 
-> **Matrix Multiplication Shape Rule:** Inner dimensions **must match**, and outer dimensions form the result:
-> $$(N \times D) \cdot (D \times H) \longrightarrow (N \times H)$$
+## 6. Core Concepts
 
-### 4.2 Dot Product vs. Cosine Similarity
-- **Dot Product:** $\mathbf{a} \cdot \mathbf{b} = \sum_i a_i b_i = \|\mathbf{a}\|_2 \|\mathbf{b}\|_2 \cos\theta$. Measures both alignment and magnitude. Used in neural dense layers (`X @ W + b`) and unnormalized attention scores (`Q @ K.T`).
-- **Cosine Similarity:** $\cos\theta = \frac{\mathbf{a} \cdot \mathbf{b}}{\|\mathbf{a}\|_2 \|\mathbf{b}\|_2} \in [-1, 1]$. Ignores vector magnitude and checks purely directional alignment. Ideal for document and query embeddings of varying text lengths.
+### 6.1 Vector Spaces, Norms & Projections
+A vector $\mathbf{v} \in \mathbb{R}^D$ represents both a point in $D$-dimensional space and a direction from the origin.
+
+#### Vector Norms ($L_p$)
+The general $L_p$ norm is defined as:
+$$\|\mathbf{v}\|_p = \left( \sum_{i=1}^D |v_i|^p \right)^{1/p}$$
+- **$L_1$ Norm (Manhattan):** $\|\mathbf{v}\|_1 = \sum |v_i|$. Used in Lasso regularization to induce sparse weights (driving irrelevant features strictly to zero).
+- **$L_2$ Norm (Euclidean):** $\|\mathbf{v}\|_2 = \sqrt{\sum v_i^2}$. Used in Ridge regularization, weight decay, and Euclidean distance.
+- **$L_\infty$ Norm (Max):** $\|\mathbf{v}\|_\infty = \max_i |v_i|$. Used in adversarial machine learning ($\epsilon$-bounded perturbations in FGSM attacks).
+
+#### Orthogonal Projections
+The projection of vector $\mathbf{y}$ onto the line spanned by vector $\mathbf{u}$ is:
+$$\text{proj}_{\mathbf{u}}(\mathbf{y}) = \frac{\mathbf{y} \cdot \mathbf{u}}{\|\mathbf{u}\|_2^2} \mathbf{u}$$
+This is the foundational geometric mechanism behind Ordinary Least Squares (OLS) regression: projecting the target vector $\mathbf{y}$ onto the column space of feature matrix $X$.
+
+### 6.2 Matrix Multiplication as a Linear Transformation
+Multiplying a matrix $A \in \mathbb{R}^{M \times D}$ by vector $\mathbf{x} \in \mathbb{R}^D$ maps $\mathbf{x}$ to a new coordinate system:
+$$T(\mathbf{x}) = A\mathbf{x}$$
+Every dense layer in a neural network ($y = Wx + b$) performs an affine transformation: rotating, scaling, and translating the feature space so that non-linear activation functions can separate decision boundaries.
 
 ```python
 import numpy as np
 
-def cosine_similarity(a: np.ndarray, b: np.ndarray) -> float:
-    denom = np.linalg.norm(a) * np.linalg.norm(b)
-    return float(np.dot(a, b) / max(denom, 1e-12))
+# 2D Rotation matrix by angle theta (e.g. 45 degrees)
+theta = np.radians(45)
+R = np.array([
+    [np.cos(theta), -np.sin(theta)],
+    [np.sin(theta),  np.cos(theta)]
+])
 
-short_doc = np.array([0.8, 0.4])
-long_duplicate_doc = short_doc * 10.0  # 10x longer document with same topic distribution
-
-print(f"Dot Product:       {np.dot(short_doc, long_duplicate_doc):.2f}")       # 8.00 (inflated by magnitude)
-print(f"Cosine Similarity: {cosine_similarity(short_doc, long_duplicate_doc):.3f}")  # 1.000 (identical meaning!)
+# Vector along x-axis
+v = np.array([1.0, 0.0])
+v_rotated = R @ v
+assert np.isclose(np.linalg.norm(v_rotated), 1.0)  # Preserves length
 ```
+
+### 6.3 Multivariate Chain Rule & Jacobians
+For a scalar loss function $L = f(\mathbf{u})$ where $\mathbf{u} = g(\mathbf{w})$, the gradient with respect to weight vector $\mathbf{w}$ is governed by the total derivative:
+$$\frac{\partial L}{\partial w_j} = \sum_{i=1}^K \frac{\partial L}{\partial u_i} \frac{\partial u_i}{\partial w_j} \implies \nabla_{\mathbf{w}} L = J_{\mathbf{u}}(\mathbf{w})^T \nabla_{\mathbf{u}} L$$
+where $J_{\mathbf{u}}(\mathbf{w}) \in \mathbb{R}^{K \times D}$ is the **Jacobian matrix** containing all first-order partial derivatives $\frac{\partial u_i}{\partial w_j}$.
 
 ---
 
-## 5. Technical Deep Dive
+## 7. Technical Deep Dive
 
-### 5.1 Tail Latency & Outlier Robustness: Mean, Median & P99
-In production systems, distributions are rarely symmetrical bell curves. Latency and spend follow heavy-tailed log-normal or Pareto distributions. Relying solely on the arithmetic mean conceals severe outages:
-
-<p align="center">
-  <img src="../../assets/animations/mean_median_p99_motion.svg" width="100%" alt="Motion comparison of mean, median, and p99 metrics under heavy-tailed latency spikes" />
-</p>
-
-```python
-import numpy as np
-
-# 1000 requests: 980 typical requests (~5ms) + 20 frozen database timeouts (5000ms)
-np.random.seed(42)
-typical = np.random.normal(loc=5.0, scale=1.0, size=980)
-timeouts = np.full(shape=20, fill_value=5000.0)
-latencies = np.concatenate([typical, timeouts])
-
-# Evaluate quantiles with empirical percentile indexing
-mean_lat = float(np.mean(latencies))
-p50 = float(np.percentile(latencies, 50))
-p95 = float(np.percentile(latencies, 95))
-p99 = float(np.percentile(latencies, 99))
-
-print(f"Mean Latency:    {mean_lat:.1f} ms")   # ~104.9 ms (severely distorted by tail!)
-print(f"Median (p50):    {p50:.1f} ms")        # ~5.0 ms (typical user experience)
-print(f"P95 Latency:     {p95:.1f} ms")        # ~6.6 ms
-print(f"P99 Latency:     {p99:.1f} ms")        # 5000.0 ms (severe SLA breach detected!)
-assert p99 == 5000.0, "Top 1% must capture the 20-sample tail timeout block"
-```
-
-### 5.2 Bayes' Theorem & The Base-Rate Fallacy in Rare Events
-When classifying rare events (fraud, rare defects, toxicity), a classifier with $99\%$ accuracy can still yield an overwhelming majority of false alarms due to the **base-rate fallacy**:
-
-$$P(A \mid B) = \frac{P(B \mid A) \cdot P(A)}{P(B)}$$
-
-Where:
-- $P(A)$ is the **Prior** (base rate of the rare event).
-- $P(B \mid A)$ is the **Likelihood / Sensitivity** (true positive rate).
-- $P(B)$ is the **Total Evidence** probability of the alarm firing:
-  $$P(B) = P(B \mid A)P(A) + P(B \mid \neg A)P(\neg A)$$
+### 7.1 Analytical Gradient Derivation for Mean Squared Error (MSE)
+Consider linear regression with target $y \in \mathbb{R}^N$, features $X \in \mathbb{R}^{N \times D}$, and weights $\mathbf{w} \in \mathbb{R}^D$:
+$$\mathcal{L}(\mathbf{w}) = \frac{1}{2N} \|X\mathbf{w} - \mathbf{y}\|_2^2 = \frac{1}{2N} (X\mathbf{w} - \mathbf{y})^T (X\mathbf{w} - \mathbf{y})$$
+Expanding the quadratic form:
+$$\mathcal{L}(\mathbf{w}) = \frac{1}{2N} \left( \mathbf{w}^T X^T X \mathbf{w} - 2 \mathbf{y}^T X \mathbf{w} + \mathbf{y}^T \mathbf{y} \right)$$
+Taking the vector derivative with respect to $\mathbf{w}$:
+$$\nabla_{\mathbf{w}} \mathcal{L}(\mathbf{w}) = \frac{1}{N} X^T (X\mathbf{w} - \mathbf{y}) = \frac{1}{N} X^T \mathbf{e}$$
+where $\mathbf{e} = X\mathbf{w} - \mathbf{y}$ is the residual error vector.
 
 ```python
-# 0.1% of transactions are fraudulent
-p_fraud = 0.001
-p_alarm_given_fraud = 0.99       # 99% Sensitivity
-p_alarm_given_legit = 0.01       # 1% False Positive Rate
-
-p_alarm_total = (p_alarm_given_fraud * p_fraud) + (p_alarm_given_legit * (1 - p_fraud))
-posterior = (p_alarm_given_fraud * p_fraud) / p_alarm_total
-print(f"True Probability of Fraud given an Alarm: {posterior:.1%}")  # Only 9.0%!
-```
-> **ML Engineering Takeaway:** In extreme imbalance ($0.1\%$), $91\%$ of all triggered alarms are false positives unless decision thresholds are calibrated against business cost matrices.
-
-### 5.3 Matrix Calculus, Gradients & Backpropagation Intuition
-Neural networks optimize loss functions via gradient descent. For a parameter vector $\mathbf{w} \in \mathbb{R}^d$, the gradient $\nabla_{\mathbf{w}} \mathcal{L}$ points in the direction of steepest rate of increase:
-
-$$\nabla_{\mathbf{w}} \mathcal{L}(\mathbf{w}) = \left[ \frac{\partial \mathcal{L}}{\partial w_1}, \frac{\partial \mathcal{L}}{\partial w_2}, \dots, \frac{\partial \mathcal{L}}{\partial w_d} \right]^T$$
-
-#### Analytical Derivation: Mean Squared Error (MSE) Gradient
-Given design matrix $\mathbf{X} \in \mathbb{R}^{N \times d}$, targets $\mathbf{y} \in \mathbb{R}^N$, and residual vector $\mathbf{e} = (\mathbf{X}\mathbf{w} - \mathbf{y})$:
-
-$$\mathcal{L}(\mathbf{w}) = \frac{1}{N} \|\mathbf{X}\mathbf{w} - \mathbf{y}\|_2^2 = \frac{1}{N} \mathbf{e}^T \mathbf{e}$$
-
-Applying the multivariate chain rule:
-$$\frac{\partial \mathcal{L}}{\partial \mathbf{e}} = \frac{2}{N} \mathbf{e}, \quad \frac{\partial \mathbf{e}}{\partial \mathbf{w}} = \mathbf{X} \implies \nabla_{\mathbf{w}} \mathcal{L}(\mathbf{w}) = \frac{2}{N} \mathbf{X}^T (\mathbf{X}\mathbf{w} - \mathbf{y})$$
-
-```python
-# Numerical Finite-Difference vs. Analytical Vectorized Gradient
-def mse_loss(X: np.ndarray, y: np.ndarray, w: np.ndarray) -> float:
-    return float(np.mean((X @ w - y) ** 2))
-
-def analytical_gradient(X: np.ndarray, y: np.ndarray, w: np.ndarray) -> np.ndarray:
+def mse_loss_and_grad(w: np.ndarray, X: np.ndarray, y: np.ndarray) -> tuple[float, np.ndarray]:
     N = X.shape[0]
-    return (2.0 / N) * (X.T @ (X @ w - y))
+    preds = X @ w
+    residuals = preds - y
+    loss = (1.0 / (2.0 * N)) * np.sum(residuals ** 2)
+    grad = (1.0 / N) * (X.T @ residuals)
+    return loss, grad
 
-# Verify against numerical gradient check: (f(w + eps) - f(w - eps)) / (2 * eps)
-X_test = np.array([[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]])
-y_test = np.array([5.0, 11.0, 17.0])
-w_init = np.array([0.5, 1.5])
-eps = 1e-6
+# Numerical Finite Difference Verification (Crucial for verifying backward passes)
+def numerical_gradient_check(w: np.ndarray, X: np.ndarray, y: np.ndarray, eps: float = 1e-5) -> float:
+    _, analytical_grad = mse_loss_and_grad(w, X, y)
+    num_grad = np.zeros_like(w)
+    for i in range(len(w)):
+        w_plus = w.copy()
+        w_plus[i] += eps
+        loss_plus, _ = mse_loss_and_grad(w_plus, X, y)
+        w_minus = w.copy()
+        w_minus[i] -= eps
+        loss_minus, _ = mse_loss_and_grad(w_minus, X, y)
+        num_grad[i] = (loss_plus - loss_minus) / (2.0 * eps)
+    # Return relative error
+    rel_error = np.linalg.norm(analytical_grad - num_grad) / (np.linalg.norm(analytical_grad) + np.linalg.norm(num_grad))
+    return rel_error
 
-grad_analytic = analytical_gradient(X_test, y_test, w_init)
-grad_numeric = np.zeros_like(w_init)
-for i in range(len(w_init)):
-    w_pos, w_neg = w_init.copy(), w_init.copy()
-    w_pos[i] += eps
-    w_neg[i] -= eps
-    grad_numeric[i] = (mse_loss(X_test, y_test, w_pos) - mse_loss(X_test, y_test, w_neg)) / (2 * eps)
-
-assert np.allclose(grad_analytic, grad_numeric, atol=1e-5), "Analytical gradient must match finite difference"
+rng = np.random.default_rng(42)
+X_test = rng.standard_normal((100, 5))
+y_test = rng.standard_normal(100)
+w_init = rng.standard_normal(5)
+error = numerical_gradient_check(w_init, X_test, y_test)
+assert error < 1e-7, f"Gradient check failed! Relative error: {error}"
 ```
 
-### 5.4 Central Limit Theorem (CLT) & Hypothesis Testing
-Even when the underlying data is heavily skewed, the sample mean $\bar{X}$ of $N$ independent, identically distributed observations converges to a normal distribution:
-$$\bar{X} \sim \mathcal{N}\left(\mu, \frac{\sigma^2}{N}\right)$$
+### 7.2 Gradient Descent Optimizers from Scratch
+In production deep learning, vanilla SGD struggles with ill-conditioned loss surfaces (valleys with high curvature). Modern optimizers maintain running momentum and second-moment scaling:
 
-This allows us to construct confidence intervals and compute two-tailed $p$-values to verify whether a challenger ML model significantly outperforms a baseline champion in production A/B tests.
+```python
+class AdamWOptimizer:
+    """AdamW optimizer with decoupled weight decay (Loshchilov & Hutter)."""
+    def __init__(self, params: np.ndarray, lr: float = 1e-3, beta1: float = 0.9, beta2: float = 0.999, eps: float = 1e-8, weight_decay: float = 0.01):
+        self.params = params
+        self.lr = lr
+        self.beta1 = beta1
+        self.beta2 = beta2
+        self.eps = eps
+        self.weight_decay = weight_decay
+        self.m = np.zeros_like(params)  # 1st moment vector (momentum)
+        self.v = np.zeros_like(params)  # 2nd moment vector (uncentered variance)
+        self.t = 0                      # Timestep
+
+    def step(self, grad: np.ndarray) -> np.ndarray:
+        self.t += 1
+        # Decoupled weight decay
+        self.params -= self.lr * self.weight_decay * self.params
+        
+        # Update biased 1st and 2nd moment estimates
+        self.m = self.beta1 * self.m + (1.0 - self.beta1) * grad
+        self.v = self.beta2 * self.v + (1.0 - self.beta2) * (grad ** 2)
+        
+        # Bias correction
+        m_hat = self.m / (1.0 - self.beta1 ** self.t)
+        v_hat = self.v / (1.0 - self.beta2 ** self.t)
+        
+        # Update parameters
+        self.params -= self.lr * m_hat / (np.sqrt(v_hat) + self.eps)
+        return self.params
+```
+
+### 7.3 Probability Distributions in Machine Learning
+| Distribution | Domain | Key Parameters | Primary ML Application |
+|---|---|---|---|
+| **Gaussian (Normal)** | $x \in \mathbb{R}$ | Mean $\mu$, Variance $\sigma^2$ | Residual noise modeling, VAE latent priors, Weight initialization |
+| **Bernoulli** | $k \in \{0, 1\}$ | Probability $p$ | Binary classification outputs, Dropout masks |
+| **Categorical / Multinomial** | $k \in \{1, \dots, K\}$ | Event probs $\mathbf{p} \in \Delta^K$ | Multi-class classification logits (Softmax), Token sampling |
+| **Poisson** | $k \in \{0, 1, 2, \dots\}$ | Rate $\lambda > 0$ | Count data modeling (API request rate, user clicks per hour) |
+| **Beta** | $\theta \in [0, 1]$ | Shape $\alpha > 0, \beta > 0$ | Conjugate prior for Bernoulli (Thompson Sampling in multi-armed bandits) |
+| **Dirichlet** | $\mathbf{p} \in \Delta^K$ | Concentration $\boldsymbol{\alpha}$ | Latent Dirichlet Allocation (topic modeling), Prior over categorical dists |
+
+### 7.4 Bayes' Theorem & The Base Rate Fallacy
+In rare event detection (e.g., fraud or security breaches occurring in 0.1% of transactions), an algorithm with 99% accuracy can still yield a terrible false alarm rate:
+$$P(\text{Fraud} \mid \text{Alarm}) = \frac{P(\text{Alarm} \mid \text{Fraud}) P(\text{Fraud})}{P(\text{Alarm})}$$
+$$P(\text{Alarm}) = P(\text{Alarm} \mid \text{Fraud})P(\text{Fraud}) + P(\text{Alarm} \mid \text{Legit})P(\text{Legit})$$
+For $P(\text{Fraud}) = 0.001$, sensitivity $99\%$, false positive rate $1\%$:
+$$P(\text{Fraud} \mid \text{Alarm}) = \frac{0.99 \times 0.001}{0.99 \times 0.001 + 0.01 \times 0.999} = \frac{0.00099}{0.00099 + 0.00999} \approx 9.01\%$$
+**Engineering Takeaway:** Even with a 99% accurate model, over 90% of raised alarms are false positives due to the severe base rate.
 
 ---
 
-## 6. Hands-on Implementation
+## 8. Hands-on Implementation
 
-Write a production-grade two-proportion Z-test with defensive input validation, boundary checking, and effect-size power evaluation:
+Implement a defensive, production-grade two-proportion Z-test for A/B testing with power calculations and sample validation:
 
 ```python
 import math
+from typing import TypedDict
+
+class ABTestResult(TypedDict):
+    z_score: float
+    p_value: float
+    is_significant: bool
+    control_rate: float
+    treatment_rate: float
+    absolute_lift: float
+    relative_lift_pct: float
 
 def ab_conversion_ztest(
-    conv_a: int, total_a: int, conv_b: int, total_b: int, alpha: float = 0.05
-) -> dict[str, float | bool]:
-    """Evaluates whether challenger conversion rate lift is statistically significant
+    conversions_c: int,
+    visitors_c: int,
+    conversions_t: int,
+    visitors_t: int,
+    alpha: float = 0.05,
+) -> ABTestResult:
+    """Performs a two-proportion Z-test comparing control vs treatment conversion rates.
 
-    using a two-proportion pooled Z-test with defensive input validation.
+    Defensive validations ensure non-zero sample sizes and positive counts.
     """
-    # 1. Defensive Input Validation
-    if total_a <= 0 or total_b <= 0:
-        raise ValueError("Total sample sizes must be strictly positive integers.")
-    if not (0 <= conv_a <= total_a) or not (0 <= conv_b <= total_b):
-        raise ValueError("Conversions must be within [0, total_samples].")
+    if visitors_c <= 0 or visitors_t <= 0:
+        raise ValueError("Visitor counts must be strictly positive.")
+    if conversions_c < 0 or conversions_t < 0:
+        raise ValueError("Conversion counts cannot be negative.")
+    if conversions_c > visitors_c or conversions_t > visitors_t:
+        raise ValueError("Conversions cannot exceed total visitors.")
 
-    p_a = conv_a / total_a
-    p_b = conv_b / total_b
-    p_pool = (conv_a + conv_b) / (total_a + total_b)
+    p_c = conversions_c / visitors_c
+    p_t = conversions_t / visitors_t
 
-    # 2. Edge Case: Zero conversions or 100% conversions across all groups
+    # Pooled probability
+    p_pool = (conversions_c + conversions_t) / (visitors_c + visitors_t)
+
+    # Edge cases: zero or complete conversion
     if p_pool == 0.0 or p_pool == 1.0:
         return {
-            "lift_pct": 0.0,
-            "z_stat": 0.0,
+            "z_score": 0.0,
             "p_value": 1.0,
-            "significant_at_alpha": False,
+            "is_significant": False,
+            "control_rate": p_c,
+            "treatment_rate": p_t,
+            "absolute_lift": p_t - p_c,
+            "relative_lift_pct": 0.0,
         }
 
-    # 3. Standard Error & Z-Score Computation
-    se = math.sqrt(p_pool * (1.0 - p_pool) * (1.0 / total_a + 1.0 / total_b))
-    z_stat = (p_b - p_a) / se
+    # Standard error under null hypothesis
+    se_pool = math.sqrt(p_pool * (1.0 - p_pool) * (1.0 / visitors_c + 1.0 / visitors_t))
+    z_score = (p_t - p_c) / se_pool
 
-    # 4. Two-tailed p-value via Complementary Error Function
-    p_val = math.erfc(abs(z_stat) / math.sqrt(2.0))
-    lift_pct = ((p_b - p_a) / p_a) * 100.0 if p_a > 0 else float("inf")
+    # Two-tailed p-value via complementary error function
+    p_value = 2.0 * (1.0 - 0.5 * (1.0 + math.erf(abs(z_score) / math.sqrt(2.0))))
 
     return {
-        "lift_pct": round(lift_pct, 2),
-        "z_stat": round(z_stat, 3),
-        "p_value": round(p_val, 5),
-        "significant_at_alpha": p_val < alpha,
+        "z_score": round(z_score, 4),
+        "p_value": round(p_value, 6),
+        "is_significant": p_value < alpha,
+        "control_rate": round(p_c, 4),
+        "treatment_rate": round(p_t, 4),
+        "absolute_lift": round(p_t - p_c, 4),
+        "relative_lift_pct": round(((p_t - p_c) / p_c) * 100.0, 2) if p_c > 0 else 0.0,
     }
 
-# Validation: Standard 85-conversion uplift test
-res = ab_conversion_ztest(conv_a=500, total_a=10_000, conv_b=585, total_b=10_000)
-assert res["significant_at_alpha"] is True
-assert res["lift_pct"] == 17.0
-assert res["p_value"] < 0.05
-print("Lab 02 Validated Successfully!", res)
+# Example: 10,000 visitors per variant
+result = ab_conversion_ztest(conversions_c=320, visitors_c=10000, conversions_t=395, visitors_t=10000)
+assert result["is_significant"] is True
+assert result["p_value"] < 0.01
+print("A/B Test Verification:", result)
 ```
 
 ---
 
-## 7. Practical Exercises
+## 9. Practical Exercises
 
-### Exercise 1: Pairwise Cosine Matrix via Matrix Multiplication
-Given two normalized embedding matrices $A \in \mathbb{R}^{M \times D}$ and $B \in \mathbb{R}^{N \times D}$:
-1. Prove mathematically that the matrix product $S = A B^T \in \mathbb{R}^{M \times N}$ represents all pairwise cosine similarities.
-2. Implement this in NumPy and verify that row-wise diagonal values equal $1.0$ when $A = B$.
+### Exercise 1: Gram-Schmidt Orthogonalization
+Given an arbitrary set of $K$ linearly independent column vectors $A = [\mathbf{a}_1, \dots, \mathbf{a}_K]$:
+1. Implement the Gram-Schmidt process in pure NumPy to construct an orthonormal basis $Q = [\mathbf{q}_1, \dots, \mathbf{q}_K]$ such that $Q^T Q = I_K$.
+2. Verify that $\|Q\mathbf{x}\|_2 = \|\mathbf{x}\|_2$ (orthonormal transformations preserve Euclidean lengths).
 
-### Exercise 2: Sample Size Calculation for A/B Experiments
-Using the CLT standard error formula:
-1. Write a function `required_sample_size(base_rate, minimum_detectable_effect, alpha=0.05, beta=0.20)` that computes the minimum number of users per variant needed to detect a $5\%$ conversion lift with $80\%$ statistical power.
-
----
-
-## 8. Mini Project
-
-### Production Vector Distance Engine & Drift Detector
-Construct an offline similarity scoring module:
-- **Input:** 5,000 synthetic 128-dimensional query vectors and 20,000 document vectors.
-- **Tasks:**
-  1. L2-normalize all vectors in-place using NumPy broadcasting.
-  2. Implement top-k nearest neighbor retrieval via matrix multiplication $Q D^T$ and `np.argpartition`.
-  3. Simulate temporal concept drift by perturbing document distributions and measure the Kolmogorov-Smirnov statistic ($KS$-test) between baseline and drifted embedding norms.
+### Exercise 2: Bootstrap Percentile Confidence Intervals
+1. Given 1,000 latency measurements with heavy tail skew (p99 > 3000ms), implement a bootstrap resampling function with $B=5,000$ iterations.
+2. Calculate the non-parametric 95% confidence interval for the 95th percentile (p95) and contrast it with an assumption-violating Gaussian Wald interval.
 
 ---
 
-## 9. Advanced Topics
+## 10. Mini Project
 
-- **Singular Value Decomposition (SVD):** Factoring any matrix $X = U \Sigma V^T$ to perform low-rank approximations, dimensionality reduction, and latent semantic analysis.
-- **Eigenvalues & Covariance Matrices:** How Principal Component Analysis (PCA) identifies axes of maximal variance by diagonalizing the feature covariance matrix.
-- **Kullback-Leibler (KL) Divergence:** Measuring information loss when approximating true data distribution $P$ with model distribution $Q$:
-  $$D_{\text{KL}}(P \parallel Q) = \sum_x P(x) \ln\left(\frac{P(x)}{Q(x)}\right)$$
-
----
-
-## 10. Common Mistakes & Gotchas
-
-1. **Confusing Statistical Significance with Business Impact:** With $N = 10,000,000$, a conversion increase of $+0.001\%$ can yield $p = 0.0001$, but generate $\$100$ in revenue while costing $\$10,000$ in additional inference infrastructure. Always compute effect size and ROI.
-2. **Ignoring L2 Normalization in Vector Search:** Running dot product search on raw, unnormalized embeddings results in longer documents always dominating the top ranks regardless of semantic relevance.
-3. **Optimizing Accuracy on Imbalanced Data:** A model predicting "Legitimate" on a $0.1\%$ fraud dataset achieves $99.9\%$ accuracy while detecting zero fraud. Use PR-AUC and cost-weighted loss instead.
+### Production Online Experimentation & Statistical Power Calculator
+Build a standalone statistical CLI and analysis engine:
+- **Sample Size Planner:** Given baseline rate $p$, minimum detectable effect (MDE $\delta$), significance $\alpha=0.05$, and power $1-\beta=0.80$, compute the minimum required sample size per variant:
+  $$N \approx \frac{2 (Z_{\alpha/2} + Z_\beta)^2 p (1-p)}{\delta^2}$$
+- **Hypothesis Engine:** Ingest simulated daily conversion logs, evaluate cumulative two-tailed Z-scores, and flag whether early stopping risks peeking p-value inflation.
+- **Reporting:** Export a markdown summary with statistical power, confidence intervals, and decision recommendations.
 
 ---
 
-## 11. Interview Questions & System Design
+## 11. Production Considerations
 
-### Q1: Why do we divide query-key dot products by $\sqrt{d_k}$ in Transformer attention?
-As embedding dimension $d_k$ grows large, the variance of the dot product $\sum_{i=1}^{d_k} q_i k_i$ scales proportionally to $d_k$ (assuming zero mean and unit variance inputs). Large magnitude logits push the softmax function into regions with near-zero gradients (vanishing gradients). Scaling by $\frac{1}{\sqrt{d_k}}$ preserves unit variance and maintains stable gradient flow during backpropagation.
-
-### Q2: What is the difference between ROC-AUC and PR-AUC in highly imbalanced domains?
-ROC-AUC plots True Positive Rate vs. False Positive Rate ($FPR = \frac{FP}{FP + TN}$). When negative samples dominate ($TN \gg FP$), huge increases in false positives produce negligible changes in $FPR$, presenting an artificially optimistic evaluation. Precision-Recall AUC (PR-AUC) evaluates $\frac{TP}{TP + FP}$ against $\frac{TP}{TP + FN}$, ignoring $TN$ and accurately exposing false alarm surges.
-
----
-
-## 12. Recommended Resources
-
-- **Free Textbook:** [Mathematics for Machine Learning](https://mml-book.github.io/) by Deisenroth, Faisal, and Ong.
-- **Visual Series:** [3Blue1Brown: Essence of Linear Algebra](https://www.3blue1brown.com/topics/linear-algebra).
-- **Statistical Reference:** [StatQuest: Hypothesis Testing and p-values](https://statquest.org/).
+1. **The Peeking Problem in A/B Testing:** Continuously checking p-values every hour and stopping the experiment as soon as $p < 0.05$ inflates the true false-positive rate from 5% to over 30%. Always fix sample sizes upfront or utilize sequential testing frameworks (e.g., mSPRT).
+2. **Numerical Stability with Softmax & Log-Sum-Exp:** Computing $\frac{e^{z_i}}{\sum e^{z_j}}$ directly overflows floating-point numbers when $z_i > 709$. Always subtract $\max(\mathbf{z})$:
+   $$\text{Softmax}(\mathbf{z})_i = \frac{e^{z_i - \max(\mathbf{z})}}{\sum_j e^{z_j - \max(\mathbf{z})}}$$
+3. **Condition Number of Feature Covariance Matrices:** If feature columns are highly collinear, the matrix $X^T X$ has a huge condition number ($\kappa > 10^5$), causing matrix inversion (`np.linalg.inv`) to produce numerically garbage weights. Always apply Ridge regularization ($X^T X + \lambda I$).
 
 ---
 
-## 13. Completion Checklist
+## 12. Common Mistakes & Gotchas
 
-- [ ] Verify tensor shapes across matrix multiplications using the inner/outer dimension rule.
-- [ ] Differentiate when to apply Dot Product vs. L2-normalized Cosine Similarity in retrieval systems.
-- [ ] Calculate p50, p95, and p99 percentiles from a raw latency log in NumPy.
-- [ ] Apply Bayes' Theorem to derive true positive probabilities under extreme class imbalance.
-- [ ] Implement a two-proportion Z-test and evaluate $p$-values against significance thresholds ($\alpha = 0.05$).
-- [ ] Complete practical exercises on pairwise matrix similarity and minimum sample size calculation.
+1. **Confusing Dot Product with Cosine Similarity:** The dot product $\mathbf{a} \cdot \mathbf{b} = \|\mathbf{a}\| \|\mathbf{b}\| \cos\theta$ scales with vector magnitude. If longer documents have larger embedding norms, dot product search erroneously favors long texts over short, relevant matches.
+2. **Reporting Arithmetic Means for Skewed Latencies:** When 99 requests take 20ms and 1 request takes 5,000ms, the mean is 69.8ms. Reporting 70ms hides that 1 out of 100 enterprise users is experiencing an unacceptable 5-second timeout. Always report P50, P95, and P99.
+3. **Violating Independence Assumptions in Hypothesis Tests:** Running an A/B test where the same user appears in both control and treatment (or triggers multiple dependent sessions) violates the independent and identically distributed (i.i.d.) assumption, invalidating the Z-test.
 
 ---
 
-[← Previous: Module 01: Python, SQL & Data Stack](./01_python_sql_and_data_stack.md) | [Home](../../README.md) | [Next: Module 03: Classical ML & RecSys →](../02-machine-learning/03_classical_ml_and_recsys.md)
+## 13. Interview Questions & System Design
+
+### Q1: Why does L1 regularization produce sparse weights while L2 regularization only shrinks them?
+In geometric terms, the L1 constraint boundary is a diamond ($\sum |w_i| \le C$) with sharp corners on the coordinate axes. The elliptical contours of the MSE loss surface intersect the diamond at its corners where parameters are strictly zero. The L2 boundary is a smooth sphere ($\sum w_i^2 \le C$), meaning loss contours touch the boundary where parameters are small, but non-zero.
+
+### Q2: What is the Law of Total Variance and why is it important in feature analysis?
+The Law of Total Variance states:
+$$\text{Var}(Y) = \mathbb{E}[\text{Var}(Y \mid X)] + \text{Var}(\mathbb{E}[Y \mid X])$$
+It partitions the total variance of target $Y$ into the average unexplained variance remaining within feature slices plus the variance explained by the model's conditional expectations.
+
+### Q3: Explain the difference between Type I and Type II errors in an ML monitoring context.
+A **Type I error ($\alpha$)** is a false positive: raising a data drift or model regression alert when no actual drift occurred. A **Type II error ($\beta$)** is a false negative: failing to alert engineers when the production model is degrading in the wild. High statistical power ($1-\beta$) minimizes Type II errors.
+
+---
+
+## 14. Recommended Resources
+
+- **Textbook:** [Mathematics for Machine Learning](https://mml-book.github.io/) by Deisenroth, Faisal, and Ong (Freely available online).
+- **Textbook:** *Linear Algebra and Learning from Data* by Gilbert Strang (MIT).
+- **Course:** [3Blue1Brown - Essence of Linear Algebra](https://www.youtube.com/playlist?list=PLZHQObOWTQDPD3MizzM2xVFitgF8hE_ab) (Visual geometric intuition).
+- **Paper:** [Decoupled Weight Decay Regularization (AdamW)](https://arxiv.org/abs/1711.05101) by Loshchilov & Hutter.
+
+---
+
+## 15. Completion Checklist
+
+- [ ] Calculate $L_1$, $L_2$, and $L_\infty$ norms for an arbitrary embedding vector.
+- [ ] Derive the analytical gradient of MSE with respect to weight vector $\mathbf{w}$.
+- [ ] Validate an analytical gradient using numerical finite difference checks ($< 10^{-6}$ error).
+- [ ] Implement the AdamW optimizer loop with decoupled weight decay.
+- [ ] Calculate the Bayesian posterior under extreme class imbalance ($P < 0.001$).
+- [ ] Compute p50, p95, and p99 percentiles for skewed API latency logs.
+- [ ] Conduct a two-proportion Z-test with defensive input validation.
+- [ ] Pass all assertions in the Math & Statistics validation lab.
+
+---
+
+## 16. Further Exploration
+
+- **Singular Value Decomposition (SVD):** Decompose $X = U \Sigma V^T$ to perform low-rank dimensionality reduction and matrix compression.
+- **Fisher Information & Natural Gradient:** Study information geometry where optimization steps are taken along Riemannian manifolds rather than Euclidean space.
+- **Multi-Armed Bandits & Thompson Sampling:** Implement Bayesian online decision-making to dynamically shift traffic toward winning A/B variants without waiting for static experiment windows.
+
+---
+
+[← Previous: Module 01: Python, SQL & Data Stack](./01_python_sql_and_data_stack.md) | [Phase 1 Index](./README.md) | [Next: Module 03: Classical ML & RecSys →](../02-core-ml-and-dl/03_classical_ml_and_recsys.md)

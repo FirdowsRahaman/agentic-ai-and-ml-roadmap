@@ -13,7 +13,7 @@ The **Agentic AI & ML Engineering Roadmap** is engineered to serve both software
 ```mermaid
 flowchart TD
     START["Start Diagnostic Assessment"] --> EVAL{"Score Evaluation"}
-    EVAL -->|"0–12 Points"| ROUTE_A["🌱 Beginner / Full-Journey Route<br/>(Modules 01 → 13, 22–28 Weeks)"]
+    EVAL -->|"0–12 Points"| ROUTE_A["🌱 Beginner / Full-Journey Route<br/>(Modules 01 → 13B, 25–31 Weeks)"]
     EVAL -->|"13–20 Points"| ROUTE_B["⚡ Experienced Developer Route<br/>(Modules 03 / 04A → 11, 12–16 Weeks)"]
     EVAL -->|"21–25 Points"| ROUTE_C["🚀 AI Architect & Agent Specialist<br/>(Modules 06A / 07 → 11, 8–10 Weeks)"]
 
@@ -77,7 +77,7 @@ Award yourself **1 point** for each checkbox you can confidently demonstrate wit
 
 | Total Score | Diagnostic Evaluation | Recommended Starting Unit | Estimated Duration |
 |---|---|---|---|
-| **0 – 12 Points** | **Foundations Required** | **[Module 01: Python, SQL & Data Stack](../curriculum/01-foundations/01_python_sql_and_data_stack.md)** | 22–28 Weeks |
+| **0 – 12 Points** | **Foundations Required** | **[Module 01: Python, SQL & Data Stack](../curriculum/01-foundations/01_python_sql_and_data_stack.md)** | 25–31 Weeks |
 | **13 – 16 Points** | **Strong Software Baseline** | **[Module 03: Classical ML & RecSys](../curriculum/02-core-ml-and-dl/03_classical_ml_and_recsys.md)** | 16–20 Weeks |
 | **17 – 20 Points** | **Intermediate ML Engineer** | **[Module 04A: Core Deep Learning & PyTorch](../curriculum/02-core-ml-and-dl/04a_deep_learning_and_pytorch.md)** | 12–16 Weeks |
 | **21 – 25 Points** | **Senior Engineer / Architect** | **[Module 06A: LLM Architecture & Inference](../curriculum/03-modern-ai-and-genai/06a_llm_architecture_and_inference.md)** | 8–12 Weeks |

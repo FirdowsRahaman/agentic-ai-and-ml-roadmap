@@ -70,42 +70,62 @@ By the end of this module, you will be able to:
 
 ## 6. Core Concepts & Practical Implementation
 
-### 6.1 Token Bucket Rate Limiter
-The token bucket algorithm regulates bursty API calls by refilling tokens at a constant rate $r$ up to capacity $C$:
+### 6.1 Thread-Safe Token Bucket Rate Limiter with Concurrency Verification
+The token bucket algorithm regulates bursty API calls by refilling tokens at a constant rate $r$ up to capacity $C$. In production multi-threaded servers (e.g. gunicorn or uvicorn worker threads), accessing `self.tokens` without synchronization causes race conditions:
 
 ```python
+import threading
 import time
+from concurrent.futures import ThreadPoolExecutor
 
-class TokenBucketLimiter:
-    """Thread-safe Token Bucket Rate Limiter for LLM API request throttling."""
+class ThreadSafeTokenBucketLimiter:
+    """Thread-safe Token Bucket Rate Limiter for multi-threaded AI API request throttling."""
     def __init__(self, capacity: int, fill_rate_per_sec: float):
         self.capacity = float(capacity)
         self.fill_rate = fill_rate_per_sec
         self.tokens = float(capacity)
-        self.last_fill = time.time()
+        self.last_fill = time.perf_counter()
+        self._lock = threading.Lock()
 
     def consume(self, tokens: int = 1) -> bool:
-        now = time.time()
-        elapsed = now - self.last_fill
-        # Add newly generated tokens up to capacity
-        self.tokens = min(self.capacity, self.tokens + elapsed * self.fill_rate)
-        self.last_fill = now
+        with self._lock:
+            now = time.perf_counter()
+            elapsed = now - self.last_fill
+            # Add newly accumulated tokens up to capacity
+            self.tokens = min(self.capacity, self.tokens + elapsed * self.fill_rate)
+            self.last_fill = now
 
-        if self.tokens >= tokens:
-            self.tokens -= tokens
-            return True
-        return False
+            if self.tokens >= tokens:
+                self.tokens -= tokens
+                return True
+            return False
 
-# Validation
-limiter = TokenBucketLimiter(capacity=3, fill_rate_per_sec=10.0)
-assert limiter.consume(1) is True
-assert limiter.consume(1) is True
-assert limiter.consume(1) is True
-assert limiter.consume(1) is False  # Bucket empty!
-print("Token Bucket Rate Limiter Validated Successfully!")
+# Concurrency Test: 50 concurrent threads attempting to consume from a bucket of capacity 10
+def test_rate_limiter_concurrency():
+    limiter = ThreadSafeTokenBucketLimiter(capacity=10, fill_rate_per_sec=0.0)
+    consumed_count = 0
+    lock = threading.Lock()
+
+    def worker():
+        nonlocal consumed_count
+        if limiter.consume(1):
+            with lock:
+                consumed_count += 1
+
+    with ThreadPoolExecutor(max_workers=50) as executor:
+        futures = [executor.submit(worker) for _ in range(50)]
+        for f in futures:
+            f.result()
+
+    # Under strict thread safety, EXACTLY 10 requests must succeed; zero race conditions allowed!
+    assert consumed_count == 10, f"Race condition detected! Consumed: {consumed_count}, expected: 10"
+    print(f"✅ Concurrency Test PASSED: Exactly {consumed_count} out of 50 concurrent threads consumed tokens.")
+
+if __name__ == "__main__":
+    test_rate_limiter_concurrency()
 ```
 
-### 6.2 Exponential Backoff with Full Jitter
+### 6.2 Exponential Backoff with Full Randomized Jitter
 When an upstream API rate-limits multiple concurrent clients, retrying at fixed intervals causes all clients to strike simultaneously (the thundering herd). Adding random jitter spreads requests evenly across time:
 
 ```python
