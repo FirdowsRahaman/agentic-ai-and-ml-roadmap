@@ -85,6 +85,19 @@ nav:
           - "12: Incident Troubleshooting Labs": curriculum/05-production-and-practice/12_incident_and_troubleshooting_labs.md
           - "13A: ML Algorithms from Scratch": curriculum/05-production-and-practice/13_algorithms_and_patterns_from_scratch/13a_ml_algorithms.md
           - "13B: AI Systems Patterns from Scratch": curriculum/05-production-and-practice/13_algorithms_and_patterns_from_scratch/13b_system_patterns.md
+          - "14: Production AI Agent Challenges":
+              - "Challenges Catalog Overview": curriculum/05-production-and-practice/14_production_ai_agent_challenges/README.md
+              - "14.1: Production AI Assistant": curriculum/05-production-and-practice/14_production_ai_agent_challenges/01_production_ai_assistant.md
+              - "14.2: Deep Research & Verification": curriculum/05-production-and-practice/14_production_ai_agent_challenges/02_research_agent.md
+              - "14.3: Production RAG & Governance": curriculum/05-production-and-practice/14_production_ai_agent_challenges/03_production_rag_agent.md
+              - "14.4: Multi-Agent Research Swarm": curriculum/05-production-and-practice/14_production_ai_agent_challenges/04_multi_agent_research_team.md
+              - "14.5: Customer Support Multi-Agent": curriculum/05-production-and-practice/14_production_ai_agent_challenges/05_customer_support_multi_agent.md
+              - "14.6: Autonomous Coding Agent": curriculum/05-production-and-practice/14_production_ai_agent_challenges/06_coding_agent.md
+              - "14.7: Text-to-SQL & Data Analyst": curriculum/05-production-and-practice/14_production_ai_agent_challenges/07_data_analyst_agent.md
+              - "14.8: Enterprise Workflow (HITL)": curriculum/05-production-and-practice/14_production_ai_agent_challenges/08_enterprise_workflow_agent.md
+              - "14.9: Reliability & Self-Healing": curriculum/05-production-and-practice/14_production_ai_agent_challenges/09_reliability_and_resilience.md
+              - "14.10: Deployment & Observability": curriculum/05-production-and-practice/14_production_ai_agent_challenges/10_deployment_and_observability.md
+              - "14.11: Capstone Multi-Agent System": curriculum/05-production-and-practice/14_production_ai_agent_challenges/11_capstone_multi_agent_system.md
   - Portfolio Projects:
       - "Project Catalog Overview": projects/README.md
       - "End-to-End Lifecycle Playbook": projects/end_to_end_lifecycle_playbook.md

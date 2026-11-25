@@ -21,9 +21,11 @@ Phase 5 cements production engineering excellence. Rather than remaining theoret
 | **[Module 12](./12_incident_and_troubleshooting_labs.md)** | Incident Troubleshooting & Diagnostic Playbooks | Advanced | 16 Hours | 15 real-world production incident triage simulations |
 | **[Module 13A](./13_algorithms_and_patterns_from_scratch/13a_ml_algorithms.md)** | Machine Learning Algorithms from Scratch | Advanced | 16 Hours | Pure NumPy implementations of Softmax, Top-K, and Attention |
 | **[Module 13B](./13_algorithms_and_patterns_from_scratch/13b_system_patterns.md)** | AI Systems Engineering Patterns from Scratch | Advanced | 14 Hours | LRU Cache, Token Bucket Limiter, and Circuit Breaker |
+| **[Module 14](./14_production_ai_agent_challenges/README.md)** | Production AI Agent Challenges & Capstone | Expert | 68 Hours | 10 production agent challenges + 1 enterprise multi-agent capstone |
 
 ---
 
-## Capstone Project for Phase 5
+## Capstones & Real-World Projects for Phase 5
+- **[Challenge 14 Capstone: Enterprise Multi-Agent Platform](./14_production_ai_agent_challenges/11_capstone_multi_agent_system.md)**
 - **[Starter Project: Full-Lifecycle Production MLOps Engine](../../projects/intermediate/starter-local-mlops/README.md)**
 - **[End-to-End Enterprise Lifecycle Playbook](../../projects/end_to_end_lifecycle_playbook.md)**

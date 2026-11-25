@@ -107,6 +107,7 @@ Covers non-root Docker deployments, Population Stability Index drift tracking, r
 | **12** | **[Incident Troubleshooting Labs](./curriculum/05-production-and-practice/12_incident_and_troubleshooting_labs.md)** | Real-world triage trees: training-serving skew, memory leaks, latency spikes, silent LLM degradation | Interactive diagnostic playbook | Advanced | 16 Hours |
 | **13A** | **[ML Algorithms from Scratch](./curriculum/05-production-and-practice/13_algorithms_and_patterns_from_scratch/13a_ml_algorithms.md)** | Numerically stable softmax, batch gradient descent, Top-K cosine search via `np.argpartition`, causal attention | 5 core algorithms in pure NumPy | Advanced | 16 Hours |
 | **13B** | **[AI Systems Patterns from Scratch](./curriculum/05-production-and-practice/13_algorithms_and_patterns_from_scratch/13b_system_patterns.md)** | LRU Cache, Token Bucket rate limiter, exponential backoff with full jitter, Circuit Breaker state machine | Resilient API gateway patterns | Advanced | 14 Hours |
+| **14** | **[Production AI Agent Challenges](./curriculum/05-production-and-practice/14_production_ai_agent_challenges/README.md)** | 10 production agent challenges (ReAct sandbox, research swarms, autonomous coding, text-to-SQL AST security, durable HITL, resilience) & enterprise capstone | 10 runnable challenge suites + 1 multi-agent capstone | Expert | 68 Hours |
 
 [<img src="assets/icons/arrow-up.svg" width="14" height="14" align="absmiddle" /> Back to Top](#roadmap-overview)
 

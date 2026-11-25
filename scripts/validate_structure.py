@@ -25,6 +25,7 @@ REQUIRED_CURRICULUM_DIRS = [
     "curriculum/04-agentic-ai",
     "curriculum/05-production-and-practice",
     "curriculum/05-production-and-practice/13_algorithms_and_patterns_from_scratch",
+    "curriculum/05-production-and-practice/14_production_ai_agent_challenges",
 ]
 
 EXPECTED_MODULES = [
@@ -51,6 +52,18 @@ EXPECTED_MODULES = [
     "curriculum/05-production-and-practice/12_incident_and_troubleshooting_labs.md",
     "curriculum/05-production-and-practice/13_algorithms_and_patterns_from_scratch/13a_ml_algorithms.md",
     "curriculum/05-production-and-practice/13_algorithms_and_patterns_from_scratch/13b_system_patterns.md",
+    "curriculum/05-production-and-practice/14_production_ai_agent_challenges/README.md",
+    "curriculum/05-production-and-practice/14_production_ai_agent_challenges/01_production_ai_assistant.md",
+    "curriculum/05-production-and-practice/14_production_ai_agent_challenges/02_research_agent.md",
+    "curriculum/05-production-and-practice/14_production_ai_agent_challenges/03_production_rag_agent.md",
+    "curriculum/05-production-and-practice/14_production_ai_agent_challenges/04_multi_agent_research_team.md",
+    "curriculum/05-production-and-practice/14_production_ai_agent_challenges/05_customer_support_multi_agent.md",
+    "curriculum/05-production-and-practice/14_production_ai_agent_challenges/06_coding_agent.md",
+    "curriculum/05-production-and-practice/14_production_ai_agent_challenges/07_data_analyst_agent.md",
+    "curriculum/05-production-and-practice/14_production_ai_agent_challenges/08_enterprise_workflow_agent.md",
+    "curriculum/05-production-and-practice/14_production_ai_agent_challenges/09_reliability_and_resilience.md",
+    "curriculum/05-production-and-practice/14_production_ai_agent_challenges/10_deployment_and_observability.md",
+    "curriculum/05-production-and-practice/14_production_ai_agent_challenges/11_capstone_multi_agent_system.md",
 ]
 
 REQUIRED_NOTEBOOK_DIRS = [

@@ -76,6 +76,7 @@ The curriculum accommodates both aspiring AI developers and experienced software
 - **Autonomous Systems:** Construct stateful cyclical multi-agent workflows using LangGraph and Google Agent Development Kit (ADK) with durable human-in-the-loop (HITL) checkpoints.
 - **Distributed Tool Protocols:** Build decoupled, secure tool backends using the open Model Context Protocol (MCP) JSON-RPC 2.0 standard.
 - **Production AI Engineering:** Eliminate pickle security vulnerabilities with safe `.npz` serialization, serve low-latency FastAPI endpoints, and monitor data drift with automated Population Stability Index (PSI) calculations.
+- **Production Agent Challenges:** 10 hands-on production challenges and 1 enterprise multi-agent capstone covering AST tool sandboxing, deep research swarms, autonomous coding & debugging, text-to-SQL AST security, durable HITL workflows, resilience tripwires, and OpenTelemetry FinOps instrumentation.
 
  
 
@@ -109,6 +110,7 @@ The curriculum is structured into **5 progressive phases** across **18 specializ
 | <img src="assets/icons/tools.svg" width="16" height="16" align="absmiddle" /> **Runnable Starters** | Fully working, local $0 API cost codebases with pytest suites | [projects/intermediate/](./projects/intermediate/README.md) |
 | <img src="assets/icons/brain.svg" width="16" height="16" align="absmiddle" /> **Interactive Labs** | Jupyter Notebooks for vectorized math, ML, and transformers | [notebooks/foundations/](./notebooks/foundations/01_numpy_pandas_sql_lab.ipynb) |
 | <img src="assets/icons/business.svg" width="16" height="16" align="absmiddle" /> **Interview Preparation** | System design, technical screenings, and resume CAR guide | [interview-kits/README.md](./interview-kits/README.md) |
+| <img src="assets/icons/rocket.svg" width="16" height="16" align="absmiddle" /> **Production Agent Challenges** | 10 production agent challenges + 1 enterprise multi-agent capstone | [curriculum/05-production-and-practice/14_production_ai_agent_challenges/](./curriculum/05-production-and-practice/14_production_ai_agent_challenges/README.md) |
 | <img src="assets/icons/api.svg" width="16" height="16" align="absmiddle" /> **Curated Resources** | Textbooks, courses, landmark research papers, and open-source tools | [resources/recommended_resources.md](./resources/recommended_resources.md) |
 | <img src="assets/icons/index.svg" width="16" height="16" align="absmiddle" /> **Technical Glossary** | Production terminology (RRF, PSI, HITL, MCP, PagedAttention) | [docs/glossary.md](./docs/glossary.md) |
 
