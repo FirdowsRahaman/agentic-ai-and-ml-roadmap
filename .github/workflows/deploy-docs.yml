@@ -36,7 +36,9 @@ jobs:
           pip install -r requirements-docs.txt
 
       - name: Build MkDocs documentation site
-        run: mkdocs build
+        run: |
+          python -c "import scripts.prepare_docs as p; p.on_pre_build({})"
+          mkdocs build
 
       - name: Setup Pages
         uses: actions/configure-pages@v5

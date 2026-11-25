@@ -49,4 +49,6 @@ jobs:
           PYTHONPATH=projects/intermediate/starter-local-mlops pytest projects/intermediate/starter-local-mlops/tests -v
 
       - name: Build MkDocs documentation site
-        run: mkdocs build
+        run: |
+          python -c "import scripts.prepare_docs as p; p.on_pre_build({})"
+          mkdocs build
