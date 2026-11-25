@@ -55,7 +55,7 @@ The curriculum accommodates both aspiring AI developers and experienced software
 
 > 🧭 **[Take the 25-Point Diagnostic Assessment in docs/assessment-guide.md →](./docs/assessment-guide.md)**
 
-[<img src="assets/icons/arrow-up.svg" width="14" height="14" align="absmiddle" /> Back to Top](#table-of-contents)
+ 
 
 ---
 
@@ -65,7 +65,7 @@ The curriculum accommodates both aspiring AI developers and experienced software
 - **Data Scientists & Classical ML Engineers** advancing to Generative AI, RAG systems, and Autonomous Agent orchestration.
 - **AI Engineers & Architects** designing enterprise multi-agent platforms, Model Context Protocol (MCP) tool servers, and production MLOps pipelines.
 
-[<img src="assets/icons/arrow-up.svg" width="14" height="14" align="absmiddle" /> Back to Top](#table-of-contents)
+ 
 
 ---
 
@@ -77,7 +77,7 @@ The curriculum accommodates both aspiring AI developers and experienced software
 - **Distributed Tool Protocols:** Build decoupled, secure tool backends using the open Model Context Protocol (MCP) JSON-RPC 2.0 standard.
 - **Production AI Engineering:** Eliminate pickle security vulnerabilities with safe `.npz` serialization, serve low-latency FastAPI endpoints, and monitor data drift with automated Population Stability Index (PSI) calculations.
 
-[<img src="assets/icons/arrow-up.svg" width="14" height="14" align="absmiddle" /> Back to Top](#table-of-contents)
+ 
 
 ---
 
@@ -93,7 +93,7 @@ The curriculum is structured into **5 progressive phases** across **18 specializ
 
 > 📖 **[View the Complete 18-Unit Module Sequence & Dependency Graph in ROADMAP.md →](./ROADMAP.md)**
 
-[<img src="assets/icons/arrow-up.svg" width="14" height="14" align="absmiddle" /> Back to Top](#table-of-contents)
+ 
 
 ---
 
@@ -112,11 +112,11 @@ The curriculum is structured into **5 progressive phases** across **18 specializ
 | <img src="assets/icons/api.svg" width="16" height="16" align="absmiddle" /> **Curated Resources** | Textbooks, courses, landmark research papers, and open-source tools | [resources/recommended_resources.md](./resources/recommended_resources.md) |
 | <img src="assets/icons/index.svg" width="16" height="16" align="absmiddle" /> **Technical Glossary** | Production terminology (RRF, PSI, HITL, MCP, PagedAttention) | [docs/glossary.md](./docs/glossary.md) |
 
-[<img src="assets/icons/arrow-up.svg" width="14" height="14" align="absmiddle" /> Back to Top](#table-of-contents)
+ 
 
 ---
 
-## <img src="assets/icons/apps.svg" width="22" height="22" align="absmiddle" /> Project Highlights ($0 API Cost Starters) <a id="project-highlights-0-api-cost-starters"></a>
+## <img src="assets/icons/apps.svg" width="22" height="22" align="absmiddle" /> Project Highlights <a id="project-highlights-0-api-cost-starters"></a>
 
 You can clone and run complete production-grade systems immediately on your laptop without registering credit cards or generating paid API tokens:
 
@@ -128,7 +128,7 @@ You can clone and run complete production-grade systems immediately on your lapt
   *Stack:* FastAPI, Uvicorn, Scikit-Learn, NumPy, Docker, Pytest  
   Implements zero-pickle `.npz` model persistence, leak-free training, REST prediction endpoints, automated Population Stability Index (PSI) drift monitoring, and non-root container deployment.
 
-[<img src="assets/icons/arrow-up.svg" width="14" height="14" align="absmiddle" /> Back to Top](#table-of-contents)
+ 
 
 ---
 
@@ -149,7 +149,7 @@ You can clone and run complete production-grade systems immediately on your lapt
    python scripts/validate_links.py
    ```
 
-[<img src="assets/icons/arrow-up.svg" width="14" height="14" align="absmiddle" /> Back to Top](#table-of-contents)
+ 
 
 ---
 
@@ -157,7 +157,7 @@ You can clone and run complete production-grade systems immediately on your lapt
 
 We welcome contributions from engineers, researchers, and educators! Please read our [Contribution Guidelines](./CONTRIBUTING.md) for details on code style, link validation, notebook requirements, and the pull request process.
 
-[<img src="assets/icons/arrow-up.svg" width="14" height="14" align="absmiddle" /> Back to Top](#table-of-contents)
+ 
 
 ---
 
@@ -165,4 +165,4 @@ We welcome contributions from engineers, researchers, and educators! Please read
 
 This project is open-source under the [MIT License](./LICENSE).
 
-[<img src="assets/icons/arrow-up.svg" width="14" height="14" align="absmiddle" /> Back to Top](#table-of-contents)
+ 
